@@ -1,0 +1,10 @@
+{
+  "package": "proto.mechanicalarms.client.mixin.renderer",
+  "refmap": "mixins.armscore.refmap.json",
+  "target": "@env(DEFAULT)",
+  "minVersion": "0.8",
+  "compatibilityLevel": "JAVA_8",
+  "client": [
+    "TileEntityRendererDispatcherMixin"
+  ]
+}

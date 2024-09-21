@@ -1,0 +1,16 @@
+[
+{
+  "modid": "mechanicalarms",
+  "name": "Mechanical Arms",
+  "description": "Interact with the world with mechanical arms.",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "",
+  "updateUrl": "",
+  "authorList": ["PrototypeTrousers"],
+  "credits": "Authors of this project",
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": []
+}
+]

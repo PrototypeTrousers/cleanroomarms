@@ -1,0 +1,18 @@
+{
+  "forge_marker": 1,
+  "defaults": {
+    "custom": { "flip-v": true },
+    "model": "mechanicalarms:arm_basic.obj",
+    "textures": {
+      "#none": "mechanicalarms:blocks/arm_base"
+    }
+  },
+    "textures": {
+    "all": "blocks/arm_basic"
+    },
+
+  "variants": {
+    "normal": [{}],
+    "inventory": [{}]
+  }
+}
