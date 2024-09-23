@@ -1,6 +1,6 @@
 package proto.mechanicalarms.client.renderer;
 
-import de.javagl.jgltf.model.GltfModel;
+import de.javagl.jgltf.model.*;
 import de.javagl.jgltf.model.io.GltfModelReader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GLAllocation;
@@ -43,7 +43,17 @@ public class Vao implements InstanceableModel{
     private int colorBuffer;
 
     public Vao(ResourceLocation resourceLocation) {
-        GltfModel g =null;
+        vertexArrayBuffer = org.lwjgl.opengl.GL30.glGenVertexArrays();
+        org.lwjgl.opengl.GL30.glBindVertexArray(vertexArrayBuffer);
+
+        int vertexAmount = 1000000 * 3;
+        FloatBuffer pos = GLAllocation.createDirectFloatBuffer(vertexAmount * 3);
+        FloatBuffer norm = GLAllocation.createDirectFloatBuffer(vertexAmount * 3);
+        FloatBuffer tex = GLAllocation.createDirectFloatBuffer(vertexAmount * 2);
+        FloatBuffer color = GLAllocation.createDirectFloatBuffer(vertexAmount * 4);
+
+
+        GltfModel g = null;
         try {
             IResource resource = Minecraft.getMinecraft().getResourceManager().getResource(resourceLocation);
             Throwable var2 = null;
@@ -72,39 +82,19 @@ public class Vao implements InstanceableModel{
             IOException e = var14;
             e.printStackTrace();
         }
-    }
-
-    public void setupVAO(IModel model) {
-        vertexArrayBuffer = GL30.glGenVertexArrays();
-        GL30.glBindVertexArray(vertexArrayBuffer);
-        List<OBJModel.Face> fl = new ArrayList<>();
-        ((OBJModel) model).getMatLib().getGroups().values().forEach(g -> fl.addAll(g.getFaces()));
-        int vertexAmount = fl.size() * 3;
-        FloatBuffer pos = GLAllocation.createDirectFloatBuffer(vertexAmount * 3);
-        FloatBuffer norm = GLAllocation.createDirectFloatBuffer(vertexAmount * 3);
-        FloatBuffer tex = GLAllocation.createDirectFloatBuffer(vertexAmount * 2);
-        FloatBuffer color = GLAllocation.createDirectFloatBuffer(vertexAmount * 4);
-
+        
         int v = 0;
-        for (OBJModel.Face face : fl) {
-            OBJModel.Vertex[] vertices = face.getVertices();
-            for (int i = 0; i < 3; i++) {
-                OBJModel.Vertex vertex = vertices[i];
-                pos.put(vertex.getPos().x);
-                pos.put(vertex.getPos().y);
-                pos.put(vertex.getPos().z);
-                //U,V
-                tex.put(vertex.getTextureCoordinate().u);
-                tex.put(vertex.getTextureCoordinate().v);
-                //Normals
-                norm.put(vertex.getNormal().x);
-                norm.put(vertex.getNormal().y);
-                norm.put(vertex.getNormal().z);
-                color.put(1);
-                color.put(1);
-                color.put(1);
-                color.put(1);
-                v++;
+        for (NodeModel nm : g.getNodeModels()){
+            for (MeshModel mm :nm.getMeshModels()){
+                for (MeshPrimitiveModel pm :mm.getMeshPrimitiveModels()){
+                    AccessorModel posAccessor = pm.getAttributes().get("POSITION");
+                    pos.put(posAccessor.getAccessorData().createByteBuffer().asFloatBuffer());
+                    AccessorModel texAccessor = pm.getAttributes().get("TEXCOORD_0");
+                    tex.put(texAccessor.getAccessorData().createByteBuffer().asFloatBuffer());
+                    AccessorModel normalAccessor = pm.getAttributes().get("NORMAL");
+                    norm.put(normalAccessor.getAccessorData().createByteBuffer().asFloatBuffer());
+                    v += pm.getIndices().getCount();
+                }
             }
         }
         pos.rewind();
