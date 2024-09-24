@@ -9,10 +9,6 @@ import net.minecraft.client.renderer.texture.SimpleTexture;
 import net.minecraft.client.resources.IResource;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.model.IModel;
-import net.minecraftforge.client.model.obj.OBJModel;
-import org.lwjgl.input.Mouse;
-import org.lwjgl.opengl.Display;
-import org.lwjgl3.glfw.GLFW;
 import org.lwjgl3.opengl.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,8 +16,7 @@ import org.slf4j.LoggerFactory;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.nio.FloatBuffer;
-import java.util.ArrayList;
-import java.util.List;
+import java.nio.ShortBuffer;
 import java.util.Objects;
 
 public class Vao implements InstanceableModel{
@@ -36,8 +31,10 @@ public class Vao implements InstanceableModel{
     public int vaoId;
     public int drawMode;
     public int vertexCount;
+    public int elementCount;
     public boolean useElements;
     private int vertexArrayBuffer;
+    public int elementBufferId;
 
     IModel model;
     private int colorBuffer;
@@ -46,12 +43,12 @@ public class Vao implements InstanceableModel{
         vertexArrayBuffer = org.lwjgl.opengl.GL30.glGenVertexArrays();
         org.lwjgl.opengl.GL30.glBindVertexArray(vertexArrayBuffer);
 
-        int vertexAmount = 1000000 * 3;
+        int vertexAmount = 1000 * 3;
         FloatBuffer pos = GLAllocation.createDirectFloatBuffer(vertexAmount * 3);
         FloatBuffer norm = GLAllocation.createDirectFloatBuffer(vertexAmount * 3);
         FloatBuffer tex = GLAllocation.createDirectFloatBuffer(vertexAmount * 2);
         FloatBuffer color = GLAllocation.createDirectFloatBuffer(vertexAmount * 4);
-
+        ShortBuffer elements = GLAllocation.createDirectByteBuffer(vertexAmount * 4).asShortBuffer();
 
         GltfModel g = null;
         try {
@@ -84,16 +81,24 @@ public class Vao implements InstanceableModel{
         }
         
         int v = 0;
+        int m = 0;
+        loop:
         for (NodeModel nm : g.getNodeModels()){
             for (MeshModel mm :nm.getMeshModels()){
                 for (MeshPrimitiveModel pm :mm.getMeshPrimitiveModels()){
+                    if (m++ != 2) {
+                        continue ;
+                    }
                     AccessorModel posAccessor = pm.getAttributes().get("POSITION");
                     pos.put(posAccessor.getAccessorData().createByteBuffer().asFloatBuffer());
                     AccessorModel texAccessor = pm.getAttributes().get("TEXCOORD_0");
                     tex.put(texAccessor.getAccessorData().createByteBuffer().asFloatBuffer());
                     AccessorModel normalAccessor = pm.getAttributes().get("NORMAL");
                     norm.put(normalAccessor.getAccessorData().createByteBuffer().asFloatBuffer());
-                    v += pm.getIndices().getCount();
+                    elements.put(pm.getIndices().getBufferViewModel().getBufferViewData().asShortBuffer().rewind());
+                    v += posAccessor.getCount();
+                    elementCount += pm.getIndices().getCount();
+                    break loop;
                 }
             }
         }
@@ -101,6 +106,7 @@ public class Vao implements InstanceableModel{
         norm.rewind();
         tex.rewind();
         color.rewind();
+        elements.rewind();
 
         posBuffer = GL15.glGenBuffers();
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, posBuffer);
@@ -151,6 +157,12 @@ public class Vao implements InstanceableModel{
             GL20.glEnableVertexAttribArray(4 + i);
             GL33.glVertexAttribDivisor(4 + i, 1);
         }
+
+        elementBufferId = GL15.glGenBuffers();
+        GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, elementBufferId);
+        GL15.glBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, elements, GL15.GL_STATIC_DRAW);
+        GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, 0);
+
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
         GL30.glBindVertexArray(0);
         this.vertexCount = v;
@@ -162,22 +174,22 @@ public class Vao implements InstanceableModel{
     }
 
     @Override
-    public int getVertexArrayBuffer() {
+    public int getVertexArrayBufferId() {
         return vertexArrayBuffer;
     }
 
     @Override
-    public int getModelTransformBuffer() {
+    public int getModelTransformBufferId() {
         return modelTransformBuffer;
     }
 
     @Override
-    public int getBlockLightBuffer() {
+    public int getBlockLightBufferId() {
         return lightBuffer;
     }
 
     @Override
-    public int getTexGl() {
+    public int getTexGlId() {
         if (texGL == 0) {
             ResourceLocation t = new ResourceLocation("mechanicalarms:textures/arm_arm.png");
             ITextureObject itextureobject = Minecraft.getMinecraft().getTextureManager().getTexture(t);
@@ -190,6 +202,16 @@ public class Vao implements InstanceableModel{
             texGL = Minecraft.getMinecraft().getTextureManager().getTexture(t).getGlTextureId();
         }
         return texGL;
+    }
+
+    @Override
+    public int getElementBufferId() {
+        return elementBufferId;
+    }
+
+    @Override
+    public int getElementCount() {
+        return elementCount;
     }
 
     @Override

@@ -52,19 +52,22 @@ public class InstanceRender {
             InstanceData instanceData = entry.getValue();
             instanceData.rewindBuffers();
 
-            GL30.glBindVertexArray(im.getVertexArrayBuffer());
+            GL30.glBindVertexArray(im.getVertexArrayBufferId());
 
-            GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, im.getModelTransformBuffer());
+            GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, im.getModelTransformBufferId());
             GL15.glBufferData(GL15.GL_ARRAY_BUFFER, instanceData.modelMatrixBuffer, GL15.GL_DYNAMIC_DRAW);
 
-            GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, im.getBlockLightBuffer());
+            GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, im.getBlockLightBufferId());
             GL15.glBufferData(GL15.GL_ARRAY_BUFFER, instanceData.blockLightBuffer, GL15.GL_DYNAMIC_DRAW);
 
-            int instanceTextureId = im.getTexGl();
-                GL11.glBindTexture(GL11.GL_TEXTURE_2D, instanceTextureId);
+            int instanceTextureId = im.getTexGlId();
+            GL11.glBindTexture(GL11.GL_TEXTURE_2D, instanceTextureId);
 
+            GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, im.getElementBufferId());
 
-            GL31.glDrawArraysInstanced(GL11.GL_TRIANGLES, 0, im.getVertexCount(), instanceData.getInstanceCount());
+            GL31.glDrawElementsInstanced(GL11.GL_TRIANGLES, im.getElementCount(), GL11.GL_UNSIGNED_SHORT, 0, instanceData.instanceCount);
+
+            GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, 0);
 
             instanceData.rewindBuffers();
             instanceData.resetCount();

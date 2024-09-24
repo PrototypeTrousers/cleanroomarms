@@ -216,28 +216,38 @@ public class ItemStackRenderToVAO implements InstanceableModel {
     }
 
     @Override
-    public int getTexGl() {
+    public int getTexGlId() {
         return texGL;
     }
 
     @Override
-    public int getBlockLightBuffer() {
+    public int getBlockLightBufferId() {
         return lightBuffer;
     }
 
     @Override
-    public int getVertexArrayBuffer() {
+    public int getVertexArrayBufferId() {
         return vertexArrayBuffer;
     }
 
     @Override
-    public int getModelTransformBuffer() {
+    public int getModelTransformBufferId() {
         return modelTransform;
     }
 
     @Override
     public int getVertexCount() {
         return vertexCount;
+    }
+
+    @Override
+    public int getElementBufferId() {
+        return 0;
+    }
+
+    @Override
+    public int getElementCount() {
+        return 0;
     }
 
     public ItemStack getStack() {

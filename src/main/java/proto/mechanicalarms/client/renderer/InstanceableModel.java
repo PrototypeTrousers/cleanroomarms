@@ -1,13 +1,17 @@
 package proto.mechanicalarms.client.renderer;
 
 public interface InstanceableModel {
-    int getVertexArrayBuffer();
+    int getVertexArrayBufferId();
 
-    int getModelTransformBuffer();
+    int getModelTransformBufferId();
 
-    int getBlockLightBuffer();
+    int getBlockLightBufferId();
 
-    int getTexGl();
+    int getTexGlId();
 
     int getVertexCount();
+
+    int getElementBufferId();
+
+    int getElementCount();
 }
