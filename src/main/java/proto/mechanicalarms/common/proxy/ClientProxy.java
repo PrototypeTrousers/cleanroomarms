@@ -1,5 +1,7 @@
 package proto.mechanicalarms.common.proxy;
 
+import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraftforge.client.event.TextureStitchEvent;
 import proto.mechanicalarms.MechanicalArms;
 import proto.mechanicalarms.client.renderer.TileArmRenderer;
 import proto.mechanicalarms.client.renderer.TileBeltRenderer;

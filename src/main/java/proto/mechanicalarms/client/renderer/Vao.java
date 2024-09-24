@@ -9,6 +9,8 @@ import net.minecraft.client.renderer.texture.SimpleTexture;
 import net.minecraft.client.resources.IResource;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.model.IModel;
+import net.minecraftforge.client.model.obj.OBJLoader;
+import net.minecraftforge.client.model.obj.OBJModel;
 import org.lwjgl3.opengl.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,6 +42,7 @@ public class Vao implements InstanceableModel{
     private int colorBuffer;
 
     public Vao(ResourceLocation resourceLocation) {
+
         vertexArrayBuffer = org.lwjgl.opengl.GL30.glGenVertexArrays();
         org.lwjgl.opengl.GL30.glBindVertexArray(vertexArrayBuffer);
 

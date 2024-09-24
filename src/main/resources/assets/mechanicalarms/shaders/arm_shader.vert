@@ -30,5 +30,5 @@ void main(){
     //0 and 1 are used for the p and q coordinates because p defaults to 0 and q defaults to 1
     texCoord = (gl_TextureMatrix[0] * vec4(in_texcoord, 0, 1)).st;
     lightCoord = (gl_TextureMatrix[1] * vec4(in_light.x * 16, in_light.y * 16, 0, 1)).st;
-    col = vec4(80,80,80,1);
+    col = vec4(2,2,2,1);
 }
