@@ -30,9 +30,6 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
     Matrix4f handMatrix = new Matrix4f();
     Matrix4f itemArmMatrix = new Matrix4f();
 
-
-
-    Vao base;
     private final Matrix4f tempModelMatrix = new Matrix4f();
     Matrix4f transformMatrix = new Matrix4f();
     Matrix4f translationMatrix = new Matrix4f();
@@ -41,11 +38,6 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
     Quaternion rot = Quaternion.createIdentity();
 
     float partialTicks;
-
-    private Vao baseMotor;
-    private Vao firstArm;
-    private Vao secondArm;
-    private Vao hand;
 
     ItemStack fakeStack = new ItemStack(Items.END_CRYSTAL);
 

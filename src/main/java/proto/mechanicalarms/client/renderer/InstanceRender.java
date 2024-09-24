@@ -19,7 +19,7 @@ public class InstanceRender {
     protected static final FloatBuffer MODELVIEW_MATRIX_BUFFER = GLAllocation.createDirectFloatBuffer(16);
     protected static final FloatBuffer PROJECTION_MATRIX_BUFFER = GLAllocation.createDirectFloatBuffer(16);
 
-    static InstanceRender INSTANCE = new InstanceRender();
+    public static InstanceRender INSTANCE = new InstanceRender();
     InstanceData current;
 
     static Map<InstanceableModel, InstanceData> modelInstanceData = new Object2ObjectOpenHashMap<>();
@@ -62,12 +62,7 @@ public class InstanceRender {
 
             int instanceTextureId = im.getTexGlId();
             GL11.glBindTexture(GL11.GL_TEXTURE_2D, instanceTextureId);
-
-            GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, im.getElementBufferId());
-
             GL31.glDrawElementsInstanced(GL11.GL_TRIANGLES, im.getElementCount(), GL11.GL_UNSIGNED_SHORT, 0, instanceData.instanceCount);
-
-            GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, 0);
 
             instanceData.rewindBuffers();
             instanceData.resetCount();
