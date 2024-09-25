@@ -1,7 +1,7 @@
 package proto.mechanicalarms.common.proxy;
 
 import proto.mechanicalarms.MechanicalArms;
-import proto.mechanicalarms.client.renderer.instances.TileArmRenderer;
+import proto.mechanicalarms.client.renderer.TileArmRenderer;
 import proto.mechanicalarms.client.renderer.TileBeltRenderer;
 import proto.mechanicalarms.common.item.Items;
 import proto.mechanicalarms.common.tile.TileArmBasic;

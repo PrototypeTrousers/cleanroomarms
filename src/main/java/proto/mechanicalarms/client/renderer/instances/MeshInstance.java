@@ -85,7 +85,7 @@ public class MeshInstance implements InstanceableModel {
         colorBuffer = GL15.glGenBuffers();
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, colorBuffer);
         GL15.glBufferData(GL15.GL_ARRAY_BUFFER, color, GL15.GL_STATIC_DRAW);
-        GL20.glVertexAttribPointer(8, 4, GL11.GL_FLOAT, true, 16, 0);
+        GL20.glVertexAttribPointer(8, 4, GL11.GL_FLOAT, true, 4, 0);
         GL20.glEnableVertexAttribArray(8);
 
         lightBuffer = GL15.glGenBuffers();

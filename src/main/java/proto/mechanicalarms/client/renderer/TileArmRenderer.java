@@ -1,7 +1,8 @@
-package proto.mechanicalarms.client.renderer.instances;
+package proto.mechanicalarms.client.renderer;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenCustomHashMap;
-import proto.mechanicalarms.client.renderer.InstanceRender;
+import proto.mechanicalarms.client.renderer.instances.MeshInstance;
+import proto.mechanicalarms.client.renderer.instances.ModelInstance;
 import proto.mechanicalarms.client.renderer.util.ItemStackHasher;
 import proto.mechanicalarms.client.renderer.util.ItemStackRenderToVAO;
 import proto.mechanicalarms.client.renderer.util.Quaternion;

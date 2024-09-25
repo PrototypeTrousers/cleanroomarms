@@ -1,16 +1,17 @@
 package proto.mechanicalarms.client.renderer.shaders;
 
-import proto.mechanicalarms.MechanicalArms;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.ResourceLocation;
 import org.apache.commons.io.IOUtils;
-import org.lwjgl.BufferUtils;
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL20;
+import org.lwjgl3.BufferUtils;
+import org.lwjgl3.opengl.GL11;
+import org.lwjgl3.opengl.GL20;
+import proto.mechanicalarms.MechanicalArms;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 
 public class ShaderManager {
 
@@ -29,7 +30,7 @@ public class ShaderManager {
             int program = GL20.glCreateProgram();
 
             vertexShader = GL20.glCreateShader(GL20.GL_VERTEX_SHADER);
-            GL20.glShaderSource(vertexShader, readFileToBuf(new ResourceLocation(file.getNamespace(), file.getPath() + ".vert")));
+            GL20.glShaderSource(vertexShader, source(new ResourceLocation(file.getNamespace(), file.getPath() + ".vert")));
             GL20.glCompileShader(vertexShader);
             if(GL20.glGetShaderi(vertexShader, GL20.GL_COMPILE_STATUS) == GL11.GL_FALSE) {
                 MechanicalArms.logger.error(GL20.glGetShaderInfoLog(vertexShader, GL20.GL_INFO_LOG_LENGTH));
@@ -37,7 +38,7 @@ public class ShaderManager {
             }
 
             fragmentShader = GL20.glCreateShader(GL20.GL_FRAGMENT_SHADER);
-            GL20.glShaderSource(fragmentShader, readFileToBuf(new ResourceLocation(file.getNamespace(), file.getPath() + ".frag")));
+            GL20.glShaderSource(fragmentShader, source(new ResourceLocation(file.getNamespace(), file.getPath() + ".frag")));
             GL20.glCompileShader(fragmentShader);
             if(GL20.glGetShaderi(fragmentShader, GL20.GL_COMPILE_STATUS) == GL11.GL_FALSE) {
                 MechanicalArms.logger.error(GL20.glGetShaderInfoLog(fragmentShader, GL20.GL_INFO_LOG_LENGTH));
@@ -72,5 +73,11 @@ public class ShaderManager {
         buf.put(bytes);
         buf.rewind();
         return buf;
+    }
+    private static String source(ResourceLocation file) throws IOException {
+        InputStream in = Minecraft.getMinecraft().getResourceManager().getResource(file).getInputStream();
+        String str = IOUtils.toString(in, StandardCharsets.UTF_8);
+        IOUtils.closeQuietly(in);
+        return str;
     }
 }

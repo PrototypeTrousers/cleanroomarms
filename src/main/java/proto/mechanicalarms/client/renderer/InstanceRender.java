@@ -6,7 +6,7 @@ import proto.mechanicalarms.client.renderer.shaders.Shader;
 import proto.mechanicalarms.client.renderer.shaders.ShaderManager;
 import net.minecraft.client.renderer.GLAllocation;
 import net.minecraft.util.ResourceLocation;
-import org.lwjgl.opengl.*;
+import org.lwjgl3.opengl.*;
 
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
@@ -37,15 +37,15 @@ public class InstanceRender {
 
         int originalTexId = GL11.glGetInteger(GL11.GL_TEXTURE_BINDING_2D);
 
-        GL11.glGetFloat(GL11.GL_MODELVIEW_MATRIX, MODELVIEW_MATRIX_BUFFER);
+        GL11.glGetFloatv(GL11.GL_MODELVIEW_MATRIX, MODELVIEW_MATRIX_BUFFER);
         // Get the current projection matrix and store it in the buffer
-        GL11.glGetFloat(GL11.GL_PROJECTION_MATRIX, PROJECTION_MATRIX_BUFFER);
+        GL11.glGetFloatv(GL11.GL_PROJECTION_MATRIX, PROJECTION_MATRIX_BUFFER);
 
         int projectionLoc = GL20.glGetUniformLocation(base_vao.getShaderId(), "projection");
         int viewLoc = GL20.glGetUniformLocation(base_vao.getShaderId(), "view");
 
-        GL20.glUniformMatrix4(projectionLoc, false, PROJECTION_MATRIX_BUFFER);
-        GL20.glUniformMatrix4(viewLoc, false, MODELVIEW_MATRIX_BUFFER);
+        GL20.glUniformMatrix4fv(projectionLoc, false, PROJECTION_MATRIX_BUFFER);
+        GL20.glUniformMatrix4fv(viewLoc, false, MODELVIEW_MATRIX_BUFFER);
 
         for (Map.Entry<InstanceableModel, InstanceData> entry : modelInstanceData.entrySet()) {
             InstanceableModel im = entry.getKey();
@@ -69,7 +69,7 @@ public class InstanceRender {
         }
 
         GL11.glBindTexture(GL11.GL_TEXTURE_2D, originalTexId);
-        modelInstanceData.clear();
+        //modelInstanceData.clear();
         GL30.glBindVertexArray(0);
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
         base_vao.release();
