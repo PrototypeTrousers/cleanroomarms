@@ -15,11 +15,13 @@ import net.minecraft.util.ResourceLocation;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ModelInstancer {
 
-    Object2ObjectArrayMap<NodeModel, MeshModel> node2MeshMap = new Object2ObjectArrayMap<>();
-    Object2ObjectArrayMap<MeshModel, MeshPrimitiveModel> mesh2PrimitiveMeshMap = new Object2ObjectArrayMap<>();
+    static Object2ObjectArrayMap<NodeModel, MeshModel> node2MeshMap = new Object2ObjectArrayMap<>();
+    static Object2ObjectArrayMap<MeshModel, MeshPrimitiveModel> mesh2PrimitiveMeshMap = new Object2ObjectArrayMap<>();
 
 
     public static GltfModel loadglTFModel(ResourceLocation resourceLocation) {
@@ -55,15 +57,17 @@ public class ModelInstancer {
         return g;
     }
 
-    public void makeVertexArrayObjects(GltfModel gltfModel) {
+    public static List<MeshInstance> makeVertexArrayObjects(GltfModel gltfModel) {
+        List<MeshInstance> l = new ArrayList<>();
         for (NodeModel nm : gltfModel.getNodeModels()) {
             for (MeshModel mm : nm.getMeshModels()) {
                 node2MeshMap.put(nm,mm);
                 for (MeshPrimitiveModel pm : mm.getMeshPrimitiveModels()) {
                     mesh2PrimitiveMeshMap.put(mm,pm);
-                    new MeshInstance(nm, mm, pm);
+                    l.add(new MeshInstance(nm, mm, pm));
                 }
             }
         }
+        return l;
     }
 }

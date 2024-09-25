@@ -3,12 +3,15 @@ package proto.mechanicalarms.client.renderer.instances;
 import de.javagl.jgltf.model.*;
 import de.javagl.jgltf.model.v2.MaterialModelV2;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.texture.ITextureObject;
+import net.minecraft.client.renderer.texture.SimpleTexture;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.model.IModel;
 import org.lwjgl3.opengl.*;
 import proto.mechanicalarms.client.renderer.InstanceableModel;
 
 import java.nio.FloatBuffer;
+import java.util.Arrays;
 import java.util.Objects;
 
 public class MeshInstance implements InstanceableModel {
@@ -29,10 +32,16 @@ public class MeshInstance implements InstanceableModel {
     //
     public float[] meshOrigin;
 
-    IModel model;
-
     MeshInstance(NodeModel nm, MeshModel meshModel, MeshPrimitiveModel meshPrimitiveModel) {
         meshOrigin = nm.getTranslation();
+        NodeModel parent = nm.getParent();
+        while (parent != null) {
+            float[] parentOrigin = parent.getTranslation();
+            meshOrigin[0] += parentOrigin[0];
+            meshOrigin[1] += parentOrigin[1];
+            meshOrigin[2] += parentOrigin[2];
+            parent = parent.getParent();
+        }
         genBuffers(meshModel, meshPrimitiveModel);
     }
 
@@ -67,24 +76,24 @@ public class MeshInstance implements InstanceableModel {
         GL20.glVertexAttribPointer(2, 3, GL11.GL_FLOAT, true, 12, 0);
         GL20.glEnableVertexAttribArray(2);
 
+//        FloatBuffer color = FloatBuffer.allocate(4);
+//        color.put(((MaterialModelV2)meshPrimitiveModel.getMaterialModel()).getBaseColorFactor());
+//        color.rewind();
+//
+//        colorBuffer = GL15.glGenBuffers();
+//        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, colorBuffer);
+//        GL15.glBufferData(GL15.GL_ARRAY_BUFFER, color, GL15.GL_STATIC_DRAW);
+//        GL20.glVertexAttribPointer(8, 4, GL11.GL_FLOAT, true, 16, 0);
+//        GL20.glEnableVertexAttribArray(8);
+
         lightBuffer = GL15.glGenBuffers();
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, lightBuffer);
         GL15.glBufferData(GL15.GL_ARRAY_BUFFER, 2, GL15.GL_DYNAMIC_DRAW);
 
-        //Light
+        //Block Light
         GL20.glVertexAttribPointer(3, 2, GL11.GL_UNSIGNED_BYTE, false, 2, 0);
         GL20.glEnableVertexAttribArray(3);
         GL33.glVertexAttribDivisor(3, 1);
-
-        FloatBuffer color = FloatBuffer.allocate(4);
-        color.put(((MaterialModelV2)meshPrimitiveModel.getMaterialModel()).getBaseColorFactor());
-        color.rewind();
-
-        colorBuffer = GL15.glGenBuffers();
-        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, colorBuffer);
-        GL15.glBufferData(GL15.GL_ARRAY_BUFFER, color, GL15.GL_STATIC_DRAW);
-        GL20.glVertexAttribPointer(8, 4, GL11.GL_FLOAT, true, 16, 0);
-        GL20.glEnableVertexAttribArray(8);
 
         //Model Transform Matrix
         modelTransformBuffer = GL15.glGenBuffers();
@@ -130,6 +139,13 @@ public class MeshInstance implements InstanceableModel {
     public int getTexGlId() {
         if (texGL == 0) {
             ResourceLocation t = new ResourceLocation("mechanicalarms:textures/arm_arm.png");
+            ITextureObject itextureobject = Minecraft.getMinecraft().getTextureManager().getTexture(t);
+
+            if (itextureobject == null)
+            {
+                itextureobject = new SimpleTexture(t);
+                Minecraft.getMinecraft().getTextureManager().loadTexture(t, itextureobject);
+            }
             texGL = Minecraft.getMinecraft().getTextureManager().getTexture(t).getGlTextureId();
         }
         return texGL;
@@ -143,18 +159,5 @@ public class MeshInstance implements InstanceableModel {
     @Override
     public int getElementCount() {
         return elementCount;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        MeshInstance vao = (MeshInstance) o;
-        return Objects.equals(model, vao.model);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(model);
     }
 }

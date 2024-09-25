@@ -16,6 +16,7 @@ import net.minecraftforge.client.model.animation.FastTESR;
 import javax.vecmath.Matrix4f;
 import javax.vecmath.Vector3f;
 import java.nio.FloatBuffer;
+import java.util.List;
 
 
 public class TileArmRenderer extends FastTESR<TileArmBasic> {
@@ -38,7 +39,7 @@ public class TileArmRenderer extends FastTESR<TileArmBasic> {
     byte b;
     Quaternion rot = Quaternion.createIdentity();
 
-    ModelInstance modelInstance;
+    List<MeshInstance> modelInstance;
 
     float partialTicks;
 
@@ -50,46 +51,19 @@ public class TileArmRenderer extends FastTESR<TileArmBasic> {
 
     void renderBase() {
         if (modelInstance == null) {
-
-            modelInstance = new ModelInstance(ClientProxy.base);
+            modelInstance = ModelInstance.instance(ClientProxy.base);
         }
-        ir.schedule(base);
-        matrix4ftofloatarray(translationMatrix, mtx);
-        ir.bufferModelMatrixData(mtx);
-        ir.bufferLight(s, b);
-    }
 
-    void renderBaseMotor(TileArmBasic tileArmBasic, double x, double y, double z) {
-        if (baseMotor == null) {
-            baseMotor = new Vao(ClientProxy.baseMotor);
+
+        for (MeshInstance m : modelInstance) {
+            ir.schedule(m);
+            baseMotorMatrix.setIdentity();
+            translate(baseMotorMatrix, m.meshOrigin[0], m.meshOrigin[1], m.meshOrigin[2]);
+            baseMotorMatrix.mul(translationMatrix);
+            matrix4ftofloatarray(baseMotorMatrix, mtx);
+            ir.bufferModelMatrixData(mtx);
+            ir.bufferLight(s, b);
         }
-        ir.schedule(baseMotor);
-
-
-        //upload model matrix, light
-
-        float[] firstArmCurrRot = tileArmBasic.getRotation(0);
-        float[] firstArmPrevRot = tileArmBasic.getAnimationRotation(0);
-
-        baseMotorMatrix.setIdentity();
-        rot.setIndentity();
-
-        baseMotorMatrix.mul(translationMatrix);
-
-        Vector3f p = new Vector3f(0.5f,0,0.6f);
-        Vector3f ap = new Vector3f(p);
-        ap.negate();
-
-        translate(baseMotorMatrix, p);
-
-        rot.rotateY(lerp(firstArmPrevRot[1], firstArmCurrRot[1], partialTicks));
-        Quaternion.rotateMatrix(baseMotorMatrix, rot);
-        translate(baseMotorMatrix, ap);
-
-
-        matrix4ftofloatarray(baseMotorMatrix, mtx);
-        ir.bufferModelMatrixData(mtx);
-        ir.bufferLight(s, b);
     }
 
     void renderHoldingItem(TileArmBasic tileArmBasic, double x, double y, double z) {
