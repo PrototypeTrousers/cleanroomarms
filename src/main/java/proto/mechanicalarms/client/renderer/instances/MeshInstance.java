@@ -3,6 +3,7 @@ package proto.mechanicalarms.client.renderer.instances;
 import de.javagl.jgltf.model.*;
 import de.javagl.jgltf.model.v2.MaterialModelV2;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.GLAllocation;
 import net.minecraft.client.renderer.texture.ITextureObject;
 import net.minecraft.client.renderer.texture.SimpleTexture;
 import net.minecraft.util.ResourceLocation;
@@ -10,6 +11,7 @@ import net.minecraftforge.client.model.IModel;
 import org.lwjgl3.opengl.*;
 import proto.mechanicalarms.client.renderer.InstanceableModel;
 
+import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.util.Arrays;
 import java.util.Objects;
@@ -65,7 +67,7 @@ public class MeshInstance implements InstanceableModel {
         texBuffer = GL15.glGenBuffers();
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, texBuffer);
         GL15.glBufferData(GL15.GL_ARRAY_BUFFER, texAccessor.getBufferViewModel().getBufferViewData(), GL15.GL_STATIC_DRAW);
-        GL20.glVertexAttribPointer(1, 2, GL11.GL_FLOAT, true, 8, 0);
+        GL20.glVertexAttribPointer(1, 2, GL11.GL_FLOAT, texAccessor.isNormalized(), 8, 0);
         GL20.glEnableVertexAttribArray(1);
 
         AccessorModel normalAccessor = meshPrimitiveModel.getAttributes().get("NORMAL");
@@ -73,18 +75,18 @@ public class MeshInstance implements InstanceableModel {
         normalBuffer = GL15.glGenBuffers();
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, normalBuffer);
         GL15.glBufferData(GL15.GL_ARRAY_BUFFER, normalAccessor.getBufferViewModel().getBufferViewData(), GL15.GL_STATIC_DRAW);
-        GL20.glVertexAttribPointer(2, 3, GL11.GL_FLOAT, true, 12, 0);
+        GL20.glVertexAttribPointer(2, 3, GL11.GL_FLOAT, normalAccessor.isNormalized(), 12, 0);
         GL20.glEnableVertexAttribArray(2);
 
-//        FloatBuffer color = FloatBuffer.allocate(4);
-//        color.put(((MaterialModelV2)meshPrimitiveModel.getMaterialModel()).getBaseColorFactor());
-//        color.rewind();
-//
-//        colorBuffer = GL15.glGenBuffers();
-//        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, colorBuffer);
-//        GL15.glBufferData(GL15.GL_ARRAY_BUFFER, color, GL15.GL_STATIC_DRAW);
-//        GL20.glVertexAttribPointer(8, 4, GL11.GL_FLOAT, true, 16, 0);
-//        GL20.glEnableVertexAttribArray(8);
+        FloatBuffer color = ByteBuffer.allocateDirect(16).asFloatBuffer();
+        color.put(((MaterialModelV2)meshPrimitiveModel.getMaterialModel()).getBaseColorFactor());
+        color.rewind();
+
+        colorBuffer = GL15.glGenBuffers();
+        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, colorBuffer);
+        GL15.glBufferData(GL15.GL_ARRAY_BUFFER, color, GL15.GL_STATIC_DRAW);
+        GL20.glVertexAttribPointer(8, 4, GL11.GL_FLOAT, true, 16, 0);
+        GL20.glEnableVertexAttribArray(8);
 
         lightBuffer = GL15.glGenBuffers();
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, lightBuffer);
