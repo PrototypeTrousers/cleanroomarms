@@ -1,4 +1,4 @@
-package proto.mechanicalarms.client.renderer;
+package proto.mechanicalarms.client.renderer.instances;
 
 public interface InstanceableModel {
     int getVertexArrayBufferId();

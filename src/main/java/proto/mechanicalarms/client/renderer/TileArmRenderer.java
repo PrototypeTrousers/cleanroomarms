@@ -1,6 +1,7 @@
 package proto.mechanicalarms.client.renderer;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenCustomHashMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import proto.mechanicalarms.client.renderer.instances.MeshInstance;
 import proto.mechanicalarms.client.renderer.instances.ModelInstance;
 import proto.mechanicalarms.client.renderer.util.ItemStackHasher;
@@ -50,17 +51,33 @@ public class TileArmRenderer extends FastTESR<TileArmBasic> {
         super();
     }
 
-    void renderBase() {
+    void renderBase(TileArmBasic tileArmBasic) {
         if (modelInstance == null) {
             modelInstance = ModelInstance.instance(ClientProxy.base);
+            for (MeshInstance m : modelInstance) {
+                if (m.getNodeName() != null && m.getNodeName().equals("BaseMotor")) {
+                    m.previousTransform = tileArmBasic.getAnimationRotation(0);
+                    m.currentTransform = tileArmBasic.getRotation(0);
+                }
+            }
         }
 
 
         for (MeshInstance m : modelInstance) {
             ir.schedule(m);
             baseMotorMatrix.setIdentity();
-            translate(baseMotorMatrix, m.meshOrigin[0], m.meshOrigin[1], m.meshOrigin[2]);
+            rot.setIndentity();
+
             baseMotorMatrix.mul(translationMatrix);
+            translate(baseMotorMatrix, m.meshOrigin[0], m.meshOrigin[1], m.meshOrigin[2]);
+
+            if (m.currentTransform != null) {
+                rot.rotateY(lerp(m.previousTransform[1], m.currentTransform[1], partialTicks));
+                //rot.rotateX(lerp(m.previousTransform[0], m.currentTransform[0], partialTicks));
+            }
+
+            Quaternion.rotateMatrix(baseMotorMatrix, rot);
+
             matrix4ftofloatarray(baseMotorMatrix, mtx);
             ir.bufferModelMatrixData(mtx);
             ir.bufferLight(s, b);
@@ -137,7 +154,7 @@ public class TileArmRenderer extends FastTESR<TileArmBasic> {
         translationMatrix.setIdentity();
         translate(translationMatrix, (float) x, (float) y, (float) z);
 
-        renderBase();
+        renderBase(tileArmBasic);
 //        renderBaseMotor(tileArmBasic,x ,y, z);
 //        renderFirstArm(tileArmBasic,x ,y, z);
 //        renderSecondArm(tileArmBasic,x ,y, z);

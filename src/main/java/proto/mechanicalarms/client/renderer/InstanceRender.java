@@ -2,6 +2,7 @@ package proto.mechanicalarms.client.renderer;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import proto.mechanicalarms.MechanicalArms;
+import proto.mechanicalarms.client.renderer.instances.InstanceableModel;
 import proto.mechanicalarms.client.renderer.shaders.Shader;
 import proto.mechanicalarms.client.renderer.shaders.ShaderManager;
 import net.minecraft.client.renderer.GLAllocation;

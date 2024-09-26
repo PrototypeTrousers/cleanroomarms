@@ -1,6 +1,6 @@
 package proto.mechanicalarms.client.renderer.util;
 
-import proto.mechanicalarms.client.renderer.InstanceableModel;
+import proto.mechanicalarms.client.renderer.instances.InstanceableModel;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GLAllocation;
 import net.minecraft.client.renderer.GlStateManager;

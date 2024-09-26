@@ -108,6 +108,7 @@ dependencies {
     minecraft "com.cleanroommc:cleanroom:${cleanroom_version}"
 
     implementation("de.javagl:jgltf-model:2.0.4")
+    implementation("org.joml:joml:1.10.8")
 
     annotationProcessor 'org.ow2.asm:asm:9.6'
     annotationProcessor 'com.google.guava:guava:33.0.0-jre'

@@ -7,13 +7,14 @@ import de.javagl.jgltf.model.NodeModel;
 import de.javagl.jgltf.model.v2.MaterialModelV2;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.ResourceLocation;
+import org.joml.Matrix4f;
 import org.lwjgl3.opengl.*;
 import proto.mechanicalarms.MechanicalArms;
 import proto.mechanicalarms.client.jgltf.EmbeddedTexture;
-import proto.mechanicalarms.client.renderer.InstanceableModel;
 
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
+import java.util.function.Supplier;
 
 public class MeshInstance implements InstanceableModel {
 
@@ -34,9 +35,17 @@ public class MeshInstance implements InstanceableModel {
     public float[] meshOrigin;
     ResourceLocation texture;
 
+    public float[] currentTransform;
+    public float[] previousTransform;
+
+    String nodeName;
+
     MeshInstance(NodeModel nm, MeshModel meshModel, MeshPrimitiveModel meshPrimitiveModel) {
         meshOrigin = nm.getTranslation();
         NodeModel parent = nm.getParent();
+
+        nodeName = nm.getName();
+
         while (parent != null) {
             float[] parentOrigin = parent.getTranslation();
             meshOrigin[0] += parentOrigin[0];
@@ -159,5 +168,9 @@ public class MeshInstance implements InstanceableModel {
     @Override
     public int getElementCount() {
         return elementCount;
+    }
+
+    public String getNodeName() {
+        return nodeName;
     }
 }
