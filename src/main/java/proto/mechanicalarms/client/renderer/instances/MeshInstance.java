@@ -35,9 +35,6 @@ public class MeshInstance implements InstanceableModel {
     public float[] meshOrigin;
     ResourceLocation texture;
 
-    public float[] currentTransform;
-    public float[] previousTransform;
-
     String nodeName;
 
     MeshInstance(NodeModel nm, MeshModel meshModel, MeshPrimitiveModel meshPrimitiveModel) {

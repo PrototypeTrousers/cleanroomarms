@@ -54,12 +54,6 @@ public class TileArmRenderer extends FastTESR<TileArmBasic> {
     void renderBase(TileArmBasic tileArmBasic) {
         if (modelInstance == null) {
             modelInstance = ModelInstance.instance(ClientProxy.base);
-            for (MeshInstance m : modelInstance) {
-                if (m.getNodeName() != null && m.getNodeName().equals("BaseMotor")) {
-                    m.previousTransform = tileArmBasic.getAnimationRotation(0);
-                    m.currentTransform = tileArmBasic.getRotation(0);
-                }
-            }
         }
 
 
@@ -71,10 +65,15 @@ public class TileArmRenderer extends FastTESR<TileArmBasic> {
             baseMotorMatrix.mul(translationMatrix);
             translate(baseMotorMatrix, m.meshOrigin[0], m.meshOrigin[1], m.meshOrigin[2]);
 
-            if (m.currentTransform != null) {
-                rot.rotateY(lerp(m.previousTransform[1], m.currentTransform[1], partialTicks));
-                //rot.rotateX(lerp(m.previousTransform[0], m.currentTransform[0], partialTicks));
+            if (m.getNodeName().equals("BaseMotor")) {
+                rot.rotateY(lerp(tileArmBasic.getAnimationRotation(0)[1], tileArmBasic.getRotation(0)[1], partialTicks));
+            } else if (m.getNodeName().equals("FirstArm")) {
+                rot.rotateY(lerp(tileArmBasic.getAnimationRotation(1)[1], tileArmBasic.getRotation(1)[1], partialTicks));
+                rot.rotateX(lerp(tileArmBasic.getAnimationRotation(1)[0], tileArmBasic.getRotation(1)[0], partialTicks));
+            } else if (m.getNodeName().equals("SecondArm")) {
+                rot.rotateX(lerp(tileArmBasic.getAnimationRotation(2)[0], tileArmBasic.getRotation(2)[0], partialTicks));
             }
+
 
             Quaternion.rotateMatrix(baseMotorMatrix, rot);
 
