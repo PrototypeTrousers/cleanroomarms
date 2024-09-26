@@ -22,7 +22,7 @@ public class EmbeddedTexture extends AbstractTexture {
     public void loadTexture(IResourceManager resourceManager) throws IOException {
         this.deleteGlTexture();
         BufferedImage bufferedimage = TextureUtil.readBufferedImage(new ByteBufferInputStream(textureModel.getImageModel().getImageData()));
-        TextureUtil.uploadTextureImageAllocate(this.getGlTextureId(), bufferedimage, false, false);
+        TextureUtil.uploadTextureImageAllocate(this.getGlTextureId(), bufferedimage, true, true);
     }
 
     static class ByteBufferInputStream extends InputStream {
