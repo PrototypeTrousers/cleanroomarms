@@ -107,7 +107,7 @@ repositories {
 dependencies {
     minecraft "com.cleanroommc:cleanroom:${cleanroom_version}"
 
-    implementation fg.deobf("curse.maven:MCglTF-591547:4367036")
+    implementation("de.javagl:jgltf-model:2.0.4")
 
     annotationProcessor 'org.ow2.asm:asm:9.6'
     annotationProcessor 'com.google.guava:guava:33.0.0-jre'

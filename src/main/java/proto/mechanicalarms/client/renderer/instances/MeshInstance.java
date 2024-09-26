@@ -1,13 +1,12 @@
 package proto.mechanicalarms.client.renderer.instances;
 
-import de.javagl.jgltf.model.*;
+import de.javagl.jgltf.model.AccessorModel;
+import de.javagl.jgltf.model.MeshModel;
+import de.javagl.jgltf.model.MeshPrimitiveModel;
+import de.javagl.jgltf.model.NodeModel;
 import de.javagl.jgltf.model.v2.MaterialModelV2;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.GLAllocation;
-import net.minecraft.client.renderer.texture.ITextureObject;
-import net.minecraft.client.renderer.texture.SimpleTexture;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.client.model.IModel;
 import org.lwjgl3.opengl.*;
 import proto.mechanicalarms.MechanicalArms;
 import proto.mechanicalarms.client.jgltf.EmbeddedTexture;
@@ -15,8 +14,6 @@ import proto.mechanicalarms.client.renderer.InstanceableModel;
 
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
-import java.util.Arrays;
-import java.util.Objects;
 
 public class MeshInstance implements InstanceableModel {
 
@@ -54,14 +51,14 @@ public class MeshInstance implements InstanceableModel {
 
     void genBuffers(MeshModel meshModel, MeshPrimitiveModel meshPrimitiveModel) {
 
-        vertexArrayBuffer = org.lwjgl.opengl.GL30.glGenVertexArrays();
+        vertexArrayBuffer = GL30.glGenVertexArrays();
         GL30.glBindVertexArray(vertexArrayBuffer);
 
         AccessorModel posAccessor = meshPrimitiveModel.getAttributes().get("POSITION");
 
         posBuffer = GL15.glGenBuffers();
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, posBuffer);
-        GL15.glBufferData(GL15.GL_ARRAY_BUFFER, posAccessor.getBufferViewModel().getBufferViewData(), GL15.GL_STATIC_DRAW);
+        GL15.glBufferData(GL15.GL_ARRAY_BUFFER, posAccessor.getAccessorData().createByteBuffer(), GL15.GL_STATIC_DRAW);
         GL20.glVertexAttribPointer(0, 3, GL11.GL_FLOAT, false, 12, 0);
         GL20.glEnableVertexAttribArray(0);
 
@@ -71,7 +68,7 @@ public class MeshInstance implements InstanceableModel {
 
         texBuffer = GL15.glGenBuffers();
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, texBuffer);
-        GL15.glBufferData(GL15.GL_ARRAY_BUFFER, texAccessor.getBufferViewModel().getBufferViewData(), GL15.GL_STATIC_DRAW);
+        GL15.glBufferData(GL15.GL_ARRAY_BUFFER, texAccessor.getAccessorData().createByteBuffer(), GL15.GL_STATIC_DRAW);
         GL20.glVertexAttribPointer(1, 2, GL11.GL_FLOAT, texAccessor.isNormalized(), 8, 0);
         GL20.glEnableVertexAttribArray(1);
 
@@ -86,7 +83,7 @@ public class MeshInstance implements InstanceableModel {
 
         normalBuffer = GL15.glGenBuffers();
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, normalBuffer);
-        GL15.glBufferData(GL15.GL_ARRAY_BUFFER, normalAccessor.getBufferViewModel().getBufferViewData(), GL15.GL_STATIC_DRAW);
+        GL15.glBufferData(GL15.GL_ARRAY_BUFFER, normalAccessor.getAccessorData().createByteBuffer(), GL15.GL_STATIC_DRAW);
         GL20.glVertexAttribPointer(2, 3, GL11.GL_FLOAT, normalAccessor.isNormalized(), 12, 0);
         GL20.glEnableVertexAttribArray(2);
 
@@ -122,7 +119,7 @@ public class MeshInstance implements InstanceableModel {
 
         elementBufferId = GL15.glGenBuffers();
         GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, elementBufferId);
-        GL15.glBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, meshPrimitiveModel.getIndices().getBufferViewModel().getBufferViewData(), GL15.GL_STATIC_DRAW);
+        GL15.glBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, meshPrimitiveModel.getIndices().getAccessorData().createByteBuffer(), GL15.GL_STATIC_DRAW);
 
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
         GL30.glBindVertexArray(0);
