@@ -9,6 +9,8 @@ import net.minecraft.client.renderer.texture.SimpleTexture;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.model.IModel;
 import org.lwjgl3.opengl.*;
+import proto.mechanicalarms.MechanicalArms;
+import proto.mechanicalarms.client.jgltf.EmbeddedTexture;
 import proto.mechanicalarms.client.renderer.InstanceableModel;
 
 import java.nio.ByteBuffer;
@@ -33,6 +35,7 @@ public class MeshInstance implements InstanceableModel {
 
     //
     public float[] meshOrigin;
+    ResourceLocation texture;
 
     MeshInstance(NodeModel nm, MeshModel meshModel, MeshPrimitiveModel meshPrimitiveModel) {
         meshOrigin = nm.getTranslation();
@@ -44,6 +47,8 @@ public class MeshInstance implements InstanceableModel {
             meshOrigin[2] += parentOrigin[2];
             parent = parent.getParent();
         }
+        texture = new ResourceLocation(MechanicalArms.MODID, "meshes/" + meshModel.getName() + ".png");
+
         genBuffers(meshModel, meshPrimitiveModel);
     }
 
@@ -69,6 +74,13 @@ public class MeshInstance implements InstanceableModel {
         GL15.glBufferData(GL15.GL_ARRAY_BUFFER, texAccessor.getBufferViewModel().getBufferViewData(), GL15.GL_STATIC_DRAW);
         GL20.glVertexAttribPointer(1, 2, GL11.GL_FLOAT, texAccessor.isNormalized(), 8, 0);
         GL20.glEnableVertexAttribArray(1);
+
+
+        MaterialModelV2 m = ((MaterialModelV2)meshPrimitiveModel.getMaterialModel());
+        EmbeddedTexture embeddedTexture = new EmbeddedTexture(m.getBaseColorTexture());
+
+        Minecraft.getMinecraft().getTextureManager().loadTexture(texture, embeddedTexture);
+        texGL = Minecraft.getMinecraft().getTextureManager().getTexture(texture).getGlTextureId();
 
         AccessorModel normalAccessor = meshPrimitiveModel.getAttributes().get("NORMAL");
 
@@ -139,17 +151,6 @@ public class MeshInstance implements InstanceableModel {
 
     @Override
     public int getTexGlId() {
-        if (texGL == 0) {
-            ResourceLocation t = new ResourceLocation("mechanicalarms:textures/arm_arm.png");
-            ITextureObject itextureobject = Minecraft.getMinecraft().getTextureManager().getTexture(t);
-
-            if (itextureobject == null)
-            {
-                itextureobject = new SimpleTexture(t);
-                Minecraft.getMinecraft().getTextureManager().loadTexture(t, itextureobject);
-            }
-            texGL = Minecraft.getMinecraft().getTextureManager().getTexture(t).getGlTextureId();
-        }
         return texGL;
     }
 
