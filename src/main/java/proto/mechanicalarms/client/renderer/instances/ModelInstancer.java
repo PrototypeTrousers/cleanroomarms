@@ -3,10 +3,7 @@ package proto.mechanicalarms.client.renderer.instances;
 //Ingests the model loaded by gltf
 //and pulls the position/tex coords/normals etc
 
-import de.javagl.jgltf.model.GltfModel;
-import de.javagl.jgltf.model.MeshModel;
-import de.javagl.jgltf.model.MeshPrimitiveModel;
-import de.javagl.jgltf.model.NodeModel;
+import de.javagl.jgltf.model.*;
 import de.javagl.jgltf.model.io.GltfModelReader;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import net.minecraft.client.Minecraft;
@@ -57,17 +54,29 @@ public class ModelInstancer {
         return g;
     }
 
-    public static List<MeshInstance> makeVertexArrayObjects(GltfModel gltfModel) {
+    public static List<MeshInstance> makeVertexArrayObjects(GltfModel gltfModel, NodeInstance root) {
         List<MeshInstance> l = new ArrayList<>();
-        for (NodeModel nm : gltfModel.getNodeModels()) {
-            for (MeshModel mm : nm.getMeshModels()) {
-                node2MeshMap.put(nm,mm);
-                for (MeshPrimitiveModel pm : mm.getMeshPrimitiveModels()) {
-                    mesh2PrimitiveMeshMap.put(mm,pm);
-                    l.add(new MeshInstance(nm, mm, pm));
-                }
+        for (SceneModel sm : gltfModel.getSceneModels()) {
+            for (NodeModel nm : sm.getNodeModels()) {
+                addNodeChildren(nm, l, root);
             }
         }
         return l;
+    }
+
+    static void addNodeChildren(NodeModel nm, List<MeshInstance> l, NodeInstance parentNode) {
+        NodeInstance currentNode = new NodeInstance();
+        parentNode.addChild(currentNode);
+        currentNode.setParent(parentNode);  // Set parent immediately after adding as a child
+
+        for (NodeModel mm : nm.getChildren()) {
+            addNodeChildren(mm, l, currentNode);  // Pass currentNode as the parent for children
+        }
+
+        for (MeshModel mm : nm.getMeshModels()) {
+            for (MeshPrimitiveModel pm : mm.getMeshPrimitiveModels()) {
+                currentNode.addMesh(new MeshInstance(nm, mm, pm));
+            }
+        }
     }
 }

@@ -7,14 +7,12 @@ import de.javagl.jgltf.model.NodeModel;
 import de.javagl.jgltf.model.v2.MaterialModelV2;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.ResourceLocation;
-import org.joml.Matrix4f;
 import org.lwjgl3.opengl.*;
 import proto.mechanicalarms.MechanicalArms;
 import proto.mechanicalarms.client.jgltf.EmbeddedTexture;
 
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
-import java.util.function.Supplier;
 
 public class MeshInstance implements InstanceableModel {
 

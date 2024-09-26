@@ -7,11 +7,24 @@ import org.apache.commons.lang3.time.StopWatch;
 import java.util.List;
 
 public class ModelInstance {
-    public static List<MeshInstance> instance(ResourceLocation resourceLocation) {
+    NodeInstance root;
+    ResourceLocation resourceLocation;
+
+    public ModelInstance(ResourceLocation resourceLocation) {
+        this.resourceLocation = resourceLocation;
+    }
+
+    public List<MeshInstance> init() {
         //StopWatch s = StopWatch.createStarted();
         GltfModel g = ModelInstancer.loadglTFModel(resourceLocation);
         //s.stop();
         //System.out.printf("load from disk took" + (s.getStopTime() - s.getStartTime()) + " ms");
-        return ModelInstancer.makeVertexArrayObjects(g);
+        this.root = new NodeInstance();
+        return ModelInstancer.makeVertexArrayObjects(g, root);
+
+    }
+
+    public NodeInstance getRoot() {
+        return root;
     }
 }

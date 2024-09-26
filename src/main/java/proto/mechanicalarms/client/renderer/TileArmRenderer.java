@@ -1,24 +1,26 @@
 package proto.mechanicalarms.client.renderer;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenCustomHashMap;
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import proto.mechanicalarms.client.renderer.instances.MeshInstance;
-import proto.mechanicalarms.client.renderer.instances.ModelInstance;
-import proto.mechanicalarms.client.renderer.util.ItemStackHasher;
-import proto.mechanicalarms.client.renderer.util.ItemStackRenderToVAO;
-import proto.mechanicalarms.client.renderer.util.Quaternion;
-import proto.mechanicalarms.common.proxy.ClientProxy;
-import proto.mechanicalarms.common.tile.TileArmBasic;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.EnumSkyBlock;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.client.model.animation.FastTESR;
 
+import proto.mechanicalarms.client.renderer.instances.MeshInstance;
+import proto.mechanicalarms.client.renderer.instances.ModelInstance;
+import proto.mechanicalarms.client.renderer.instances.NodeInstance;
+import proto.mechanicalarms.client.renderer.util.ItemStackHasher;
+import proto.mechanicalarms.client.renderer.util.ItemStackRenderToVAO;
+import proto.mechanicalarms.client.renderer.util.Matrix4fStack;
+import proto.mechanicalarms.client.renderer.util.Quaternion;
+import proto.mechanicalarms.common.proxy.ClientProxy;
+import proto.mechanicalarms.common.tile.TileArmBasic;
+
 import javax.vecmath.Matrix4f;
 import javax.vecmath.Vector3f;
 import java.nio.FloatBuffer;
-import java.util.List;
+
 
 
 public class TileArmRenderer extends FastTESR<TileArmBasic> {
@@ -41,7 +43,10 @@ public class TileArmRenderer extends FastTESR<TileArmBasic> {
     byte b;
     Quaternion rot = Quaternion.createIdentity();
 
-    List<MeshInstance> modelInstance;
+    Matrix4fStack matrix4fStack = new Matrix4fStack(10);
+
+
+    ModelInstance modelInstance = new ModelInstance(ClientProxy.base);
 
     float partialTicks;
 
@@ -51,19 +56,24 @@ public class TileArmRenderer extends FastTESR<TileArmBasic> {
         super();
     }
 
-    void renderBase(TileArmBasic tileArmBasic) {
-        if (modelInstance == null) {
-            modelInstance = ModelInstance.instance(ClientProxy.base);
+    void traverseHierarchy(NodeInstance node, TileArmBasic tileArmBasic) {
+        // Process the current node (for example, print its information)
+        processNode(node, tileArmBasic);
+
+        // Recursively traverse each child node
+        for (NodeInstance child : node.getChildren()) {
+            matrix4fStack.pushMatrix();
+            traverseHierarchy(child, tileArmBasic);
+            matrix4fStack.popMatrix();
         }
+    }
 
-
-        for (MeshInstance m : modelInstance) {
+    void processNode(NodeInstance node, TileArmBasic tileArmBasic) {
+        for (MeshInstance m : node.getMeshes()) {
             ir.schedule(m);
+
             baseMotorMatrix.setIdentity();
             rot.setIndentity();
-
-            baseMotorMatrix.mul(translationMatrix);
-            translate(baseMotorMatrix, m.meshOrigin[0], m.meshOrigin[1], m.meshOrigin[2]);
 
             if (m.getNodeName().equals("BaseMotor")) {
                 rot.rotateY(lerp(tileArmBasic.getAnimationRotation(0)[1], tileArmBasic.getRotation(0)[1], partialTicks));
@@ -74,13 +84,29 @@ public class TileArmRenderer extends FastTESR<TileArmBasic> {
                 rot.rotateX(lerp(tileArmBasic.getAnimationRotation(2)[0], tileArmBasic.getRotation(2)[0], partialTicks));
             }
 
+            baseMotorMatrix.mul(matrix4fStack);
 
+            baseMotorMatrix.mul(translationMatrix);
+            translate(baseMotorMatrix, m.meshOrigin[0], m.meshOrigin[1], m.meshOrigin[2]);
             Quaternion.rotateMatrix(baseMotorMatrix, rot);
+
 
             matrix4ftofloatarray(baseMotorMatrix, mtx);
             ir.bufferModelMatrixData(mtx);
             ir.bufferLight(s, b);
         }
+    }
+
+    void renderBase(TileArmBasic tileArmBasic) {
+
+        if (modelInstance.getRoot() == null)
+        {
+            modelInstance.init();
+        }
+
+        NodeInstance ni = modelInstance.getRoot();
+
+        traverseHierarchy(ni, tileArmBasic);
     }
 
     void renderHoldingItem(TileArmBasic tileArmBasic, double x, double y, double z) {
