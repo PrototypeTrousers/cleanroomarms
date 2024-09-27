@@ -63,7 +63,11 @@ public class InstanceRender {
 
             int instanceTextureId = im.getTexGlId();
             GL11.glBindTexture(GL11.GL_TEXTURE_2D, instanceTextureId);
-            GL31.glDrawElementsInstanced(GL11.GL_TRIANGLES, im.getElementCount(), GL11.GL_UNSIGNED_SHORT, 0, instanceData.instanceCount);
+            if (im.getElementCount() > 0) {
+                GL31.glDrawElementsInstanced(GL11.GL_TRIANGLES, im.getElementCount(), GL11.GL_UNSIGNED_SHORT, 0, instanceData.instanceCount);
+            } else {
+                GL31.glDrawArraysInstanced(GL11.GL_TRIANGLES, 0, im.getVertexCount(), instanceData.getInstanceCount());
+            }
 
             instanceData.rewindBuffers();
             instanceData.resetCount();

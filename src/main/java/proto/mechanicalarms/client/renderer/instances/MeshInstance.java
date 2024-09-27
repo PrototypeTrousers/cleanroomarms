@@ -5,7 +5,6 @@ import de.javagl.jgltf.model.MeshModel;
 import de.javagl.jgltf.model.MeshPrimitiveModel;
 import de.javagl.jgltf.model.NodeModel;
 import de.javagl.jgltf.model.v2.MaterialModelV2;
-import it.unimi.dsi.fastutil.Function;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.ResourceLocation;
 import org.lwjgl3.opengl.*;
@@ -87,14 +86,16 @@ public class MeshInstance implements InstanceableModel {
         GL20.glVertexAttribPointer(2, 3, GL11.GL_FLOAT, normalAccessor.isNormalized(), 12, 0);
         GL20.glEnableVertexAttribArray(2);
 
-        FloatBuffer color = ByteBuffer.allocateDirect(16).asFloatBuffer();
-        color.put(((MaterialModelV2) meshPrimitiveModel.getMaterialModel()).getBaseColorFactor());
+        FloatBuffer color = ByteBuffer.allocateDirect(vertexCount *16).asFloatBuffer();
+        for (int i =0; i < vertexCount ;i++) {
+            color.put(((MaterialModelV2) meshPrimitiveModel.getMaterialModel()).getBaseColorFactor());
+        }
         color.rewind();
 
         colorBuffer = GL15.glGenBuffers();
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, colorBuffer);
         GL15.glBufferData(GL15.GL_ARRAY_BUFFER, color, GL15.GL_STATIC_DRAW);
-        GL20.glVertexAttribPointer(8, 4, GL11.GL_FLOAT, true, 4, 0);
+        GL20.glVertexAttribPointer(8, 4, GL11.GL_FLOAT, true, 16, 0);
         GL20.glEnableVertexAttribArray(8);
 
         lightBuffer = GL15.glGenBuffers();
@@ -159,10 +160,6 @@ public class MeshInstance implements InstanceableModel {
     @Override
     public int getElementCount() {
         return elementCount;
-    }
-
-    public String getNodeName() {
-        return nodeName;
     }
 
     public void applyRotation(Quaternion quaternion) {

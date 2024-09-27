@@ -2,13 +2,15 @@ package proto.mechanicalarms.common.tile;
 
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.ITickable;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraftforge.items.ItemStackHandler;
 
 
-public class TileBeltBasic extends TileEntity {
+public class TileBeltBasic extends TileEntity implements ITickable {
 
     AxisAlignedBB renderBB;
+    int progress = 0;
 
     protected ItemStackHandler leftItemHandler = new ItemStackHandler(5);
     protected ItemStackHandler rightItemHandler = new ItemStackHandler(5);
@@ -46,5 +48,18 @@ public class TileBeltBasic extends TileEntity {
     @Override
     public boolean hasFastRenderer() {
         return true;
+    }
+
+
+    @Override
+    public void update() {
+        progress++;
+        if (progress >= 20){
+            progress = 0;
+        }
+    }
+
+    public double getProgress() {
+        return progress;
     }
 }

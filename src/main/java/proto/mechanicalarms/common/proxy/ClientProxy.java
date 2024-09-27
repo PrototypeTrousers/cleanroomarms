@@ -20,11 +20,7 @@ import net.minecraftforge.fml.relauncher.Side;
 public class ClientProxy extends CommonProxy {
 
     public static final ModelResourceLocation base = new ModelResourceLocation(new ResourceLocation(MechanicalArms.MODID, "models/block/fullarm.glb"), "");
-    public static final ModelResourceLocation baseMotor = new ModelResourceLocation(new ResourceLocation(MechanicalArms.MODID, "models/block/basemotor.obj"), "");
-    public static final ModelResourceLocation firstArm = new ModelResourceLocation(new ResourceLocation(MechanicalArms.MODID, "models/block/firstarm.obj"), "");
-    public static final ModelResourceLocation secondArm = new ModelResourceLocation(new ResourceLocation(MechanicalArms.MODID, "models/block/secondarm.obj"), "");
-    public static final ModelResourceLocation hand = new ModelResourceLocation(new ResourceLocation(MechanicalArms.MODID, "models/block/claw.obj"), "");
-    public static final ModelResourceLocation belt = new ModelResourceLocation(new ResourceLocation(MechanicalArms.MODID, "models/block/belt.obj"), "");
+    public static final ModelResourceLocation belt = new ModelResourceLocation(new ResourceLocation(MechanicalArms.MODID, "models/block/belt.glb"), "");
     @SubscribeEvent
     public static void registerModels(ModelRegistryEvent event) {
         ModelLoader.setCustomModelResourceLocation(Items.ARM_BASE, 0, new ModelResourceLocation(new ResourceLocation(MechanicalArms.MODID, "models/block/completearm.obj"), "inventory"));

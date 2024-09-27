@@ -1,9 +1,15 @@
 package proto.mechanicalarms.client.renderer;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenCustomHashMap;
+import proto.mechanicalarms.client.renderer.instances.MeshInstance;
+import proto.mechanicalarms.client.renderer.instances.ModelInstance;
+import proto.mechanicalarms.client.renderer.instances.NodeInstance;
 import proto.mechanicalarms.client.renderer.util.ItemStackHasher;
 import proto.mechanicalarms.client.renderer.util.ItemStackRenderToVAO;
+import proto.mechanicalarms.client.renderer.util.Matrix4fStack;
 import proto.mechanicalarms.client.renderer.util.Quaternion;
+import proto.mechanicalarms.common.proxy.ClientProxy;
+import proto.mechanicalarms.common.tile.TileArmBasic;
 import proto.mechanicalarms.common.tile.TileBeltBasic;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.init.Items;
@@ -15,10 +21,12 @@ import net.minecraftforge.client.model.animation.FastTESR;
 import javax.vecmath.Matrix4f;
 import javax.vecmath.Vector3f;
 import java.nio.FloatBuffer;
+import java.util.function.Supplier;
 
 
 public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
     InstanceRender ir = InstanceRender.INSTANCE;
+    TileBeltBasic renderingTE;
 
     float[] mtx = new float[16];
     float[] mtx2 = new float[16];
@@ -36,6 +44,9 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
     byte s;
     byte b;
     Quaternion rot = Quaternion.createIdentity();
+    Matrix4fStack matrix4fStack = new Matrix4fStack(10);
+
+    ModelInstance modelInstance = new ModelInstance(ClientProxy.belt);
 
     float partialTicks;
 
@@ -48,8 +59,60 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
         super();
     }
 
-    void renderBase() {
+    void traverseHierarchy(NodeInstance node, TileBeltBasic tileBeltBasic) {
+        // Process the current node (for example, print its information)
+        processNode(node, tileBeltBasic);
 
+        // Recursively traverse each child node
+        for (NodeInstance child : node.getChildren()) {
+            matrix4fStack.pushMatrix();
+            traverseHierarchy(child, tileBeltBasic);
+            matrix4fStack.popMatrix();
+        }
+    }
+
+    void processNode(NodeInstance node, TileBeltBasic tileBeltBasic) {
+        for (MeshInstance m : node.getMeshes()) {
+            ir.schedule(m); // Schedule the mesh for rendering
+
+            // Reset the rotation matrix
+            if (m.hasRotationFunction()) {
+                rot.setIndentity();
+                m.applyRotation(rot);
+                translate(matrix4fStack, m.meshOrigin[0], m.meshOrigin[1], m.meshOrigin[2]);
+                Quaternion.rotateMatrix(matrix4fStack, rot);
+            } else {
+                translate(matrix4fStack, m.meshOrigin[0], m.meshOrigin[1], m.meshOrigin[2]);
+            }
+
+            matrix4ftofloatarray(matrix4fStack, mtx);
+
+            // Buffer matrix and lighting data
+            ir.bufferModelMatrixData(mtx);
+            ir.bufferLight(s, b);
+        }
+    }
+
+    void setRenderingTE(TileBeltBasic tileBeltBasic) {
+        renderingTE = tileBeltBasic;
+    }
+
+    public Supplier<TileBeltBasic> getRenderingTE() {
+        return () -> renderingTE;
+    }
+
+    void renderBase(TileBeltBasic tileBeltBasic) {
+        setRenderingTE(tileBeltBasic);
+        if (modelInstance.getRoot() == null) {
+            modelInstance.init();
+        }
+
+        NodeInstance ni = modelInstance.getRoot();
+        matrix4fStack.pushMatrix();
+        matrix4fStack.mul(translationMatrix);
+        traverseHierarchy(ni, tileBeltBasic);
+        matrix4fStack.popMatrix();
+        setRenderingTE(null);
     }
 
     void renderHoldingItem(TileBeltBasic tileBeltBasic, double x, double y, double z) {
@@ -122,12 +185,14 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
         this.partialTicks = partialTicks;
 
         translationMatrix.setIdentity();
-        translate(translationMatrix, (float) x, (float) y, (float) z);
+        translate(translationMatrix, (float) x + 0.5F, (float) y, (float) z+ 0.5F);
 
-        renderHoldingItem(tileBeltBasic, x , y, z);
-        renderHoldingItem(tileBeltBasic, x + 0.5, y, z + 0.5);
-        renderHoldingItem(tileBeltBasic, x + 0.5, y, z);
-        renderHoldingItem(tileBeltBasic, x , y, z + 0.5);
+        renderBase(tileBeltBasic);
+
+        renderHoldingItem(tileBeltBasic, x , y - 0.5F, z - 0.05 * tileBeltBasic.getProgress());
+        renderHoldingItem(tileBeltBasic, x + 0.5, y - 0.5F, z + 0.5 - 0.05 * tileBeltBasic.getProgress());
+        renderHoldingItem(tileBeltBasic, x + 0.5, y - 0.5F, z - 0.05 * tileBeltBasic.getProgress());
+        renderHoldingItem(tileBeltBasic, x , y - 0.5F, z + 0.5 - 0.05 * tileBeltBasic.getProgress());
 
         //renderPart(tileArmBasic, x, y, z, partialTicks, transformMatrix);
     }

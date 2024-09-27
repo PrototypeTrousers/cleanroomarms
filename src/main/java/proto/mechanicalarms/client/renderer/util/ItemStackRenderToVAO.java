@@ -1,5 +1,6 @@
 package proto.mechanicalarms.client.renderer.util;
 
+import org.joml.Vector3f;
 import proto.mechanicalarms.client.renderer.instances.InstanceableModel;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GLAllocation;
@@ -9,8 +10,7 @@ import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.client.ForgeHooksClient;
-import org.lwjgl.opengl.*;
-import org.lwjgl.util.vector.Vector3f;
+import org.lwjgl3.opengl.*;
 
 import java.nio.FloatBuffer;
 
@@ -134,12 +134,12 @@ public class ItemStackRenderToVAO implements InstanceableModel {
                 Vector3f v1 = new Vector3f(posv[3], posv[4], posv[5]);
                 Vector3f v2 = new Vector3f(posv[6], posv[7], posv[8]);
 
-                Vector3f edge1 = Vector3f.sub(v2, v1, new Vector3f());
-                Vector3f edge2 = Vector3f.sub(v0, v1, new Vector3f());
+                Vector3f edge1 = new Vector3f(v2).sub(v1);
+                Vector3f edge2 = new Vector3f(v0).sub(v1);
 
-                Vector3f crsProd = Vector3f.cross(edge1, edge2, new Vector3f()); // Cross product between edge1 and edge2
+                Vector3f crsProd = edge1.cross(edge2, new Vector3f()); // Cross product between edge1 and edge2
 
-                Vector3f normal = (Vector3f) crsProd.normalise(); // Normalization of the vector
+                Vector3f normal = crsProd.normalize(); // Normalization of the vector
                 for (int i = 0; i < 3; i++) {
                     norm.put(normal.x);
                     norm.put(normal.y);
