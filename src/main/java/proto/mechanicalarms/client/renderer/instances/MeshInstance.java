@@ -5,19 +5,20 @@ import de.javagl.jgltf.model.MeshModel;
 import de.javagl.jgltf.model.MeshPrimitiveModel;
 import de.javagl.jgltf.model.NodeModel;
 import de.javagl.jgltf.model.v2.MaterialModelV2;
+import it.unimi.dsi.fastutil.Function;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.ResourceLocation;
 import org.lwjgl3.opengl.*;
 import proto.mechanicalarms.MechanicalArms;
 import proto.mechanicalarms.client.jgltf.EmbeddedTexture;
+import proto.mechanicalarms.client.renderer.util.Quaternion;
 
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
+import java.util.function.UnaryOperator;
 
 public class MeshInstance implements InstanceableModel {
 
-    //OpenGL
-    private int texGL;
     public int lightBuffer;
     public int modelTransformBuffer;
     public int posBuffer;
@@ -25,29 +26,24 @@ public class MeshInstance implements InstanceableModel {
     public int texBuffer;
     public int vertexCount;
     public int elementCount;
-    private int vertexArrayBuffer;
     public int elementBufferId;
-    private int colorBuffer;
-
     //
     public float[] meshOrigin;
     ResourceLocation texture;
-
     String nodeName;
+    //OpenGL
+    private int texGL;
+    private int vertexArrayBuffer;
+    private int colorBuffer;
+    private Quaternion rotation;
+    private UnaryOperator<Quaternion> rotationFunction;
 
     MeshInstance(NodeModel nm, MeshModel meshModel, MeshPrimitiveModel meshPrimitiveModel) {
         meshOrigin = nm.getTranslation();
-        NodeModel parent = nm.getParent();
 
         nodeName = nm.getName();
         meshOrigin = nm.getTranslation();
-//        while (parent != null) {
-//            float[] parentOrigin = parent.getTranslation();
-//            meshOrigin[0] += parentOrigin[0];
-//            meshOrigin[1] += parentOrigin[1];
-//            meshOrigin[2] += parentOrigin[2];
-//            parent = parent.getParent();
-//        }
+
         texture = new ResourceLocation(MechanicalArms.MODID, "meshes/" + meshModel.getName() + ".png");
 
         genBuffers(meshModel, meshPrimitiveModel);
@@ -77,7 +73,7 @@ public class MeshInstance implements InstanceableModel {
         GL20.glEnableVertexAttribArray(1);
 
 
-        MaterialModelV2 m = ((MaterialModelV2)meshPrimitiveModel.getMaterialModel());
+        MaterialModelV2 m = ((MaterialModelV2) meshPrimitiveModel.getMaterialModel());
         EmbeddedTexture embeddedTexture = new EmbeddedTexture(m.getBaseColorTexture());
 
         Minecraft.getMinecraft().getTextureManager().loadTexture(texture, embeddedTexture);
@@ -92,7 +88,7 @@ public class MeshInstance implements InstanceableModel {
         GL20.glEnableVertexAttribArray(2);
 
         FloatBuffer color = ByteBuffer.allocateDirect(16).asFloatBuffer();
-        color.put(((MaterialModelV2)meshPrimitiveModel.getMaterialModel()).getBaseColorFactor());
+        color.put(((MaterialModelV2) meshPrimitiveModel.getMaterialModel()).getBaseColorFactor());
         color.rewind();
 
         colorBuffer = GL15.glGenBuffers();
@@ -167,5 +163,17 @@ public class MeshInstance implements InstanceableModel {
 
     public String getNodeName() {
         return nodeName;
+    }
+
+    public void applyRotation(Quaternion quaternion) {
+        rotationFunction.apply(quaternion);
+    }
+
+    public void setRotationFunction(UnaryOperator<Quaternion> f) {
+        rotationFunction = f;
+    }
+
+    public boolean hasRotationFunction() {
+        return rotationFunction != null;
     }
 }

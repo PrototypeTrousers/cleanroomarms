@@ -6,7 +6,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.world.EnumSkyBlock;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.client.model.animation.FastTESR;
-
 import proto.mechanicalarms.client.renderer.instances.MeshInstance;
 import proto.mechanicalarms.client.renderer.instances.ModelInstance;
 import proto.mechanicalarms.client.renderer.instances.NodeInstance;
@@ -20,11 +19,12 @@ import proto.mechanicalarms.common.tile.TileArmBasic;
 import javax.vecmath.Matrix4f;
 import javax.vecmath.Vector3f;
 import java.nio.FloatBuffer;
-
+import java.util.function.Supplier;
 
 
 public class TileArmRenderer extends FastTESR<TileArmBasic> {
     InstanceRender ir = InstanceRender.INSTANCE;
+    TileArmBasic renderingTE;
 
     float[] mtx = new float[16];
 
@@ -65,27 +65,15 @@ public class TileArmRenderer extends FastTESR<TileArmBasic> {
             ir.schedule(m); // Schedule the mesh for rendering
 
             // Reset the rotation matrix
-            rot.setIndentity();
-
-            // Apply specific rotations based on node names
-            if (m.getNodeName().equals("BaseMotor")) {
-                rot.rotateY(lerp(tileArmBasic.getAnimationRotation(0)[1], tileArmBasic.getRotation(0)[1], partialTicks));
-            } else if (m.getNodeName().equals("FirstArm")) {
-                rot.rotateX(lerp(tileArmBasic.getAnimationRotation(0)[0], tileArmBasic.getRotation(0)[0], partialTicks));
-            } else if (m.getNodeName().equals("SecondArm")) {
-                rot.rotateX(lerp(tileArmBasic.getAnimationRotation(1)[0], tileArmBasic.getRotation(1)[0], partialTicks));
+            if (m.hasRotationFunction()) {
+                rot.setIndentity();
+                m.applyRotation(rot);
+                translate(matrix4fStack, m.meshOrigin[0], m.meshOrigin[1], m.meshOrigin[2]);
+                Quaternion.rotateMatrix(matrix4fStack, rot);
+            } else {
+                translate(matrix4fStack, m.meshOrigin[0], m.meshOrigin[1], m.meshOrigin[2]);
             }
 
-            // Apply translation to matrix stack
-            // Apply the rotation to the matrix stack
-
-            translate(matrix4fStack, m.meshOrigin[0], m.meshOrigin[1], m.meshOrigin[2]);
-
-            Quaternion.rotateMatrix(matrix4fStack, rot);
-
-            //translate(localTransform, -m.meshOrigin[0], -m.meshOrigin[1], -m.meshOrigin[2]);
-
-            // Transfer matrix stack to float array
             matrix4ftofloatarray(matrix4fStack, mtx);
 
             // Buffer matrix and lighting data
@@ -94,10 +82,26 @@ public class TileArmRenderer extends FastTESR<TileArmBasic> {
         }
     }
 
-    void renderBase(TileArmBasic tileArmBasic) {
+    void setRenderingTE(TileArmBasic tileArmBasic) {
+         renderingTE = tileArmBasic;
+    }
 
-        if (modelInstance.getRoot() == null)
-        {
+    public Supplier<TileArmBasic> getRenderingTE() {
+        return () -> renderingTE;
+    }
+
+    void renderBase(TileArmBasic tileArmBasic) {
+        setRenderingTE(tileArmBasic);
+        if (modelInstance.getRoot() == null) {
+            modelInstance.setMeshRotationFunction(
+                    "BaseMotor", (quaternion) -> quaternion.rotateY(lerp(getRenderingTE().get().getAnimationRotation(0)[1],
+                            getRenderingTE().get().getRotation(0)[1], partialTicks)));
+            modelInstance.setMeshRotationFunction(
+                    "FirstArm", (quaternion) -> quaternion.rotateX(lerp(getRenderingTE().get().getAnimationRotation(0)[0],
+                            getRenderingTE().get().getRotation(0)[0], partialTicks)));
+            modelInstance.setMeshRotationFunction(
+                    "SecondArm", (quaternion) -> quaternion.rotateX(lerp(getRenderingTE().get().getAnimationRotation(1)[0],
+                            getRenderingTE().get().getRotation(1)[0], partialTicks)));
             modelInstance.init();
         }
 
@@ -106,6 +110,7 @@ public class TileArmRenderer extends FastTESR<TileArmBasic> {
         matrix4fStack.mul(translationMatrix);
         traverseHierarchy(ni, tileArmBasic);
         matrix4fStack.popMatrix();
+        setRenderingTE(null);
     }
 
     void renderHoldingItem(TileArmBasic tileArmBasic, double x, double y, double z) {

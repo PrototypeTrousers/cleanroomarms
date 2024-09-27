@@ -107,7 +107,7 @@ public class Quaternion {
         this.multiply(x * q, y * q, z * q, (float) Math.cos(radian));
     }
 
-    public void rotateX(float radian) {
+    public Quaternion rotateX(float radian) {
         radian *= 0.5F;
         float x = (float) Math.sin(radian);
         float w = (float) Math.cos(radian);
@@ -119,9 +119,10 @@ public class Quaternion {
         this.y =  y0 * w + z0 * x;
         this.z = -y0 * x + z0 * w;
         this.w = -x0 * x + w0 * w;
+        return this;
     }
 
-    public void rotateY(float radian) {
+    public Quaternion rotateY(float radian) {
         radian *= 0.5F;
         float y = (float) Math.sin(radian);
         float w = (float) Math.cos(radian);
@@ -133,9 +134,10 @@ public class Quaternion {
         this.y =  y0 * w + w0 * y;
         this.z =  x0 * y + z0 * w;
         this.w = -y0 * y + w0 * w;
+        return this;
     }
 
-    public void rotateZ(float radian) {
+    public Quaternion rotateZ(float radian) {
         radian *= 0.5F;
         float z = (float) Math.sin(radian);
         float w = (float) Math.cos(radian);
@@ -147,6 +149,7 @@ public class Quaternion {
         this.y = -x0 * z + y0 * w;
         this.z =  z0 * w + w0 * z;
         this.w = -z0 * z + w0 * w;
+        return this;
     }
 
     public static Matrix4f createRotateMatrix(Quaternion quaternion) {

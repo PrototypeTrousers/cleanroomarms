@@ -9,7 +9,7 @@ public class NodeInstance {
     List<NodeInstance> children = Collections.emptyList();
     List<MeshInstance> meshes = Collections.emptyList();
 
-    NodeInstance(){
+    NodeInstance() {
     }
 
     public void setParent(NodeInstance parent) {
