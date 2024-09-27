@@ -27,22 +27,16 @@ public class TileArmRenderer extends FastTESR<TileArmBasic> {
     InstanceRender ir = InstanceRender.INSTANCE;
 
     float[] mtx = new float[16];
-    float[] mtx2 = new float[16];
-
-    Matrix4f localTransform = new Matrix4f();
 
     Matrix4f handMatrix = new Matrix4f();
     Matrix4f itemArmMatrix = new Matrix4f();
 
     private final Matrix4f tempModelMatrix = new Matrix4f();
-    Matrix4f transformMatrix = new Matrix4f();
     Matrix4f translationMatrix = new Matrix4f();
     byte s;
     byte b;
     Quaternion rot = Quaternion.createIdentity();
-
     Matrix4fStack matrix4fStack = new Matrix4fStack(10);
-
 
     ModelInstance modelInstance = new ModelInstance(ClientProxy.base);
 
@@ -72,9 +66,6 @@ public class TileArmRenderer extends FastTESR<TileArmBasic> {
 
             // Reset the rotation matrix
             rot.setIndentity();
-            localTransform.setIdentity();
-
-            localTransform.mul(matrix4fStack);
 
             // Apply specific rotations based on node names
             if (m.getNodeName().equals("BaseMotor")) {
@@ -88,14 +79,11 @@ public class TileArmRenderer extends FastTESR<TileArmBasic> {
             // Apply translation to matrix stack
             // Apply the rotation to the matrix stack
 
-            translate(localTransform, m.meshOrigin[0], m.meshOrigin[1], m.meshOrigin[2]);
+            translate(matrix4fStack, m.meshOrigin[0], m.meshOrigin[1], m.meshOrigin[2]);
 
-            Quaternion.rotateMatrix(localTransform, rot);
+            Quaternion.rotateMatrix(matrix4fStack, rot);
 
             //translate(localTransform, -m.meshOrigin[0], -m.meshOrigin[1], -m.meshOrigin[2]);
-
-
-            matrix4fStack.set(localTransform);
 
             // Transfer matrix stack to float array
             matrix4ftofloatarray(matrix4fStack, mtx);
