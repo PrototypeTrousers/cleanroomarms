@@ -4,6 +4,7 @@ import de.javagl.jgltf.model.TextureModel;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.TextureUtil;
 import net.minecraft.client.resources.IResourceManager;
+import org.lwjgl3.opengl.GL11;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -22,7 +23,7 @@ public class EmbeddedTexture extends AbstractTexture {
     public void loadTexture(IResourceManager resourceManager) throws IOException {
         this.deleteGlTexture();
         BufferedImage bufferedimage = TextureUtil.readBufferedImage(new ByteBufferInputStream(textureModel.getImageModel().getImageData()));
-        TextureUtil.uploadTextureImageAllocate(this.getGlTextureId(), bufferedimage, true, true);
+        TextureUtil.uploadTextureImageAllocate(this.getGlTextureId(), bufferedimage, textureModel.getMagFilter() != GL11.GL_NEAREST, false);
     }
 
     static class ByteBufferInputStream extends InputStream {

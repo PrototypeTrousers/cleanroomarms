@@ -13,6 +13,7 @@ import proto.mechanicalarms.client.jgltf.EmbeddedTexture;
 import proto.mechanicalarms.client.renderer.util.Quaternion;
 
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.util.function.UnaryOperator;
 
@@ -61,7 +62,7 @@ public class MeshInstance implements InstanceableModel {
         GL20.glVertexAttribPointer(0, 3, GL11.GL_FLOAT, false, 12, 0);
         GL20.glEnableVertexAttribArray(0);
 
-        vertexCount = posAccessor.getCount() / 3;
+        vertexCount = posAccessor.getCount();
 
         AccessorModel texAccessor = meshPrimitiveModel.getAttributes().get("TEXCOORD_0");
 
@@ -86,7 +87,7 @@ public class MeshInstance implements InstanceableModel {
         GL20.glVertexAttribPointer(2, 3, GL11.GL_FLOAT, normalAccessor.isNormalized(), 12, 0);
         GL20.glEnableVertexAttribArray(2);
 
-        FloatBuffer color = ByteBuffer.allocateDirect(vertexCount *16).asFloatBuffer();
+        FloatBuffer color = ByteBuffer.allocateDirect(vertexCount << 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
         for (int i =0; i < vertexCount ;i++) {
             color.put(((MaterialModelV2) meshPrimitiveModel.getMaterialModel()).getBaseColorFactor());
         }
