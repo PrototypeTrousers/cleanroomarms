@@ -33,6 +33,7 @@ public class Matrix4fStack extends Matrix4f {
         for (int i = 0; i < mats.length; i++) {
             mats[i] = new Matrix4f();
         }
+        this.setIdentity();
     }
 
     /**

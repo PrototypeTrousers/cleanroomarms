@@ -82,7 +82,7 @@ public class TileArmBasic extends TileArmBase {
     @Override
     public AxisAlignedBB getRenderBoundingBox() {
         if (renderBB == null) {
-            renderBB = super.getRenderBoundingBox().expand(4, 4, 4);
+            renderBB = super.getRenderBoundingBox().grow(5, 5, 5);
         }
         return renderBB;
     }

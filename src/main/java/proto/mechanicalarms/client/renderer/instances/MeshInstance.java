@@ -40,14 +40,14 @@ public class MeshInstance implements InstanceableModel {
         NodeModel parent = nm.getParent();
 
         nodeName = nm.getName();
-
-        while (parent != null) {
-            float[] parentOrigin = parent.getTranslation();
-            meshOrigin[0] += parentOrigin[0];
-            meshOrigin[1] += parentOrigin[1];
-            meshOrigin[2] += parentOrigin[2];
-            parent = parent.getParent();
-        }
+        meshOrigin = nm.getTranslation();
+//        while (parent != null) {
+//            float[] parentOrigin = parent.getTranslation();
+//            meshOrigin[0] += parentOrigin[0];
+//            meshOrigin[1] += parentOrigin[1];
+//            meshOrigin[2] += parentOrigin[2];
+//            parent = parent.getParent();
+//        }
         texture = new ResourceLocation(MechanicalArms.MODID, "meshes/" + meshModel.getName() + ".png");
 
         genBuffers(meshModel, meshPrimitiveModel);

@@ -29,9 +29,7 @@ public class TileArmRenderer extends FastTESR<TileArmBasic> {
     float[] mtx = new float[16];
     float[] mtx2 = new float[16];
 
-    Matrix4f baseMotorMatrix = new Matrix4f();
-    Matrix4f firstArmMatrix = new Matrix4f();
-    Matrix4f secondArmMatrix = new Matrix4f();
+    Matrix4f localTransform = new Matrix4f();
 
     Matrix4f handMatrix = new Matrix4f();
     Matrix4f itemArmMatrix = new Matrix4f();
@@ -70,28 +68,39 @@ public class TileArmRenderer extends FastTESR<TileArmBasic> {
 
     void processNode(NodeInstance node, TileArmBasic tileArmBasic) {
         for (MeshInstance m : node.getMeshes()) {
-            ir.schedule(m);
+            ir.schedule(m); // Schedule the mesh for rendering
 
-            baseMotorMatrix.setIdentity();
+            // Reset the rotation matrix
             rot.setIndentity();
+            localTransform.setIdentity();
 
+            localTransform.mul(matrix4fStack);
+
+            // Apply specific rotations based on node names
             if (m.getNodeName().equals("BaseMotor")) {
                 rot.rotateY(lerp(tileArmBasic.getAnimationRotation(0)[1], tileArmBasic.getRotation(0)[1], partialTicks));
             } else if (m.getNodeName().equals("FirstArm")) {
-                rot.rotateY(lerp(tileArmBasic.getAnimationRotation(1)[1], tileArmBasic.getRotation(1)[1], partialTicks));
-                rot.rotateX(lerp(tileArmBasic.getAnimationRotation(1)[0], tileArmBasic.getRotation(1)[0], partialTicks));
+                rot.rotateX(lerp(tileArmBasic.getAnimationRotation(0)[0], tileArmBasic.getRotation(0)[0], partialTicks));
             } else if (m.getNodeName().equals("SecondArm")) {
-                rot.rotateX(lerp(tileArmBasic.getAnimationRotation(2)[0], tileArmBasic.getRotation(2)[0], partialTicks));
+                rot.rotateX(lerp(tileArmBasic.getAnimationRotation(1)[0], tileArmBasic.getRotation(1)[0], partialTicks));
             }
 
-            baseMotorMatrix.mul(matrix4fStack);
+            // Apply translation to matrix stack
+            // Apply the rotation to the matrix stack
 
-            baseMotorMatrix.mul(translationMatrix);
-            translate(baseMotorMatrix, m.meshOrigin[0], m.meshOrigin[1], m.meshOrigin[2]);
-            Quaternion.rotateMatrix(baseMotorMatrix, rot);
+            translate(localTransform, m.meshOrigin[0], m.meshOrigin[1], m.meshOrigin[2]);
+
+            Quaternion.rotateMatrix(localTransform, rot);
+
+            //translate(localTransform, -m.meshOrigin[0], -m.meshOrigin[1], -m.meshOrigin[2]);
 
 
-            matrix4ftofloatarray(baseMotorMatrix, mtx);
+            matrix4fStack.set(localTransform);
+
+            // Transfer matrix stack to float array
+            matrix4ftofloatarray(matrix4fStack, mtx);
+
+            // Buffer matrix and lighting data
             ir.bufferModelMatrixData(mtx);
             ir.bufferLight(s, b);
         }
@@ -105,8 +114,10 @@ public class TileArmRenderer extends FastTESR<TileArmBasic> {
         }
 
         NodeInstance ni = modelInstance.getRoot();
-
+        matrix4fStack.pushMatrix();
+        matrix4fStack.mul(translationMatrix);
         traverseHierarchy(ni, tileArmBasic);
+        matrix4fStack.popMatrix();
     }
 
     void renderHoldingItem(TileArmBasic tileArmBasic, double x, double y, double z) {
