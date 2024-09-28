@@ -3,6 +3,8 @@ package proto.mechanicalarms.common.tile;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.network.NetworkManager;
+import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
@@ -21,21 +23,48 @@ public class TileBeltBasic extends TileEntity implements ITickable {
     AxisAlignedBB pickerBB;
     int progress = 0;
 
-    protected ItemStackHandler leftItemHandler = new ItemStackHandler(5);
-    protected ItemStackHandler rightItemHandler = new ItemStackHandler(5);
+    protected ItemStackHandler leftItemHandler = new BeltItemHandler(5);
+    protected ItemStackHandler rightItemHandler = new BeltItemHandler(5);
 
     @Override
     public NBTTagCompound writeToNBT(NBTTagCompound compound) {
+        super.writeToNBT(compound);
         compound.setTag("leftInventory", leftItemHandler.serializeNBT());
         compound.setTag("rightInventory", rightItemHandler.serializeNBT());
-        return super.writeToNBT(compound);
+        return compound;
     }
 
     @Override
     public void readFromNBT(NBTTagCompound compound) {
+        super.readFromNBT(compound);
         leftItemHandler.deserializeNBT(compound.getCompoundTag("leftInventory"));
         rightItemHandler.deserializeNBT(compound.getCompoundTag("rightInventory"));
-        super.readFromNBT(compound);
+    }
+
+    @Override
+    public NBTTagCompound getUpdateTag() {
+        // getUpdateTag() is called whenever the chunkdata is sent to the
+        // client. In contrast getUpdatePacket() is called when the tile entity
+        // itself wants to sync to the client. In many cases you want to send
+        // over the same information in getUpdateTag() as in getUpdatePacket().
+        return writeToNBT(new NBTTagCompound());
+    }
+
+    @Override
+    public SPacketUpdateTileEntity getUpdatePacket() {
+        // Prepare a packet for syncing our TE to the client. Since we only have to sync the stack
+        // and that's all we have we just write our entire NBT here. If you have a complex
+        // tile entity that doesn't need to have all information on the client you can write
+        // a more optimal NBT here.
+        NBTTagCompound nbtTag = new NBTTagCompound();
+        this.writeToNBT(nbtTag);
+        return new SPacketUpdateTileEntity(getPos(), 1, nbtTag);
+    }
+
+    @Override
+    public void onDataPacket(NetworkManager net, SPacketUpdateTileEntity packet) {
+        // Here we get the packet from the server and read it into our client side tile entity
+        this.readFromNBT(packet.getNbtCompound());
     }
 
     public ItemStackHandler getleftItemHandler() {
@@ -82,7 +111,12 @@ public class TileBeltBasic extends TileEntity implements ITickable {
                 IItemHandler cap = frontTe.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, facing.getOpposite());
                 if ( cap != null) {
                     if (cap.insertItem(0, leftItemHandler.extractItem(0,1, true), true) != leftItemHandler.getStackInSlot(0)){
+                        progress = 0;
                         cap.insertItem(0,leftItemHandler.extractItem(0,1,false),false);
+                        return;
+                    } else {
+                        progress = 20;
+                        return;
                     }
                 }
             }
@@ -112,5 +146,17 @@ public class TileBeltBasic extends TileEntity implements ITickable {
     @Override
     public boolean hasCapability(Capability<?> capability, @Nullable EnumFacing facing) {
         return capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY;
+    }
+
+    public class BeltItemHandler extends ItemStackHandler {
+        public BeltItemHandler(int i) {
+            super(i);
+        }
+
+        @Override
+        protected void onContentsChanged(int slot) {
+            markDirty();
+            world.notifyBlockUpdate(pos, world.getBlockState(pos), world.getBlockState(pos), 3);
+        }
     }
 }
