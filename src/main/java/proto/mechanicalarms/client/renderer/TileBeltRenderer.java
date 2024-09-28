@@ -1,6 +1,7 @@
 package proto.mechanicalarms.client.renderer;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenCustomHashMap;
+import net.minecraft.util.EnumFacing;
 import proto.mechanicalarms.client.renderer.instances.MeshInstance;
 import proto.mechanicalarms.client.renderer.instances.ModelInstance;
 import proto.mechanicalarms.client.renderer.instances.NodeInstance;
@@ -8,6 +9,7 @@ import proto.mechanicalarms.client.renderer.util.ItemStackHasher;
 import proto.mechanicalarms.client.renderer.util.ItemStackRenderToVAO;
 import proto.mechanicalarms.client.renderer.util.Matrix4fStack;
 import proto.mechanicalarms.client.renderer.util.Quaternion;
+import proto.mechanicalarms.common.block.BlockBelt;
 import proto.mechanicalarms.common.proxy.ClientProxy;
 import proto.mechanicalarms.common.tile.TileArmBasic;
 import proto.mechanicalarms.common.tile.TileBeltBasic;
@@ -119,7 +121,7 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
         ItemStack curStack = tileBeltBasic.getleftItemHandler().getStackInSlot(0);
 
         if (curStack.isEmpty()) {
-            curStack = fakeStack;
+            return;
         }
 
         ItemStackRenderToVAO itemvao = modelCache.get(curStack);
@@ -143,9 +145,6 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
         ap.negate();
 
         translate(itemArmMatrix, p);
-
-        //itemArmMatrix.setScale(0.5f);
-        //rot.rotateY(lerp(secondArmPrevRot[1], secondArmCurrRot[1], partialTicks));
         rot.rotateX((float) (-Math.PI/2));
         scale(itemArmMatrix, 0.5f, 0.5f,0.5f);
 
@@ -185,14 +184,38 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
         this.partialTicks = partialTicks;
 
         translationMatrix.setIdentity();
-        translate(translationMatrix, (float) x + 0.5F, (float) y, (float) z+ 0.5F);
+        rot.setIndentity();
+
+        translate(translationMatrix, (float) x + 0.5F, (float) y, (float) z + 0.5F);
+
+        y -= 0.5f;
+
+        EnumFacing facing = tileBeltBasic.getWorld().getBlockState(tileBeltBasic.getPos()).getValue(BlockBelt.FACING);
+        float xOff = 0;
+        float zOff = 0;
+        if (facing == EnumFacing.EAST) {
+            rot.rotateY((float) (-Math.PI / 2));
+            xOff = (float) (0.05 * tileBeltBasic.getProgress());
+            zOff += 0.375f;
+        } else if (facing == EnumFacing.SOUTH) {
+            zOff = (float) (0.05 * tileBeltBasic.getProgress());
+            xOff += 0.25F;
+            rot.rotateY((float) (Math.PI));
+        } else if (facing == EnumFacing.WEST) {
+            rot.rotateY((float) (Math.PI / 2));
+            xOff = (float) (0.75 -0.05 * tileBeltBasic.getProgress());
+            zOff += 0.375f;
+        } else {
+            zOff = (float) (0.75 + -0.05 * tileBeltBasic.getProgress());
+            xOff += 0.25F;
+        }
+
+        Quaternion.rotateMatrix(translationMatrix, rot);
 
         renderBase(tileBeltBasic);
 
-        renderHoldingItem(tileBeltBasic, x , y - 0.5F, z - 0.05 * tileBeltBasic.getProgress());
-        renderHoldingItem(tileBeltBasic, x + 0.5, y - 0.5F, z + 0.5 - 0.05 * tileBeltBasic.getProgress());
-        renderHoldingItem(tileBeltBasic, x + 0.5, y - 0.5F, z - 0.05 * tileBeltBasic.getProgress());
-        renderHoldingItem(tileBeltBasic, x , y - 0.5F, z + 0.5 - 0.05 * tileBeltBasic.getProgress());
+        renderHoldingItem(tileBeltBasic, x + xOff, y, z + zOff);
+
 
         //renderPart(tileArmBasic, x, y, z, partialTicks, transformMatrix);
     }
