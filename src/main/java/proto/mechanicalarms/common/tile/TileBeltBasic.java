@@ -111,13 +111,12 @@ public class TileBeltBasic extends TileEntity implements ITickable {
                 IItemHandler cap = frontTe.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, facing.getOpposite());
                 if ( cap != null) {
                     if (cap.insertItem(0, leftItemHandler.extractItem(0,1, true), true) != leftItemHandler.getStackInSlot(0)){
-                        progress = 0;
                         cap.insertItem(0,leftItemHandler.extractItem(0,1,false),false);
-                        return;
+                        progress = 0;
                     } else {
                         progress = 20;
-                        return;
                     }
+                    return;
                 }
             }
             progress = 0;
@@ -155,8 +154,7 @@ public class TileBeltBasic extends TileEntity implements ITickable {
 
         @Override
         protected void onContentsChanged(int slot) {
-            markDirty();
-            world.notifyBlockUpdate(pos, world.getBlockState(pos), world.getBlockState(pos), 3);
+            TileBeltBasic.this.markDirty();
         }
     }
 }
