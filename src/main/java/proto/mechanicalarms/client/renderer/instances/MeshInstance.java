@@ -6,15 +6,18 @@ import de.javagl.jgltf.model.MeshPrimitiveModel;
 import de.javagl.jgltf.model.NodeModel;
 import de.javagl.jgltf.model.v2.MaterialModelV2;
 import net.minecraft.client.Minecraft;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import org.lwjgl3.opengl.*;
 import proto.mechanicalarms.MechanicalArms;
 import proto.mechanicalarms.client.jgltf.EmbeddedTexture;
+import proto.mechanicalarms.client.renderer.util.ItemStackRenderToVAO;
 import proto.mechanicalarms.client.renderer.util.Quaternion;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
+import java.util.Objects;
 import java.util.function.UnaryOperator;
 
 public class MeshInstance implements InstanceableModel {
@@ -173,5 +176,18 @@ public class MeshInstance implements InstanceableModel {
 
     public boolean hasRotationFunction() {
         return rotationFunction != null;
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof MeshInstance that)) return false;
+        return Objects.equals(nodeName, that.nodeName);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(nodeName);
     }
 }

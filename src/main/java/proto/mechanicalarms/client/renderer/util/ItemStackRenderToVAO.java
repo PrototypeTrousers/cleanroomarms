@@ -1,5 +1,12 @@
 package proto.mechanicalarms.client.renderer.util;
 
+import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.renderer.texture.TextureUtil;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.client.model.pipeline.UnpackedBakedQuad;
 import org.joml.Vector3f;
 import proto.mechanicalarms.client.renderer.instances.InstanceableModel;
 import net.minecraft.client.Minecraft;
@@ -13,6 +20,8 @@ import net.minecraftforge.client.ForgeHooksClient;
 import org.lwjgl3.opengl.*;
 
 import java.nio.FloatBuffer;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ItemStackRenderToVAO implements InstanceableModel {
 
@@ -46,110 +55,207 @@ public class ItemStackRenderToVAO implements InstanceableModel {
 
         int v = 0;
 
+        List<BakedQuad> loq = new ArrayList<>(model.getQuads(null, null, 0));
+        for (EnumFacing e : EnumFacing.VALUES) {
+            loq.addAll(model.getQuads(null, e, 0));
+        }
 
         //if an item model has no quads, attempt to capture its rendering
         //a missing item model has quads.
 
-        int originalTexId = GL11.glGetInteger(GL11.GL_TEXTURE_BINDING_2D);
+        if (loq.isEmpty()) {
 
 
-        GL11.glDisable(GL11.GL_CULL_FACE);
-        GL11.glMatrixMode(GL11.GL_MODELVIEW);
-        GL11.glPushMatrix();
-        GL11.glLoadIdentity();
-        GL11.glMatrixMode(GL11.GL_PROJECTION);
-        GL11.glPushMatrix();
-        GL11.glLoadIdentity();
-        GL11.glViewport(0, 0, 1, 1);
+            //if an item model has no quads, attempt to capture its rendering
+            //a missing item model has quads.
 
-        // Allocate buffer for feedback data
+            int originalTexId = GL11.glGetInteger(GL11.GL_TEXTURE_BINDING_2D);
 
-        FloatBuffer feedbackBuffer = GLAllocation.createDirectFloatBuffer(875);
-        do {
-            feedbackBuffer = GLAllocation.createDirectFloatBuffer(feedbackBuffer.capacity() * 2);
-            GL11.glFeedbackBuffer(GL11.GL_3D_COLOR_TEXTURE, feedbackBuffer);
-            GL11.glRenderMode(GL11.GL_FEEDBACK);
 
-            Minecraft.getMinecraft().getTextureManager().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
+            GL11.glDisable(GL11.GL_CULL_FACE);
+            GL11.glMatrixMode(GL11.GL_MODELVIEW);
+            GL11.glPushMatrix();
+            GL11.glLoadIdentity();
+            GL11.glMatrixMode(GL11.GL_PROJECTION);
+            GL11.glPushMatrix();
+            GL11.glLoadIdentity();
+            GL11.glViewport(0, 0, 1, 1);
 
-            // Retrieve feedback data
-            if (model.isBuiltInRenderer()) {
-                GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
-                GlStateManager.enableRescaleNormal();
-                stack.getItem().getTileEntityItemStackRenderer().renderByItem(stack);
-            } else {
-                Minecraft.getMinecraft().getRenderItem().renderModel(model, stack);
-            }
+            // Allocate buffer for feedback data
 
-            // Return to normal rendering mode
-        } while (GL11.glRenderMode(GL11.GL_RENDER) <= 0);
-        //save the current bound texture for later.
-        //maybe mixin to GlStateManager bindTexture
+            FloatBuffer feedbackBuffer = GLAllocation.createDirectFloatBuffer(875);
+            do {
+                feedbackBuffer = GLAllocation.createDirectFloatBuffer(feedbackBuffer.capacity() * 2);
+                GL11.glFeedbackBuffer(GL11.GL_3D_COLOR_TEXTURE, feedbackBuffer);
+                GL11.glRenderMode(GL11.GL_FEEDBACK);
 
-        texGL = GL11.glGetInteger(GL11.GL_TEXTURE_BINDING_2D);
-        GL11.glBindTexture(GL11.GL_TEXTURE_2D, originalTexId);
+                Minecraft.getMinecraft().getTextureManager().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
 
-        GL11.glMatrixMode(GL11.GL_PROJECTION);
-        GL11.glPopMatrix();
-        GL11.glMatrixMode(GL11.GL_MODELVIEW);
-        GL11.glPopMatrix();
-
-        boolean end = false;
-        float[] posv = new float[9];
-        while (!end) {
-            float cur = feedbackBuffer.get();
-            if ((int) cur == GL11.GL_POLYGON_TOKEN) {
-                feedbackBuffer.get();
-                // 3 floats for pos, 3 floats for normal and 2 floats for texture UV, per vertex. always.
-                if (pos.remaining() < 33) {
-                    pos = GLAllocation.createDirectFloatBuffer(pos.capacity() * 2).put(pos);
-                    norm = GLAllocation.createDirectFloatBuffer(norm.capacity() * 2).put(norm);
-                    tex = GLAllocation.createDirectFloatBuffer(tex.capacity() * 2).put(tex);
-                    color = GLAllocation.createDirectFloatBuffer(color.capacity() * 2).put(color);
+                // Retrieve feedback data
+                if (model.isBuiltInRenderer()) {
+                    GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+                    GlStateManager.enableRescaleNormal();
+                    stack.getItem().getTileEntityItemStackRenderer().renderByItem(stack);
+                } else {
+                    Minecraft.getMinecraft().getRenderItem().renderModel(model, stack);
                 }
-                for (int j = 0; j < 3; j++) {
+
+                // Return to normal rendering mode
+            } while (GL11.glRenderMode(GL11.GL_RENDER) <= 0);
+            //save the current bound texture for later.
+            //maybe mixin to GlStateManager bindTexture
+
+            texGL = GL11.glGetInteger(GL11.GL_TEXTURE_BINDING_2D);
+            GL11.glBindTexture(GL11.GL_TEXTURE_2D, originalTexId);
+
+            GL11.glMatrixMode(GL11.GL_PROJECTION);
+            GL11.glPopMatrix();
+            GL11.glMatrixMode(GL11.GL_MODELVIEW);
+            GL11.glPopMatrix();
+
+            boolean end = false;
+            float[] posv = new float[9];
+            while (!end) {
+                float cur = feedbackBuffer.get();
+                if ((int) cur == GL11.GL_POLYGON_TOKEN) {
+                    feedbackBuffer.get();
+                    // 3 floats for pos, 3 floats for normal and 2 floats for texture UV, per vertex. always.
+                    if (pos.remaining() < 33) {
+                        pos = GLAllocation.createDirectFloatBuffer(pos.capacity() * 2).put(pos);
+                        norm = GLAllocation.createDirectFloatBuffer(norm.capacity() * 2).put(norm);
+                        tex = GLAllocation.createDirectFloatBuffer(tex.capacity() * 2).put(tex);
+                        color = GLAllocation.createDirectFloatBuffer(color.capacity() * 2).put(color);
+                    }
+                    for (int j = 0; j < 3; j++) {
+                        v++;
+                        float x = feedbackBuffer.get();
+                        float y = feedbackBuffer.get();
+                        float z = feedbackBuffer.get();
+
+                        pos.put(x); //x
+                        pos.put(y); //y
+                        pos.put(z); //z
+
+                        color.put(feedbackBuffer.get());//R
+                        color.put(feedbackBuffer.get());//G
+                        color.put(feedbackBuffer.get());//B
+                        color.put(feedbackBuffer.get());//A
+
+                        tex.put(feedbackBuffer.get()); // u
+                        tex.put(feedbackBuffer.get()); // v
+                        feedbackBuffer.get(); // unused
+                        feedbackBuffer.get(); // unused
+                    }
+                    //face normal:
+                    pos.position(pos.position() - 9);
+                    pos.get(posv);
+                    Vector3f v0 = new Vector3f(posv[0], posv[1], posv[2]);
+                    Vector3f v1 = new Vector3f(posv[3], posv[4], posv[5]);
+                    Vector3f v2 = new Vector3f(posv[6], posv[7], posv[8]);
+
+                    Vector3f edge1 = new Vector3f(v2).sub(v1);
+                    Vector3f edge2 = new Vector3f(v0).sub(v1);
+
+                    Vector3f crsProd = edge1.cross(edge2, new Vector3f()); // Cross product between edge1 and edge2
+
+                    Vector3f normal = crsProd.normalize(); // Normalization of the vector
+                    for (int i = 0; i < 3; i++) {
+                        norm.put(normal.x);
+                        norm.put(normal.y);
+                        norm.put(normal.z);
+                    }
+                } else {
+                    end = true;
+                }
+                if (feedbackBuffer.position() == feedbackBuffer.limit()) {
+                    end = true;
+                }
+            }
+        }
+
+        else {
+            for (BakedQuad bq : loq) {
+                texGL = Minecraft.getMinecraft().getTextureManager().getTexture(TextureMap.LOCATION_BLOCKS_TEXTURE).getGlTextureId();
+                int[] quadData = bq.getVertexData();
+                for (int k = 0; k < 3; ++k) {
                     v++;
-                    float x = feedbackBuffer.get();
-                    float y = feedbackBuffer.get();
-                    float z = feedbackBuffer.get();
+                    // Getting the offset for the current vertex.
+                    int vertexIndex = k * 7;
+                    pos.put(Float.intBitsToFloat(quadData[vertexIndex]));
+                    pos.put(Float.intBitsToFloat(quadData[vertexIndex + 1]));
+                    pos.put(Float.intBitsToFloat(quadData[vertexIndex + 2]));
 
-                    pos.put(x); //x
-                    pos.put(y); //y
-                    pos.put(z); //z
+                    tex.put(Float.intBitsToFloat(quadData[vertexIndex + 4])); //texture
+                    tex.put(Float.intBitsToFloat(quadData[vertexIndex + 5])); //texture
 
-                    color.put(feedbackBuffer.get());//R
-                    color.put(feedbackBuffer.get());//G
-                    color.put(feedbackBuffer.get());//B
-                    color.put(feedbackBuffer.get());//A
+                    float r = ((quadData[vertexIndex + 3] & 0xFF0000) >> 16) / 255F;
+                    float g = ((quadData[vertexIndex + 3] & 0xFF00) >> 8) / 255F;
+                    float b = (quadData[vertexIndex + 3] & 0xFF) / 255F;
+                    float a = ((quadData[vertexIndex + 3] & 0xFF000000) >> 24) / 255F;
 
-                    tex.put(feedbackBuffer.get()); // u
-                    tex.put(feedbackBuffer.get()); // v
-                    feedbackBuffer.get(); // unused
-                    feedbackBuffer.get(); // unused
+                    color.put(r);
+                    color.put(g);
+                    color.put(b);
+                    color.put(a);
+
+                    int packedNormal = quadData[vertexIndex + 6];
+                    norm.put(((packedNormal) & 255) / 127.0F);
+                    norm.put(((packedNormal >> 8) & 255) / 127.0F);
+                    norm.put(((packedNormal >> 16) & 255) / 127.0F);
+
                 }
-                //face normal:
-                pos.position(pos.position() - 9);
-                pos.get(posv);
-                Vector3f v0 = new Vector3f(posv[0], posv[1], posv[2]);
-                Vector3f v1 = new Vector3f(posv[3], posv[4], posv[5]);
-                Vector3f v2 = new Vector3f(posv[6], posv[7], posv[8]);
+                for (int k = 2; k < 4; ++k) {
+                    v++;
+                    // Getting the offset for the current vertex.
+                    int vertexIndex = k * 7;
+                    pos.put(Float.intBitsToFloat(quadData[vertexIndex]));
+                    pos.put(Float.intBitsToFloat(quadData[vertexIndex + 1]));
+                    pos.put(Float.intBitsToFloat(quadData[vertexIndex + 2]));
 
-                Vector3f edge1 = new Vector3f(v2).sub(v1);
-                Vector3f edge2 = new Vector3f(v0).sub(v1);
+                    tex.put(Float.intBitsToFloat(quadData[vertexIndex + 4])); //texture
+                    tex.put(Float.intBitsToFloat(quadData[vertexIndex + 5])); //texture
 
-                Vector3f crsProd = edge1.cross(edge2, new Vector3f()); // Cross product between edge1 and edge2
+                    float r = ((quadData[vertexIndex + 3] & 0xFF0000) >> 16) / 255F;
+                    float g = ((quadData[vertexIndex + 3] & 0xFF00) >> 8) / 255F;
+                    float b = (quadData[vertexIndex + 3] & 0xFF) / 255F;
+                    float a = ((quadData[vertexIndex + 3] & 0xFF000000) >> 24) / 255F;
 
-                Vector3f normal = crsProd.normalize(); // Normalization of the vector
-                for (int i = 0; i < 3; i++) {
-                    norm.put(normal.x);
-                    norm.put(normal.y);
-                    norm.put(normal.z);
+                    color.put(r);
+                    color.put(g);
+                    color.put(b);
+                    color.put(a);
+
+                    int packedNormal = quadData[vertexIndex + 6];
+                    norm.put(((packedNormal) & 255) / 127.0F);
+                    norm.put(((packedNormal >> 8) & 255) / 127.0F);
+                    norm.put(((packedNormal >> 16) & 255) / 127.0F);
                 }
-            } else {
-                end = true;
-            }
-            if (feedbackBuffer.position() == feedbackBuffer.limit()) {
-                end = true;
+                v++;
+                // Getting the offset for the current vertex.
+                int vertexIndex = 0;
+                pos.put(Float.intBitsToFloat(quadData[vertexIndex]));
+                pos.put(Float.intBitsToFloat(quadData[vertexIndex + 1]));
+                pos.put(Float.intBitsToFloat(quadData[vertexIndex + 2]));
+
+                tex.put(Float.intBitsToFloat(quadData[vertexIndex + 4])); //texture
+                tex.put(Float.intBitsToFloat(quadData[vertexIndex + 5])); //texture
+
+
+                float r = ((quadData[vertexIndex + 3] & 0xFF0000) >> 16) / 255F;
+                float g = ((quadData[vertexIndex + 3] & 0xFF00) >> 8) / 255F;
+                float b = (quadData[vertexIndex + 3] & 0xFF) / 255F;
+                float a = ((quadData[vertexIndex + 3] & 0xFF000000) >> 24) / 255F;
+
+                color.put(r);
+                color.put(g);
+                color.put(b);
+                color.put(a);
+
+                int packedNormal = quadData[vertexIndex + 6];
+                norm.put(((packedNormal) & 255) / 127.0F);
+                norm.put(((packedNormal >> 8) & 255) / 127.0F);
+                norm.put(((packedNormal >> 16) & 255) / 127.0F);
+
             }
         }
         GL11.glEnable(GL11.GL_CULL_FACE);
