@@ -9,6 +9,7 @@ import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.ForgeHooksClient;
 import org.joml.Vector3f;
 import org.lwjgl3.opengl.*;
@@ -62,10 +63,7 @@ public class ItemStackRenderToVAO implements InstanceableModel {
             //a missing item model has quads.
 
             int originalTexId = GL11.glGetInteger(GL11.GL_TEXTURE_BINDING_2D);
-
-
-            //GL11.glDisable(GL11.GL_CULL_FACE);
-
+            GL11.glDisable(GL11.GL_CULL_FACE);
 
             // Allocate buffer for feedback data
 
@@ -83,8 +81,6 @@ public class ItemStackRenderToVAO implements InstanceableModel {
                 feedbackBuffer = GLAllocation.createDirectFloatBuffer(feedbackBuffer.capacity() * 2);
                 GL11.glFeedbackBuffer(GL11.GL_3D_COLOR_TEXTURE, feedbackBuffer);
                 GL11.glRenderMode(GL11.GL_FEEDBACK);
-
-                Minecraft.getMinecraft().getTextureManager().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
 
                 // Retrieve feedback data
                 if (model.isBuiltInRenderer()) {
@@ -167,9 +163,14 @@ public class ItemStackRenderToVAO implements InstanceableModel {
                 }
             }
         } else {
+            texGL = Minecraft.getMinecraft().getRenderItem().getItemModelMesher().getModelManager().getTextureMap().getGlTextureId();
+            if (stack.hasEffect()) {
+                Minecraft.getMinecraft().getTextureManager().bindTexture(new ResourceLocation("textures/misc/enchanted_item_glint.png"));
+                texGL = Minecraft.getMinecraft().getTextureManager().getTexture(new ResourceLocation("textures/misc/enchanted_item_glint.png")).getGlTextureId();
+            }
             for (BakedQuad bq : loq) {
-                texGL = Minecraft.getMinecraft().getTextureManager().getTexture(TextureMap.LOCATION_BLOCKS_TEXTURE).getGlTextureId();
                 int[] quadData = bq.getVertexData();
+
                 for (int k = 0; k < 3; ++k) {
                     v++;
                     // Getting the offset for the current vertex.
@@ -181,10 +182,12 @@ public class ItemStackRenderToVAO implements InstanceableModel {
                     tex.put(Float.intBitsToFloat(quadData[vertexIndex + 4])); //texture
                     tex.put(Float.intBitsToFloat(quadData[vertexIndex + 5])); //texture
 
-                    int col;
-
-                    if (bq.hasTintIndex()) {
-                        col = Minecraft.getMinecraft().getItemColors().colorMultiplier(stack, bq.getTintIndex());
+                    int col = 0;
+                    if (bq.hasTintIndex() || stack.hasEffect()) {
+                        if (stack.hasEffect()) {
+                            col = -8372020;
+                        }
+                        col |= Minecraft.getMinecraft().getItemColors().colorMultiplier(stack, bq.getTintIndex());
                     } else {
                         col = quadData[vertexIndex + 3];
                     }
@@ -216,10 +219,12 @@ public class ItemStackRenderToVAO implements InstanceableModel {
                     tex.put(Float.intBitsToFloat(quadData[vertexIndex + 4])); //texture
                     tex.put(Float.intBitsToFloat(quadData[vertexIndex + 5])); //texture
 
-                    int col;
-
-                    if (bq.hasTintIndex()) {
-                        col = Minecraft.getMinecraft().getItemColors().colorMultiplier(stack, bq.getTintIndex());
+                    int col = 0;
+                    if (bq.hasTintIndex() || stack.hasEffect()) {
+                        if (stack.hasEffect()) {
+                            col = -8372020;
+                        }
+                        col |= Minecraft.getMinecraft().getItemColors().colorMultiplier(stack, bq.getTintIndex());
                     } else {
                         col = quadData[vertexIndex + 3];
                     }
@@ -250,10 +255,12 @@ public class ItemStackRenderToVAO implements InstanceableModel {
                 tex.put(Float.intBitsToFloat(quadData[vertexIndex + 5])); //texture
 
 
-                int col;
-
-                if (bq.hasTintIndex()) {
-                    col = Minecraft.getMinecraft().getItemColors().colorMultiplier(stack, bq.getTintIndex());
+                int col = 0;
+                if (bq.hasTintIndex() || stack.hasEffect()) {
+                    if (stack.hasEffect()) {
+                        col = -8372020;
+                    }
+                    col |= Minecraft.getMinecraft().getItemColors().colorMultiplier(stack, bq.getTintIndex());
                 } else {
                     col = quadData[vertexIndex + 3];
                 }

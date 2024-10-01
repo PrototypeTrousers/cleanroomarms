@@ -1,5 +1,6 @@
 package proto.mechanicalarms.client.renderer;
 
+import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import proto.mechanicalarms.MechanicalArms;
 import proto.mechanicalarms.client.renderer.instances.InstanceableModel;
@@ -23,7 +24,7 @@ public class InstanceRender {
     public static InstanceRender INSTANCE = new InstanceRender();
     InstanceData current;
 
-    static Map<InstanceableModel, InstanceData> modelInstanceData = new Object2ObjectOpenHashMap<>();
+    static Map<InstanceableModel, InstanceData> modelInstanceData = new Object2ObjectLinkedOpenHashMap<>();
 
     public static void draw() {
 
