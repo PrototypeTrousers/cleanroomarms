@@ -1,23 +1,18 @@
 package proto.mechanicalarms.client.renderer.util;
 
-import net.minecraft.client.renderer.block.model.BakedQuad;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.renderer.texture.TextureUtil;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.client.model.pipeline.UnpackedBakedQuad;
-import org.joml.Vector3f;
-import proto.mechanicalarms.client.renderer.instances.InstanceableModel;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GLAllocation;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.EnumFacing;
 import net.minecraftforge.client.ForgeHooksClient;
+import org.joml.Vector3f;
 import org.lwjgl3.opengl.*;
+import proto.mechanicalarms.client.renderer.instances.InstanceableModel;
 
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
@@ -25,19 +20,16 @@ import java.util.List;
 
 public class ItemStackRenderToVAO implements InstanceableModel {
 
+    private final ItemStack stack;
     private int texGL;
     private int posBuffer;
     private int texBuffer;
     private int normalBuffer;
-
     private int colorBuffer;
     private int lightBuffer;
     private int modelTransform;
     private int vertexCount;
-
     private int vertexArrayBuffer;
-
-    private ItemStack stack;
 
     public ItemStackRenderToVAO(ItemStack stack) {
         this.stack = stack.copy();
@@ -47,7 +39,7 @@ public class ItemStackRenderToVAO implements InstanceableModel {
     public synchronized void setupVAO(ItemStack stack) {
         IBakedModel mm = Minecraft.getMinecraft().getRenderItem().getItemModelMesher().getItemModel(stack);
         IBakedModel model = mm.getOverrides().handleItemState(mm, stack, null, null);
-        model = ForgeHooksClient.handleCameraTransforms(model, ItemCameraTransforms.TransformType.GROUND, false);
+        model = ForgeHooksClient.handleCameraTransforms(model, ItemCameraTransforms.TransformType.NONE, false);
         FloatBuffer pos = GLAllocation.createDirectFloatBuffer(3000);
         FloatBuffer norm = GLAllocation.createDirectFloatBuffer(3000);
         FloatBuffer tex = GLAllocation.createDirectFloatBuffer(2000);
@@ -72,19 +64,22 @@ public class ItemStackRenderToVAO implements InstanceableModel {
             int originalTexId = GL11.glGetInteger(GL11.GL_TEXTURE_BINDING_2D);
 
 
-            GL11.glDisable(GL11.GL_CULL_FACE);
-            GL11.glMatrixMode(GL11.GL_MODELVIEW);
-            GL11.glPushMatrix();
-            GL11.glLoadIdentity();
-            GL11.glMatrixMode(GL11.GL_PROJECTION);
-            GL11.glPushMatrix();
-            GL11.glLoadIdentity();
-            GL11.glViewport(0, 0, 1, 1);
+            //GL11.glDisable(GL11.GL_CULL_FACE);
+
 
             // Allocate buffer for feedback data
 
             FloatBuffer feedbackBuffer = GLAllocation.createDirectFloatBuffer(875);
             do {
+
+                GL11.glMatrixMode(GL11.GL_MODELVIEW);
+                GL11.glPushMatrix();
+                GL11.glLoadIdentity();
+                GL11.glMatrixMode(GL11.GL_PROJECTION);
+                GL11.glPushMatrix();
+                GL11.glLoadIdentity();
+                GL11.glViewport(0, 0, 1, 1);
+
                 feedbackBuffer = GLAllocation.createDirectFloatBuffer(feedbackBuffer.capacity() * 2);
                 GL11.glFeedbackBuffer(GL11.GL_3D_COLOR_TEXTURE, feedbackBuffer);
                 GL11.glRenderMode(GL11.GL_FEEDBACK);
@@ -100,6 +95,11 @@ public class ItemStackRenderToVAO implements InstanceableModel {
                     Minecraft.getMinecraft().getRenderItem().renderModel(model, stack);
                 }
 
+                GL11.glMatrixMode(GL11.GL_PROJECTION);
+                GL11.glPopMatrix();
+                GL11.glMatrixMode(GL11.GL_MODELVIEW);
+                GL11.glPopMatrix();
+
                 // Return to normal rendering mode
             } while (GL11.glRenderMode(GL11.GL_RENDER) <= 0);
             //save the current bound texture for later.
@@ -107,11 +107,6 @@ public class ItemStackRenderToVAO implements InstanceableModel {
 
             texGL = GL11.glGetInteger(GL11.GL_TEXTURE_BINDING_2D);
             GL11.glBindTexture(GL11.GL_TEXTURE_2D, originalTexId);
-
-            GL11.glMatrixMode(GL11.GL_PROJECTION);
-            GL11.glPopMatrix();
-            GL11.glMatrixMode(GL11.GL_MODELVIEW);
-            GL11.glPopMatrix();
 
             boolean end = false;
             float[] posv = new float[9];
@@ -171,9 +166,7 @@ public class ItemStackRenderToVAO implements InstanceableModel {
                     end = true;
                 }
             }
-        }
-
-        else {
+        } else {
             for (BakedQuad bq : loq) {
                 texGL = Minecraft.getMinecraft().getTextureManager().getTexture(TextureMap.LOCATION_BLOCKS_TEXTURE).getGlTextureId();
                 int[] quadData = bq.getVertexData();
@@ -188,10 +181,18 @@ public class ItemStackRenderToVAO implements InstanceableModel {
                     tex.put(Float.intBitsToFloat(quadData[vertexIndex + 4])); //texture
                     tex.put(Float.intBitsToFloat(quadData[vertexIndex + 5])); //texture
 
-                    float r = ((quadData[vertexIndex + 3] & 0xFF0000) >> 16) / 255F;
-                    float g = ((quadData[vertexIndex + 3] & 0xFF00) >> 8) / 255F;
-                    float b = (quadData[vertexIndex + 3] & 0xFF) / 255F;
-                    float a = ((quadData[vertexIndex + 3] & 0xFF000000) >> 24) / 255F;
+                    int col;
+
+                    if (bq.hasTintIndex()) {
+                        col = Minecraft.getMinecraft().getItemColors().colorMultiplier(stack, bq.getTintIndex());
+                    } else {
+                        col = quadData[vertexIndex + 3];
+                    }
+
+                    float r = ((col & 0xFF0000) >> 16) / 255F;
+                    float g = ((col & 0xFF00) >> 8) / 255F;
+                    float b = (col & 0xFF) / 255F;
+                    float a = ((col & 0xFF000000) >> 24) / 255F;
 
                     color.put(r);
                     color.put(g);
@@ -215,10 +216,18 @@ public class ItemStackRenderToVAO implements InstanceableModel {
                     tex.put(Float.intBitsToFloat(quadData[vertexIndex + 4])); //texture
                     tex.put(Float.intBitsToFloat(quadData[vertexIndex + 5])); //texture
 
-                    float r = ((quadData[vertexIndex + 3] & 0xFF0000) >> 16) / 255F;
-                    float g = ((quadData[vertexIndex + 3] & 0xFF00) >> 8) / 255F;
-                    float b = (quadData[vertexIndex + 3] & 0xFF) / 255F;
-                    float a = ((quadData[vertexIndex + 3] & 0xFF000000) >> 24) / 255F;
+                    int col;
+
+                    if (bq.hasTintIndex()) {
+                        col = Minecraft.getMinecraft().getItemColors().colorMultiplier(stack, bq.getTintIndex());
+                    } else {
+                        col = quadData[vertexIndex + 3];
+                    }
+
+                    float r = ((col & 0xFF0000) >> 16) / 255F;
+                    float g = ((col & 0xFF00) >> 8) / 255F;
+                    float b = (col & 0xFF) / 255F;
+                    float a = ((col & 0xFF000000) >> 24) / 255F;
 
                     color.put(r);
                     color.put(g);
@@ -241,10 +250,18 @@ public class ItemStackRenderToVAO implements InstanceableModel {
                 tex.put(Float.intBitsToFloat(quadData[vertexIndex + 5])); //texture
 
 
-                float r = ((quadData[vertexIndex + 3] & 0xFF0000) >> 16) / 255F;
-                float g = ((quadData[vertexIndex + 3] & 0xFF00) >> 8) / 255F;
-                float b = (quadData[vertexIndex + 3] & 0xFF) / 255F;
-                float a = ((quadData[vertexIndex + 3] & 0xFF000000) >> 24) / 255F;
+                int col;
+
+                if (bq.hasTintIndex()) {
+                    col = Minecraft.getMinecraft().getItemColors().colorMultiplier(stack, bq.getTintIndex());
+                } else {
+                    col = quadData[vertexIndex + 3];
+                }
+
+                float r = ((col & 0xFF0000) >> 16) / 255F;
+                float g = ((col & 0xFF00) >> 8) / 255F;
+                float b = (col & 0xFF) / 255F;
+                float a = ((col & 0xFF000000) >> 24) / 255F;
 
                 color.put(r);
                 color.put(g);
@@ -368,7 +385,7 @@ public class ItemStackRenderToVAO implements InstanceableModel {
         return (stack.getItem() == that.stack.getItem() &&
                 stack.getMetadata() == that.stack.getMetadata() &&
                 stack.getItemDamage() == that.stack.getItemDamage() &&
-                ItemStack.areItemStackTagsEqual(stack,that.stack));
+                ItemStack.areItemStackTagsEqual(stack, that.stack));
     }
 
     @Override
