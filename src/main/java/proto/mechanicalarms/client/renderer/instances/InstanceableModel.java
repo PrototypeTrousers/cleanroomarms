@@ -11,7 +11,7 @@ public interface InstanceableModel {
 
     int getVertexCount();
 
-    int getElementBufferId();
-
     int getElementCount();
+
+    boolean hasEffect();
 }

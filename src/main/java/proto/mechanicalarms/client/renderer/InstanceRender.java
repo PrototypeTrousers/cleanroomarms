@@ -2,6 +2,8 @@ package proto.mechanicalarms.client.renderer;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.RenderItem;
 import proto.mechanicalarms.MechanicalArms;
 import proto.mechanicalarms.client.renderer.instances.InstanceableModel;
 import proto.mechanicalarms.client.renderer.shaders.Shader;
@@ -9,6 +11,7 @@ import proto.mechanicalarms.client.renderer.shaders.ShaderManager;
 import net.minecraft.client.renderer.GLAllocation;
 import net.minecraft.util.ResourceLocation;
 import org.lwjgl3.opengl.*;
+import proto.mechanicalarms.client.renderer.util.ItemStackRenderToVAO;
 
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
@@ -68,6 +71,35 @@ public class InstanceRender {
                 GL31.glDrawElementsInstanced(GL11.GL_TRIANGLES, im.getElementCount(), GL11.GL_UNSIGNED_SHORT, 0, instanceData.instanceCount);
             } else {
                 GL31.glDrawArraysInstanced(GL11.GL_TRIANGLES, 0, im.getVertexCount(), instanceData.getInstanceCount());
+            }
+
+            if (im.hasEffect()) {
+                instanceData.rewindBuffers();
+                GlStateManager.depthMask(false);
+                GlStateManager.depthFunc(GL11.GL_EQUAL);
+
+                im = ((ItemStackRenderToVAO) im).getEffectModel();
+                GL11.glBlendFunc(GL11.GL_SRC_COLOR, GL11.GL_ONE);
+
+                GL30.glBindVertexArray(im.getVertexArrayBufferId());
+
+                GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, im.getModelTransformBufferId());
+                GL15.glBufferData(GL15.GL_ARRAY_BUFFER, instanceData.modelMatrixBuffer, GL15.GL_DYNAMIC_DRAW);
+
+                GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, im.getBlockLightBufferId());
+                GL15.glBufferData(GL15.GL_ARRAY_BUFFER, instanceData.blockLightBuffer, GL15.GL_DYNAMIC_DRAW);
+
+                instanceTextureId = im.getTexGlId();
+                GL11.glBindTexture(GL11.GL_TEXTURE_2D, instanceTextureId);
+                if (im.getElementCount() > 0) {
+                    GL31.glDrawElementsInstanced(GL11.GL_TRIANGLES, im.getElementCount(), GL11.GL_UNSIGNED_SHORT, 0, instanceData.instanceCount);
+                } else {
+                    GL31.glDrawArraysInstanced(GL11.GL_TRIANGLES, 0, im.getVertexCount(), instanceData.getInstanceCount());
+                }
+
+                GlStateManager.depthFunc(GL11.GL_LEQUAL);
+                GlStateManager.depthMask(true);
+                GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
             }
 
             instanceData.rewindBuffers();

@@ -157,13 +157,13 @@ public class MeshInstance implements InstanceableModel {
     }
 
     @Override
-    public int getElementBufferId() {
-        return elementBufferId;
+    public int getElementCount() {
+        return elementCount;
     }
 
     @Override
-    public int getElementCount() {
-        return elementCount;
+    public boolean hasEffect() {
+        return false;
     }
 
     public void applyRotation(Quaternion quaternion) {
