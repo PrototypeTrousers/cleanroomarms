@@ -1,5 +1,6 @@
 package proto.mechanicalarms.client.events;
 
+import com.google.common.math.IntMath;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GLAllocation;
 import net.minecraft.client.renderer.ItemRenderer;
@@ -50,13 +51,53 @@ public class Tick {
                 width = originalTint.getWidth();
                 height = originalTint.getHeight();
             }
-            float f = (float) (Minecraft.getSystemTime() % 3000L) / 3000.0F / 8.0F;
-            BufferedImage translatedTint = translateImage(originalTint, f * 10, 0);
+            float f = (float) (Minecraft.getSystemTime() % 3000L) / 3000.0F / 8F * 740;
+            BufferedImage translatedTint = translateImage(originalTint, f, 0);
             BufferedImage rot = rotateImage(translatedTint, -50);
 
 
-            TextureUtil.uploadTextureImageAllocate(tintTexGL, rot, false,false);
+            float f1 = (float) (Minecraft.getSystemTime() % 4873L) / 4873.0F / 8.0F * 740;
+
+            BufferedImage translatedTint2 = translateImage(originalTint, -f1, 0);
+            BufferedImage rot2 = rotateImage(translatedTint2, 10);
+
+            BufferedImage mixed = blendImagesByColor(rot, rot2);
+
+            TextureUtil.uploadTextureImageAllocate(tintTexGL, mixed, true, false);
         }
+    }
+
+    public static BufferedImage blendImagesByColor(BufferedImage img1, BufferedImage img2) {
+        // Ensure both images have the same dimensions
+        int width = Math.min(img1.getWidth(), img2.getWidth());
+        int height = Math.min(img1.getHeight(), img2.getHeight());
+
+        BufferedImage blendedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+
+        // Loop through each pixel
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+                // Get RGB values for both images
+                int rgb1 = img1.getRGB(x, y);
+                int rgb2 = img2.getRGB(x, y);
+
+                // Extract color components of both pixels
+                Color color1 = new Color(rgb1, true);
+                Color color2 = new Color(rgb2, true);
+
+                // Blend each color component (R, G, B, and optionally Alpha)
+                int blendedRed = (int) (Math.pow(color1.getRed(),2) + color2.getRed());
+                int blendedGreen = (int) (Math.pow(color1.getGreen(),2) + color2.getGreen());
+                int blendedBlue = (int) (Math.pow(color1.getBlue(),2) + color2.getBlue());
+                int blendedAlpha = 255; // Blend transparency if needed
+
+                // Create new blended color and set it to the output image
+                Color blendedColor = new Color(blendedRed, blendedGreen, blendedBlue, blendedAlpha);
+                blendedImage.setRGB(x, y, blendedColor.getRGB());
+            }
+        }
+
+        return blendedImage;
     }
 
     private static ByteBuffer convertImageData(BufferedImage image) {

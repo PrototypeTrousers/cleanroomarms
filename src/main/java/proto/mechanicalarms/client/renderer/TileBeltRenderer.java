@@ -214,7 +214,8 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
 
         renderBase(tileBeltBasic);
 
-        renderHoldingItem(tileBeltBasic, x + xOff, y, z + zOff);
+        //renderHoldingItem(tileBeltBasic, x + xOff, y, z + zOff);
+        renderHoldingItem(tileBeltBasic, x, y, z);
 
 
         //renderPart(tileArmBasic, x, y, z, partialTicks, transformMatrix);

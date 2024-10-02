@@ -49,7 +49,7 @@ public class ItemStackEffectModel implements InstanceableModel {
                 // Getting the offset for the current vertex.
                 int vertexIndex = k * 7;
                 tex.put(Float.intBitsToFloat(quadData[vertexIndex + 4])); //texture
-                tex.put(Float.intBitsToFloat(quadData[vertexIndex + 5])); //texture
+                tex.put(Float.intBitsToFloat(quadData[vertexIndex + 5]) * 8); //texture
 
                 int col = -8372020;
                 float r = ((col & 0xFF0000) >> 16) / 255F;
@@ -69,7 +69,7 @@ public class ItemStackEffectModel implements InstanceableModel {
                 int vertexIndex = k * 7;
 
                 tex.put(Float.intBitsToFloat(quadData[vertexIndex + 4])); //texture
-                tex.put(Float.intBitsToFloat(quadData[vertexIndex + 5])); //texture
+                tex.put(Float.intBitsToFloat(quadData[vertexIndex + 5]) * 8); //texture
 
                 int col = -8372020;
                 float r = ((col & 0xFF0000) >> 16) / 255F;
@@ -87,7 +87,7 @@ public class ItemStackEffectModel implements InstanceableModel {
             int vertexIndex = 0;
 
             tex.put(Float.intBitsToFloat(quadData[vertexIndex + 4])); //texture
-            tex.put(Float.intBitsToFloat(quadData[vertexIndex + 5])); //texture
+            tex.put(Float.intBitsToFloat(quadData[vertexIndex + 5]) * 8); //texture
 
             int col = -8372020;
             float r = ((col & 0xFF0000) >> 16) / 255F;
@@ -119,7 +119,7 @@ public class ItemStackEffectModel implements InstanceableModel {
         texBuffer = GL15.glGenBuffers();
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, texBuffer);
         GL15.glBufferData(GL15.GL_ARRAY_BUFFER, tex, GL15.GL_STATIC_DRAW);
-        GL20.glVertexAttribPointer(1, 2, GL11.GL_FLOAT, true, 8, 0);
+        GL20.glVertexAttribPointer(1, 2, GL11.GL_FLOAT, false, 8, 0);
         GL20.glEnableVertexAttribArray(1);
 
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, normalBuffer);
