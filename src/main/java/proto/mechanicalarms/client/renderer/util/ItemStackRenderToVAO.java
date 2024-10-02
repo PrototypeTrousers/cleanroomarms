@@ -3,9 +3,11 @@ package proto.mechanicalarms.client.renderer.util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GLAllocation;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.RenderItem;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
+import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
 import net.minecraftforge.client.ForgeHooksClient;
@@ -14,6 +16,7 @@ import org.lwjgl3.opengl.*;
 import proto.mechanicalarms.client.renderer.instances.InstanceableModel;
 import proto.mechanicalarms.client.renderer.instances.ItemStackEffectModel;
 
+import java.awt.geom.AffineTransform;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -43,10 +46,10 @@ public class ItemStackRenderToVAO implements InstanceableModel {
         IBakedModel mm = Minecraft.getMinecraft().getRenderItem().getItemModelMesher().getItemModel(stack);
         IBakedModel model = mm.getOverrides().handleItemState(mm, stack, null, null);
         model = ForgeHooksClient.handleCameraTransforms(model, ItemCameraTransforms.TransformType.NONE, false);
-        FloatBuffer pos = GLAllocation.createDirectFloatBuffer(3000);
-        FloatBuffer norm = GLAllocation.createDirectFloatBuffer(3000);
-        FloatBuffer tex = GLAllocation.createDirectFloatBuffer(2000);
-        FloatBuffer color = GLAllocation.createDirectFloatBuffer(4000);
+        FloatBuffer pos = GLAllocation.createDirectFloatBuffer(30000);
+        FloatBuffer norm = GLAllocation.createDirectFloatBuffer(30000);
+        FloatBuffer tex = GLAllocation.createDirectFloatBuffer(20000);
+        FloatBuffer color = GLAllocation.createDirectFloatBuffer(40000);
 
         int v = 0;
 
@@ -337,7 +340,6 @@ public class ItemStackRenderToVAO implements InstanceableModel {
             hasEffect = true;
             effectModel = new ItemStackEffectModel(this, loq);
         }
-
     }
 
     @Override

@@ -1,6 +1,8 @@
 package proto.mechanicalarms.common.proxy;
 
+import net.minecraftforge.common.MinecraftForge;
 import proto.mechanicalarms.MechanicalArms;
+import proto.mechanicalarms.client.events.Tick;
 import proto.mechanicalarms.client.renderer.TileArmRenderer;
 import proto.mechanicalarms.client.renderer.TileBeltRenderer;
 import proto.mechanicalarms.common.item.Items;
@@ -32,6 +34,7 @@ public class ClientProxy extends CommonProxy {
         OBJLoader.INSTANCE.addDomain(MechanicalArms.MODID);
         ClientRegistry.bindTileEntitySpecialRenderer(TileArmBasic.class, new TileArmRenderer());
         ClientRegistry.bindTileEntitySpecialRenderer(TileBeltBasic.class, new TileBeltRenderer());
+        MinecraftForge.EVENT_BUS.register(Tick.INSTANCE);
         super.preInit();
     }
 

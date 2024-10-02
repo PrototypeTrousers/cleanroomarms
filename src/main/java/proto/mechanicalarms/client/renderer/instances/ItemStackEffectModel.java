@@ -6,6 +6,7 @@ import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import org.lwjgl3.opengl.*;
+import proto.mechanicalarms.client.events.Tick;
 import proto.mechanicalarms.client.renderer.util.ItemStackRenderToVAO;
 
 import java.nio.FloatBuffer;
@@ -13,7 +14,6 @@ import java.util.List;
 
 public class ItemStackEffectModel implements InstanceableModel {
 
-    private int texGL;
     private int posBuffer;
     private int texBuffer;
     private int normalBuffer;
@@ -40,8 +40,6 @@ public class ItemStackEffectModel implements InstanceableModel {
         FloatBuffer tex = GLAllocation.createDirectFloatBuffer(2000);
         FloatBuffer color = GLAllocation.createDirectFloatBuffer(4000);
 
-        Minecraft.getMinecraft().getTextureManager().bindTexture(new ResourceLocation("textures/misc/enchanted_item_glint.png"));
-        texGL = Minecraft.getMinecraft().getTextureManager().getTexture(new ResourceLocation("textures/misc/enchanted_item_glint.png")).getGlTextureId();
         int v=0;
         for (BakedQuad bq : loq) {
             int[] quadData = bq.getVertexData();
@@ -159,7 +157,7 @@ public class ItemStackEffectModel implements InstanceableModel {
 
     @Override
     public int getTexGlId() {
-        return texGL;
+        return Tick.tintTexGL;
     }
 
     @Override

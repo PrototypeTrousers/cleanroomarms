@@ -107,7 +107,7 @@ public class InstanceRender {
         }
 
         GL11.glBindTexture(GL11.GL_TEXTURE_2D, originalTexId);
-        //modelInstanceData.clear();
+        modelInstanceData.clear();
         GL30.glBindVertexArray(0);
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
         base_vao.release();
