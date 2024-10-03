@@ -1,27 +1,22 @@
 package proto.mechanicalarms.client.renderer.util;
 
 import codechicken.lib.render.item.IItemRenderer;
-import morph.avaritia.client.render.item.HaloRenderItem;
-import morph.avaritia.client.render.item.WrappedItemRenderer;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.*;
+import net.minecraft.client.renderer.GLAllocation;
+import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
 import net.minecraft.client.renderer.texture.TextureMap;
-import net.minecraft.client.renderer.vertex.VertexFormat;
-import net.minecraft.client.renderer.vertex.VertexFormatElement;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
 import net.minecraftforge.client.ForgeHooksClient;
-import org.joml.Vector3f;
 import org.lwjgl3.opengl.*;
 import proto.mechanicalarms.client.renderer.ProtoTesselator;
 import proto.mechanicalarms.client.renderer.instances.InstanceableModel;
 import proto.mechanicalarms.client.renderer.instances.ItemStackEffectModel;
 
-import java.awt.geom.AffineTransform;
-import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -78,8 +73,6 @@ public class ItemStackRenderToVAO implements InstanceableModel {
             //a missing item model has quads.
 
             int originalTexId = GL11.glGetInteger(GL11.GL_TEXTURE_BINDING_2D);
-            GL11.glDisable(GL11.GL_CULL_FACE);
-
 
             // Retrieve feedback data
             if (model.isBuiltInRenderer()) {
@@ -264,7 +257,6 @@ public class ItemStackRenderToVAO implements InstanceableModel {
 
             }
         }
-        GL11.glEnable(GL11.GL_CULL_FACE);
 
         vertexArrayBuffer = GL30.glGenVertexArrays();
         GL30.glBindVertexArray(vertexArrayBuffer);
