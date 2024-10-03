@@ -1,24 +1,15 @@
 package proto.mechanicalarms.client.events;
 
-import com.google.common.math.IntMath;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.GLAllocation;
-import net.minecraft.client.renderer.ItemRenderer;
-import net.minecraft.client.renderer.RenderItem;
 import net.minecraft.client.renderer.texture.TextureUtil;
 import net.minecraft.client.resources.IResource;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
-import net.minecraftforge.fml.relauncher.Side;
 import org.lwjgl3.opengl.GL11;
 
-import java.awt.*;
-import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 
 public class Tick {
     public static Tick INSTANCE = new Tick();
@@ -31,11 +22,7 @@ public class Tick {
     public static int tintTexGL;
 
     @SubscribeEvent
-    public void onTick(final TickEvent ev) {
-        if (Minecraft.getMinecraft().world == null || ev.side == Side.SERVER) {
-            return;
-        }
-
+    public void onTick(final TickEvent.ClientTickEvent ev) {
         if (ev.phase == TickEvent.Phase.END) {
             if (tintTexGL == 0) {
                 tintTexGL = GL11.glGenTextures();

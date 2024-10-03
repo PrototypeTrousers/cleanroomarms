@@ -1,22 +1,27 @@
 package proto.mechanicalarms.client.renderer.util;
 
+import codechicken.lib.render.item.IItemRenderer;
+import morph.avaritia.client.render.item.HaloRenderItem;
+import morph.avaritia.client.render.item.WrappedItemRenderer;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.GLAllocation;
-import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.RenderItem;
+import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
 import net.minecraft.client.renderer.texture.TextureMap;
+import net.minecraft.client.renderer.vertex.VertexFormat;
+import net.minecraft.client.renderer.vertex.VertexFormatElement;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
 import net.minecraftforge.client.ForgeHooksClient;
 import org.joml.Vector3f;
 import org.lwjgl3.opengl.*;
+import proto.mechanicalarms.client.renderer.ProtoTesselator;
 import proto.mechanicalarms.client.renderer.instances.InstanceableModel;
 import proto.mechanicalarms.client.renderer.instances.ItemStackEffectModel;
 
 import java.awt.geom.AffineTransform;
+import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -46,6 +51,7 @@ public class ItemStackRenderToVAO implements InstanceableModel {
         IBakedModel mm = Minecraft.getMinecraft().getRenderItem().getItemModelMesher().getItemModel(stack);
         IBakedModel model = mm.getOverrides().handleItemState(mm, stack, null, null);
         model = ForgeHooksClient.handleCameraTransforms(model, ItemCameraTransforms.TransformType.NONE, false);
+
         FloatBuffer pos = GLAllocation.createDirectFloatBuffer(30000);
         FloatBuffer norm = GLAllocation.createDirectFloatBuffer(30000);
         FloatBuffer tex = GLAllocation.createDirectFloatBuffer(20000);
@@ -58,11 +64,15 @@ public class ItemStackRenderToVAO implements InstanceableModel {
             loq.addAll(model.getQuads(null, e, 0));
         }
 
+
+
         //if an item model has no quads, attempt to capture its rendering
         //a missing item model has quads.
 
         if (loq.isEmpty()) {
 
+            Tessellator origTess = Tessellator.getInstance();
+            Tessellator.INSTANCE = new ProtoTesselator(2097152, pos, tex, color, norm);
 
             //if an item model has no quads, attempt to capture its rendering
             //a missing item model has quads.
@@ -70,103 +80,83 @@ public class ItemStackRenderToVAO implements InstanceableModel {
             int originalTexId = GL11.glGetInteger(GL11.GL_TEXTURE_BINDING_2D);
             GL11.glDisable(GL11.GL_CULL_FACE);
 
-            // Allocate buffer for feedback data
 
-            FloatBuffer feedbackBuffer = GLAllocation.createDirectFloatBuffer(875);
-            do {
-
-                GL11.glMatrixMode(GL11.GL_MODELVIEW);
-                GL11.glPushMatrix();
-                GL11.glLoadIdentity();
-                GL11.glMatrixMode(GL11.GL_PROJECTION);
-                GL11.glPushMatrix();
-                GL11.glLoadIdentity();
-                GL11.glViewport(0, 0, 1, 1);
-
-                feedbackBuffer = GLAllocation.createDirectFloatBuffer(feedbackBuffer.capacity() * 2);
-                GL11.glFeedbackBuffer(GL11.GL_3D_COLOR_TEXTURE, feedbackBuffer);
-                GL11.glRenderMode(GL11.GL_FEEDBACK);
-
-                // Retrieve feedback data
-                if (model.isBuiltInRenderer()) {
-                    GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
-                    GlStateManager.enableRescaleNormal();
-                    stack.getItem().getTileEntityItemStackRenderer().renderByItem(stack);
+            // Retrieve feedback data
+            if (model.isBuiltInRenderer()) {
+                GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+                GlStateManager.enableRescaleNormal();
+                if (model instanceof IItemRenderer cc) {
+                    cc.renderItem(stack, ItemCameraTransforms.TransformType.NONE);
                 } else {
-                    Minecraft.getMinecraft().getRenderItem().renderModel(model, stack);
+                    stack.getItem().getTileEntityItemStackRenderer().renderByItem(stack);
                 }
-
-                GL11.glMatrixMode(GL11.GL_PROJECTION);
-                GL11.glPopMatrix();
-                GL11.glMatrixMode(GL11.GL_MODELVIEW);
-                GL11.glPopMatrix();
-
-                // Return to normal rendering mode
-            } while (GL11.glRenderMode(GL11.GL_RENDER) <= 0);
-            //save the current bound texture for later.
-            //maybe mixin to GlStateManager bindTexture
+            } else {
+                Minecraft.getMinecraft().getRenderItem().renderModel(model, stack);
+            }
+            v= ((ProtoTesselator)Tessellator.INSTANCE).getTvx();
+            Tessellator.INSTANCE = origTess;
 
             texGL = GL11.glGetInteger(GL11.GL_TEXTURE_BINDING_2D);
             GL11.glBindTexture(GL11.GL_TEXTURE_2D, originalTexId);
 
-            boolean end = false;
-            float[] posv = new float[9];
-            while (!end) {
-                float cur = feedbackBuffer.get();
-                if ((int) cur == GL11.GL_POLYGON_TOKEN) {
-                    feedbackBuffer.get();
-                    // 3 floats for pos, 3 floats for normal and 2 floats for texture UV, per vertex. always.
-                    if (pos.remaining() < 33) {
-                        pos = GLAllocation.createDirectFloatBuffer(pos.capacity() * 2).put(pos);
-                        norm = GLAllocation.createDirectFloatBuffer(norm.capacity() * 2).put(norm);
-                        tex = GLAllocation.createDirectFloatBuffer(tex.capacity() * 2).put(tex);
-                        color = GLAllocation.createDirectFloatBuffer(color.capacity() * 2).put(color);
-                    }
-                    for (int j = 0; j < 3; j++) {
-                        v++;
-                        float x = feedbackBuffer.get();
-                        float y = feedbackBuffer.get();
-                        float z = feedbackBuffer.get();
-
-                        pos.put(x); //x
-                        pos.put(y); //y
-                        pos.put(z); //z
-
-                        color.put(feedbackBuffer.get());//R
-                        color.put(feedbackBuffer.get());//G
-                        color.put(feedbackBuffer.get());//B
-                        color.put(feedbackBuffer.get());//A
-
-                        tex.put(feedbackBuffer.get()); // u
-                        tex.put(feedbackBuffer.get()); // v
-                        feedbackBuffer.get(); // unused
-                        feedbackBuffer.get(); // unused
-                    }
-                    //face normal:
-                    pos.position(pos.position() - 9);
-                    pos.get(posv);
-                    Vector3f v0 = new Vector3f(posv[0], posv[1], posv[2]);
-                    Vector3f v1 = new Vector3f(posv[3], posv[4], posv[5]);
-                    Vector3f v2 = new Vector3f(posv[6], posv[7], posv[8]);
-
-                    Vector3f edge1 = new Vector3f(v2).sub(v1);
-                    Vector3f edge2 = new Vector3f(v0).sub(v1);
-
-                    Vector3f crsProd = edge1.cross(edge2, new Vector3f()); // Cross product between edge1 and edge2
-
-                    Vector3f normal = crsProd.normalize(); // Normalization of the vector
-                    for (int i = 0; i < 3; i++) {
-                        norm.put(normal.x);
-                        norm.put(normal.y);
-                        norm.put(normal.z);
-                    }
-                } else {
-                    end = true;
-                }
-                if (feedbackBuffer.position() == feedbackBuffer.limit()) {
-                    end = true;
-                }
-            }
+//            boolean end = false;
+//            float[] posv = new float[9];
+//            while (!end) {
+//                float cur = feedbackBuffer.get();
+//                if ((int) cur == GL11.GL_POLYGON_TOKEN) {
+//                    feedbackBuffer.get();
+//                    // 3 floats for pos, 3 floats for normal and 2 floats for texture UV, per vertex. always.
+//                    if (pos.remaining() < 33) {
+//                        pos = GLAllocation.createDirectFloatBuffer(pos.capacity() * 2).put(pos);
+//                        norm = GLAllocation.createDirectFloatBuffer(norm.capacity() * 2).put(norm);
+//                        tex = GLAllocation.createDirectFloatBuffer(tex.capacity() * 2).put(tex);
+//                        color = GLAllocation.createDirectFloatBuffer(color.capacity() * 2).put(color);
+//                    }
+//                    for (int j = 0; j < 3; j++) {
+//                        v++;
+//                        float x = feedbackBuffer.get();
+//                        float y = feedbackBuffer.get();
+//                        float z = feedbackBuffer.get();
+//
+//                        pos.put(x); //x
+//                        pos.put(y); //y
+//                        pos.put(z); //z
+//
+//                        color.put(feedbackBuffer.get());//R
+//                        color.put(feedbackBuffer.get());//G
+//                        color.put(feedbackBuffer.get());//B
+//                        color.put(feedbackBuffer.get());//A
+//
+//                        tex.put(feedbackBuffer.get()); // u
+//                        tex.put(feedbackBuffer.get()); // v
+//                        feedbackBuffer.get(); // unused
+//                        feedbackBuffer.get(); // unused
+//                    }
+//                    //face normal:
+//                    pos.position(pos.position() - 9);
+//                    pos.get(posv);
+//                    Vector3f v0 = new Vector3f(posv[0], posv[1], posv[2]);
+//                    Vector3f v1 = new Vector3f(posv[3], posv[4], posv[5]);
+//                    Vector3f v2 = new Vector3f(posv[6], posv[7], posv[8]);
+//
+//                    Vector3f edge1 = new Vector3f(v2).sub(v1);
+//                    Vector3f edge2 = new Vector3f(v0).sub(v1);
+//
+//                    Vector3f crsProd = edge1.cross(edge2, new Vector3f()); // Cross product between edge1 and edge2
+//
+//                    Vector3f normal = crsProd.normalize(); // Normalization of the vector
+//                    for (int i = 0; i < 3; i++) {
+//                        norm.put(normal.x);
+//                        norm.put(normal.y);
+//                        norm.put(normal.z);
+//                    }
+//                } else {
+//                    end = true;
+//                }
+//                if (feedbackBuffer.position() == feedbackBuffer.limit()) {
+//                    end = true;
+//                }
+//            }
         } else {
             texGL = Minecraft.getMinecraft().getRenderItem().getItemModelMesher().getModelManager().getTextureMap().getGlTextureId();
             for (BakedQuad bq : loq) {
