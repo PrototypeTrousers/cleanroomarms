@@ -1,6 +1,7 @@
 package proto.mechanicalarms.client.renderer;
 
 import net.minecraft.client.model.ModelRenderer;
+import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.VertexFormat;
 import net.minecraft.client.renderer.vertex.VertexFormatElement;
@@ -14,7 +15,9 @@ import javax.vecmath.Point3f;
 import javax.vecmath.Vector3f;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 
 public class ProtoTesselator extends Tessellator {
@@ -28,13 +31,14 @@ public class ProtoTesselator extends Tessellator {
 
     ModelRenderer mr;
 
+    public boolean isCompilingGlList;
 
     int tvx;
     private float mrScale;
 
     public ProtoTesselator(int size, FloatBuffer pos, FloatBuffer tex, FloatBuffer color, FloatBuffer norm) {
         super(size);
-        this.pos =pos;
+        this.pos = pos;
         this.tex = tex;
         this.color = color;
         this.norm = norm;
@@ -44,10 +48,13 @@ public class ProtoTesselator extends Tessellator {
 
     @Override
     public void draw() {
+        if (isCompilingGlList) {
+            return;
+        }
         boolean hasColor = false;
         buffer.finishDrawing();
         int v = buffer.getVertexCount();
-        tvx += v / 4 * 6 ;
+        tvx += v / 4 * 6;
         if (v > 0) {
             VertexFormat vertexFormat = buffer.getVertexFormat();
             int vertexSize = vertexFormat.getSize();
@@ -128,7 +135,7 @@ public class ProtoTesselator extends Tessellator {
         buffer.reset();
         if (!hasColor) {
             float[] fullcolor = new float[v * 6];
-            Arrays.fill(fullcolor,1);
+            Arrays.fill(fullcolor, 1);
             color.put(fullcolor);
         }
     }
@@ -141,7 +148,7 @@ public class ProtoTesselator extends Tessellator {
         if (matrixMode == GL11.GL_MODELVIEW) {
             Matrix4f loc = new Matrix4f();
             loc.setIdentity();
-            loc.setTranslation(new Vector3f(x,y,z));
+            loc.setTranslation(new Vector3f(x, y, z));
             modelViewMatrixStack.mul(loc);
         }
     }
@@ -192,5 +199,16 @@ public class ProtoTesselator extends Tessellator {
 
     public void setModelRender(ModelRenderer modelRenderer) {
         this.mr = modelRenderer;
+    }
+
+    public void glNewList() {
+        this.isCompilingGlList = true;
+    }
+
+    public void callList() {
+        if (isCompilingGlList) {
+            this.isCompilingGlList = false;
+            draw();
+        }
     }
 }

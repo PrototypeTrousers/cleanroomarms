@@ -5,9 +5,10 @@
   "minVersion": "0.8",
   "compatibilityLevel": "JAVA_8",
   "client": [
+    "BufferBuilderMixin",
     "GlStateManagerMixin",
-    "TileEntityRendererDispatcherMixin",
-    "ModelRendererMixin"
+    "ModelRendererMixin",
+    "TileEntityRendererDispatcherMixin"
   ],
   "mixins": [
   ]

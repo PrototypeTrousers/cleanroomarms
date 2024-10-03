@@ -52,4 +52,18 @@ public class GlStateManagerMixin {
         }
     }
 
+    @Inject(method = "glNewList", at = @At("HEAD"))
+    private static void glNewListProtoTesselator(int p_187423_0_, int p_187423_1_, CallbackInfo ci) {
+        if (Tessellator.INSTANCE instanceof ProtoTesselator protoTesselator) {
+            protoTesselator.glNewList();
+        }
+    }
+
+    @Inject(method = "callList", at = @At("HEAD"))
+    private static void glCallListProtoTesselator(int p_179148_0_, CallbackInfo ci) {
+        if (Tessellator.INSTANCE instanceof ProtoTesselator protoTesselator) {
+            protoTesselator.callList();
+        }
+    }
+
 }
