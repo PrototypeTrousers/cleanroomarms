@@ -6,6 +6,9 @@
   "compatibilityLevel": "JAVA_8",
   "client": [
     "GlStateManagerMixin",
-    "TileEntityRendererDispatcherMixin"
+    "TileEntityRendererDispatcherMixin",
+    "ModelRendererMixin"
+  ],
+  "mixins": [
   ]
 }

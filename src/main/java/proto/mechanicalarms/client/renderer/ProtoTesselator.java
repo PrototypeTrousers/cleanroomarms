@@ -1,9 +1,11 @@
 package proto.mechanicalarms.client.renderer;
 
+import net.minecraft.client.model.ModelRenderer;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.VertexFormat;
 import net.minecraft.client.renderer.vertex.VertexFormatElement;
 import org.lwjgl3.opengl.GL11;
+import proto.mechanicalarms.client.mixin.renderer.ModelRendererMixin;
 import proto.mechanicalarms.client.renderer.util.Matrix4fStack;
 
 import javax.vecmath.AxisAngle4f;
@@ -24,8 +26,12 @@ public class ProtoTesselator extends Tessellator {
     Matrix4fStack modelViewMatrixStack = new Matrix4fStack(10);
     int matrixMode;
 
+    ModelRenderer mr;
+
 
     int tvx;
+    private float mrScale;
+
     public ProtoTesselator(int size, FloatBuffer pos, FloatBuffer tex, FloatBuffer color, FloatBuffer norm) {
         super(size);
         this.pos =pos;
@@ -76,7 +82,13 @@ public class ProtoTesselator extends Tessellator {
                                             byteBuffer.getFloat(),
                                             byteBuffer.getFloat());
 
+
+                                    if (mr != null) {
+                                        translate(mr.rotationPointX * mrScale, mr.rotationPointY * mrScale, mr.rotationPointZ * mrScale);
+                                    }
+
                                     modelViewMatrixStack.transform(posVec);
+
 
                                     pos.put(posVec.x);
                                     pos.put(posVec.y);
@@ -172,5 +184,13 @@ public class ProtoTesselator extends Tessellator {
             loc.m22 = z;
             modelViewMatrixStack.mul(loc);
         }
+    }
+
+    public void setPostScale(float scale) {
+        this.mrScale = scale;
+    }
+
+    public void setModelRender(ModelRenderer modelRenderer) {
+        this.mr = modelRenderer;
     }
 }
