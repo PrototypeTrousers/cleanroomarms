@@ -19,7 +19,7 @@ public class BufferBuilderMixin {
     @Inject(method = "begin", at = @At("HEAD"), cancellable = true)
     void keepGoing(int p_181668_1_, VertexFormat p_181668_2_, CallbackInfo ci) {
         if (Tessellator.INSTANCE instanceof ProtoTesselator pt) {
-            if (this.cleanroomarms$inited) {
+            if ( pt.isCompilingGlList && this.cleanroomarms$inited) {
                 ci.cancel();
                 return;
             }

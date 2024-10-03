@@ -89,11 +89,6 @@ public class ProtoTesselator extends Tessellator {
                                             byteBuffer.getFloat(),
                                             byteBuffer.getFloat());
 
-
-                                    if (mr != null) {
-                                        translate(mr.rotationPointX * mrScale, mr.rotationPointY * mrScale, mr.rotationPointZ * mrScale);
-                                    }
-
                                     modelViewMatrixStack.transform(posVec);
 
 
@@ -157,7 +152,7 @@ public class ProtoTesselator extends Tessellator {
         if (matrixMode == GL11.GL_MODELVIEW) {
             Vector3f axis = new Vector3f(x, y, z);
             axis.normalize();
-            AxisAngle4f rot = new AxisAngle4f(axis, (float) Math.toRadians(-angle));
+            AxisAngle4f rot = new AxisAngle4f(axis, (float) Math.toRadians(angle));
 
             Matrix4f loc = new Matrix4f();
             loc.setIdentity();
@@ -191,14 +186,6 @@ public class ProtoTesselator extends Tessellator {
             loc.m22 = z;
             modelViewMatrixStack.mul(loc);
         }
-    }
-
-    public void setPostScale(float scale) {
-        this.mrScale = scale;
-    }
-
-    public void setModelRender(ModelRenderer modelRenderer) {
-        this.mr = modelRenderer;
     }
 
     public void glNewList() {

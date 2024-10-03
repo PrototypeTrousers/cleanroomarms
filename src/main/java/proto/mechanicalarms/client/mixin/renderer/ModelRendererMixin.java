@@ -10,12 +10,4 @@ import proto.mechanicalarms.client.renderer.ProtoTesselator;
 
 @Mixin(ModelRenderer.class)
 public class ModelRendererMixin {
-
-    @Inject(method = "render", at = @At("HEAD"))
-    void injectRender(float scale, CallbackInfo ci){
-        if (Tessellator.INSTANCE instanceof ProtoTesselator protoTesselator) {
-            protoTesselator.setPostScale(scale);
-            protoTesselator.setModelRender((ModelRenderer) (Object)this);
-        }
-    }
 }
