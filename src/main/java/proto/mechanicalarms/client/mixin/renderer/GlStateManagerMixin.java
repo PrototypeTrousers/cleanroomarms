@@ -16,4 +16,40 @@ public class GlStateManagerMixin {
             protoTesselator.translate(x, y, z);
         }
     }
+
+    @Inject(method = "rotate(FFFF)V", at = @At("HEAD"))
+    private static void rotateProtoTesselator(float angle, float x, float y, float z, CallbackInfo ci) {
+        if (Tessellator.INSTANCE instanceof ProtoTesselator protoTesselator) {
+            protoTesselator.rotate(angle, x, y, z);
+        }
+    }
+
+    @Inject(method = "pushMatrix", at = @At("HEAD"))
+    private static void pushMatrixProtoTesselator(CallbackInfo ci) {
+        if (Tessellator.INSTANCE instanceof ProtoTesselator protoTesselator) {
+            protoTesselator.pushMatrix();
+        }
+    }
+
+    @Inject(method = "popMatrix", at = @At("HEAD"))
+    private static void popMatrixProtoTesselator(CallbackInfo ci) {
+        if (Tessellator.INSTANCE instanceof ProtoTesselator protoTesselator) {
+            protoTesselator.popMatrix();
+        }
+    }
+
+    @Inject(method = "matrixMode", at = @At("HEAD"))
+    private static void matrixModeProtoTesselator(int mode, CallbackInfo ci) {
+        if (Tessellator.INSTANCE instanceof ProtoTesselator protoTesselator) {
+            protoTesselator.matrixMode(mode);
+        }
+    }
+
+    @Inject(method = "scale(FFF)V", at = @At("HEAD"))
+    private static void scaleMatrixModeProtoTesselator(float x, float y, float z, CallbackInfo ci) {
+        if (Tessellator.INSTANCE instanceof ProtoTesselator protoTesselator) {
+            protoTesselator.scale(x,y,z);
+        }
+    }
+
 }

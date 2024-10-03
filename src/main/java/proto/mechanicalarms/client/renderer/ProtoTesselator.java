@@ -3,7 +3,13 @@ package proto.mechanicalarms.client.renderer;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.VertexFormat;
 import net.minecraft.client.renderer.vertex.VertexFormatElement;
+import org.lwjgl3.opengl.GL11;
+import proto.mechanicalarms.client.renderer.util.Matrix4fStack;
 
+import javax.vecmath.AxisAngle4f;
+import javax.vecmath.Matrix4f;
+import javax.vecmath.Point3f;
+import javax.vecmath.Vector3f;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.util.Arrays;
@@ -14,9 +20,10 @@ public class ProtoTesselator extends Tessellator {
     FloatBuffer tex;
     FloatBuffer color;
     FloatBuffer norm;
-    float xOff;
-    float yOff;
-    float zOff;
+
+    Matrix4fStack modelViewMatrixStack = new Matrix4fStack(10);
+    int matrixMode;
+
 
     int tvx;
     public ProtoTesselator(int size, FloatBuffer pos, FloatBuffer tex, FloatBuffer color, FloatBuffer norm) {
@@ -25,6 +32,8 @@ public class ProtoTesselator extends Tessellator {
         this.tex = tex;
         this.color = color;
         this.norm = norm;
+        this.matrixMode = GL11.glGetInteger(GL11.GL_MATRIX_MODE);
+        modelViewMatrixStack.pushMatrix();
     }
 
     @Override
@@ -63,9 +72,15 @@ public class ProtoTesselator extends Tessellator {
                             // Extract based on the usage type
                             switch (usage) {
                                 case POSITION:
-                                    pos.put(byteBuffer.getFloat() + xOff);
-                                    pos.put(byteBuffer.getFloat() + yOff);
-                                    pos.put(byteBuffer.getFloat() + zOff);
+                                    Point3f posVec = new Point3f(byteBuffer.getFloat(),
+                                            byteBuffer.getFloat(),
+                                            byteBuffer.getFloat());
+
+                                    modelViewMatrixStack.transform(posVec);
+
+                                    pos.put(posVec.x);
+                                    pos.put(posVec.y);
+                                    pos.put(posVec.z);
                                     break;
                                 case UV:
                                     tex.put(byteBuffer.getFloat());
@@ -99,7 +114,6 @@ public class ProtoTesselator extends Tessellator {
             }
         }
         buffer.reset();
-        xOff = yOff = zOff = 0;
         if (!hasColor) {
             float[] fullcolor = new float[v * 6];
             Arrays.fill(fullcolor,1);
@@ -112,8 +126,51 @@ public class ProtoTesselator extends Tessellator {
     }
 
     public void translate(float x, float y, float z) {
-        this.xOff += x;
-        this.yOff += y;
-        this.zOff += z;
+        if (matrixMode == GL11.GL_MODELVIEW) {
+            Matrix4f loc = new Matrix4f();
+            loc.setIdentity();
+            loc.setTranslation(new Vector3f(x,y,z));
+            modelViewMatrixStack.mul(loc);
+        }
+    }
+
+    public void rotate(float angle, float x, float y, float z) {
+        if (matrixMode == GL11.GL_MODELVIEW) {
+            Vector3f axis = new Vector3f(x, y, z);
+            axis.normalize();
+            AxisAngle4f rot = new AxisAngle4f(axis, (float) Math.toRadians(-angle));
+
+            Matrix4f loc = new Matrix4f();
+            loc.setIdentity();
+            loc.setRotation(rot);
+            modelViewMatrixStack.mul(loc);
+        }
+    }
+
+    public void pushMatrix() {
+        if (matrixMode == GL11.GL_MODELVIEW) {
+            modelViewMatrixStack.pushMatrix();
+        }
+    }
+
+    public void popMatrix() {
+        if (matrixMode == GL11.GL_MODELVIEW) {
+            modelViewMatrixStack.popMatrix();
+        }
+    }
+
+    public void matrixMode(int mode) {
+        this.matrixMode = mode;
+    }
+
+    public void scale(float x, float y, float z) {
+        if (matrixMode == GL11.GL_MODELVIEW) {
+            Matrix4f loc = new Matrix4f();
+            loc.setIdentity();
+            loc.m00 = x;
+            loc.m11 = y;
+            loc.m22 = z;
+            modelViewMatrixStack.mul(loc);
+        }
     }
 }
