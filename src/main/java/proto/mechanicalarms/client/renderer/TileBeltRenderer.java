@@ -11,7 +11,6 @@ import proto.mechanicalarms.client.renderer.util.Matrix4fStack;
 import proto.mechanicalarms.client.renderer.util.Quaternion;
 import proto.mechanicalarms.common.block.BlockBelt;
 import proto.mechanicalarms.common.proxy.ClientProxy;
-import proto.mechanicalarms.common.tile.TileArmBasic;
 import proto.mechanicalarms.common.tile.TileBeltBasic;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.init.Items;
@@ -145,7 +144,9 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
         ap.negate();
 
         translate(itemArmMatrix, p);
-        //rot.rotateX((float) (-Math.PI / 2));
+        if (itemvao.rotateX) {
+            rot.rotateX((float) (-Math.PI / 2));
+        }//
         scale(itemArmMatrix, itemvao.suggestedScale.x, itemvao.suggestedScale.y, itemvao.suggestedScale.z);
 
         Quaternion.rotateMatrix(itemArmMatrix, rot);

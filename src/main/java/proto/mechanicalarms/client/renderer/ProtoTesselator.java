@@ -1,6 +1,5 @@
 package proto.mechanicalarms.client.renderer;
 
-import net.minecraft.client.model.ModelRenderer;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.VertexFormat;
 import net.minecraft.client.renderer.vertex.VertexFormatElement;
@@ -17,22 +16,22 @@ import java.util.Arrays;
 import java.util.List;
 
 public class ProtoTesselator extends Tessellator {
+    public int texGL;
+    public boolean isCompilingGlList;
     FloatBuffer pos;
     FloatBuffer tex;
     FloatBuffer color;
     FloatBuffer norm;
-
-    public int texGL;
-
     Matrix4fStack modelViewMatrixStack = new Matrix4fStack(10);
     int matrixMode;
-
-    ModelRenderer mr;
-
-    public boolean isCompilingGlList;
-
     int tvx;
-    private float mrScale;
+
+    int[] quadIndices = {0, 1, 2, 3};
+    // Create two triangles (v0, v1, v2) and (v2, v3, v0)
+    int[][] triangleIndices = {
+            {quadIndices[0], quadIndices[1], quadIndices[2]}, // First triangle
+            {quadIndices[2], quadIndices[3], quadIndices[0]}  // Second triangle
+    };
 
     public ProtoTesselator(int size, FloatBuffer pos, FloatBuffer tex, FloatBuffer color, FloatBuffer norm) {
         super(size);
@@ -67,14 +66,6 @@ public class ProtoTesselator extends Tessellator {
 
                 // Process quads in groups of 4 vertices
                 for (int j = 0; j < buffer.getVertexCount(); j += 4) {
-                    int[] quadIndices = {0, 1, 2, 3};
-
-                    // Create two triangles (v0, v1, v2) and (v2, v3, v0)
-                    int[][] triangleIndices = {
-                            {quadIndices[0], quadIndices[1], quadIndices[2]}, // First triangle
-                            {quadIndices[2], quadIndices[3], quadIndices[0]}  // Second triangle
-                    };
-
                     for (int[] triangle : triangleIndices) {
                         for (int vertexIndex : triangle) {
                             int vertexOffset = (j + vertexIndex) * vertexSize;

@@ -1,6 +1,15 @@
 package proto.mechanicalarms.common.proxy;
 
+import net.minecraft.client.renderer.block.model.ModelResourceLocation;
+import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.client.event.ModelRegistryEvent;
+import net.minecraftforge.client.model.ModelLoader;
+import net.minecraftforge.client.model.obj.OBJLoader;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.fml.client.registry.ClientRegistry;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.relauncher.Side;
 import proto.mechanicalarms.MechanicalArms;
 import proto.mechanicalarms.client.events.Tick;
 import proto.mechanicalarms.client.renderer.TileArmRenderer;
@@ -8,15 +17,6 @@ import proto.mechanicalarms.client.renderer.TileBeltRenderer;
 import proto.mechanicalarms.common.item.Items;
 import proto.mechanicalarms.common.tile.TileArmBasic;
 import proto.mechanicalarms.common.tile.TileBeltBasic;
-import net.minecraft.client.renderer.block.model.ModelResourceLocation;
-import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.client.event.ModelRegistryEvent;
-import net.minecraftforge.client.model.ModelLoader;
-import net.minecraftforge.client.model.obj.OBJLoader;
-import net.minecraftforge.fml.client.registry.ClientRegistry;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.relauncher.Side;
 
 @Mod.EventBusSubscriber(Side.CLIENT)
 public class ClientProxy extends CommonProxy {

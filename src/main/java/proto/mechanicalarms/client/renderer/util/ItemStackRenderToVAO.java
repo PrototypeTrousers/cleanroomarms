@@ -11,7 +11,6 @@ import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
 import net.minecraftforge.client.ForgeHooksClient;
-import net.minecraftforge.common.model.TRSRTransformation;
 import org.lwjgl3.opengl.*;
 import proto.mechanicalarms.client.renderer.ProtoTesselator;
 import proto.mechanicalarms.client.renderer.instances.InstanceableModel;
@@ -37,6 +36,7 @@ public class ItemStackRenderToVAO implements InstanceableModel {
     public boolean hasEffect;
 
     public Vector3f suggestedScale;
+    public boolean rotateX;
 
     ItemStackEffectModel effectModel;
 
@@ -296,8 +296,12 @@ public class ItemStackRenderToVAO implements InstanceableModel {
         }
 
         float width = maxX - minX;
-        float height = maxY - minZ;
+        float height = maxY - minY;
         float depth = maxZ - minZ;
+
+        if (height > depth) {
+            rotateX = true;
+        }
 
         float s = 0.5f / Math.max(Math.max(width,height),depth);
 
