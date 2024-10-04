@@ -1,12 +1,10 @@
 package proto.mechanicalarms.client.renderer;
 
 import net.minecraft.client.model.ModelRenderer;
-import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.VertexFormat;
 import net.minecraft.client.renderer.vertex.VertexFormatElement;
 import org.lwjgl3.opengl.GL11;
-import proto.mechanicalarms.client.mixin.renderer.ModelRendererMixin;
 import proto.mechanicalarms.client.renderer.util.Matrix4fStack;
 
 import javax.vecmath.AxisAngle4f;
@@ -15,9 +13,7 @@ import javax.vecmath.Point3f;
 import javax.vecmath.Vector3f;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 
 public class ProtoTesselator extends Tessellator {
@@ -25,6 +21,8 @@ public class ProtoTesselator extends Tessellator {
     FloatBuffer tex;
     FloatBuffer color;
     FloatBuffer norm;
+
+    public int texGL;
 
     Matrix4fStack modelViewMatrixStack = new Matrix4fStack(10);
     int matrixMode;
@@ -196,6 +194,12 @@ public class ProtoTesselator extends Tessellator {
         if (isCompilingGlList) {
             this.isCompilingGlList = false;
             draw();
+        }
+    }
+
+    public void bindTexture(int textureId) {
+        if (textureId != 0) {
+            this.texGL = textureId;
         }
     }
 }

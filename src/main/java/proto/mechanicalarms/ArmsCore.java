@@ -41,6 +41,6 @@ public class ArmsCore implements IFMLLoadingPlugin, IEarlyMixinLoader {
     @Override
     public List<String> getMixinConfigs() {
         return Lists.newArrayList(
-                "mixins.renderer.json");
+                "mechanicalarms.mixins.json");
     }
 }

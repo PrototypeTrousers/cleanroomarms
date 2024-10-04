@@ -1,15 +1,20 @@
 {
   "package": "proto.mechanicalarms.client.mixin.renderer",
-  "refmap": "mixins.armscore.refmap.json",
+  "refmap": "mechanicalarms.mixins.refmap.json",
   "target": "@env(DEFAULT)",
   "minVersion": "0.8",
-  "compatibilityLevel": "JAVA_8",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "BufferBuilderMixin",
+    "GlStateManagerMixin",
+    "ModelRendererMixin",
+    "TileEntityRendererDispatcherMixin"
+  ],
   "client": [
     "BufferBuilderMixin",
     "GlStateManagerMixin",
     "ModelRendererMixin",
     "TileEntityRendererDispatcherMixin"
   ],
-  "mixins": [
-  ]
+  "server": []
 }

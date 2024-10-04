@@ -8,7 +8,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import proto.mechanicalarms.client.renderer.ProtoTesselator;
 
-@Mixin(GlStateManager.class)
+@Mixin(value = GlStateManager.class, remap = true)
 public class GlStateManagerMixin {
     @Inject(method = "translate(FFF)V", at = @At("HEAD"))
     private static void translateProtoTesselator(float x, float y, float z, CallbackInfo ci) {
@@ -63,6 +63,13 @@ public class GlStateManagerMixin {
     private static void glCallListProtoTesselator(int p_179148_0_, CallbackInfo ci) {
         if (Tessellator.INSTANCE instanceof ProtoTesselator protoTesselator) {
             protoTesselator.callList();
+        }
+    }
+
+    @Inject(method = "bindTexture", at = @At("HEAD"))
+    private static void bindTextureProtoTesselator(int textureId, CallbackInfo ci) {
+        if (Tessellator.INSTANCE instanceof ProtoTesselator protoTesselator) {
+            protoTesselator.bindTexture(textureId);
         }
     }
 
