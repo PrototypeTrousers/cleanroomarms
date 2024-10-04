@@ -40,6 +40,9 @@ public class ItemStackRenderToVAO implements InstanceableModel {
     public Vector3f modelCenter;
 
     ItemStackEffectModel effectModel;
+    public float xOffset;
+    public float yOffset;
+    public float zOffset;
 
     public ItemStackRenderToVAO(ItemStack stack) {
         this.stack = stack.copy();
@@ -302,6 +305,16 @@ public class ItemStackRenderToVAO implements InstanceableModel {
 
         if (height > depth) {
             rotateX = true;
+        }
+
+        if(width > 1) {
+            xOffset = -minX;
+        } if (height>1){
+            yOffset = -minY;
+        }if (depth > 1) {
+            if (minZ < 0) {
+                zOffset = -minZ;
+            }
         }
 
         float s = 0.5f / Math.max(Math.max(width,height),depth);
