@@ -133,7 +133,7 @@ dependencies {
 
     annotationProcessor ('com.cleanroommc:sponge-mixin:0.18.5+mixin.0.8.5')
 
-    //implementation rfg.deobf("curse.maven:ie-231951:2974106")
+    implementation fg.deobf("curse.maven:ie-231951:2974106")
     implementation fg.deobf("curse.maven:avaritia-261348:3143349")
     implementation fg.deobf("curse.maven:CodeChicken-242818:2779848")
     implementation "curse.maven:Fugue-1005815:5667350"

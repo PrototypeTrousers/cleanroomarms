@@ -8,15 +8,16 @@ import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
-import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
 import net.minecraftforge.client.ForgeHooksClient;
+import net.minecraftforge.common.model.TRSRTransformation;
 import org.lwjgl3.opengl.*;
 import proto.mechanicalarms.client.renderer.ProtoTesselator;
 import proto.mechanicalarms.client.renderer.instances.InstanceableModel;
 import proto.mechanicalarms.client.renderer.instances.ItemStackEffectModel;
 
+import javax.vecmath.Vector3f;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +35,8 @@ public class ItemStackRenderToVAO implements InstanceableModel {
     public int vertexCount;
     public int vertexArrayBuffer;
     public boolean hasEffect;
+
+    public Vector3f suggestedScale;
 
     ItemStackEffectModel effectModel;
 
@@ -58,7 +61,6 @@ public class ItemStackRenderToVAO implements InstanceableModel {
         for (EnumFacing e : EnumFacing.VALUES) {
             loq.addAll(model.getQuads(null, e, 0));
         }
-
 
 
         //if an item model has no quads, attempt to capture its rendering
@@ -89,70 +91,11 @@ public class ItemStackRenderToVAO implements InstanceableModel {
                 Minecraft.getMinecraft().getRenderItem().renderModel(model, stack);
                 texGL = Minecraft.getMinecraft().getRenderItem().getItemModelMesher().getModelManager().getTextureMap().getGlTextureId();
             }
-            v= ((ProtoTesselator)Tessellator.INSTANCE).getTvx();
+            v = ((ProtoTesselator) Tessellator.INSTANCE).getTvx();
 
             Tessellator.INSTANCE = origTess;
 
             GL11.glBindTexture(GL11.GL_TEXTURE_2D, originalTexId);
-
-//            boolean end = false;
-//            float[] posv = new float[9];
-//            while (!end) {
-//                float cur = feedbackBuffer.get();
-//                if ((int) cur == GL11.GL_POLYGON_TOKEN) {
-//                    feedbackBuffer.get();
-//                    // 3 floats for pos, 3 floats for normal and 2 floats for texture UV, per vertex. always.
-//                    if (pos.remaining() < 33) {
-//                        pos = GLAllocation.createDirectFloatBuffer(pos.capacity() * 2).put(pos);
-//                        norm = GLAllocation.createDirectFloatBuffer(norm.capacity() * 2).put(norm);
-//                        tex = GLAllocation.createDirectFloatBuffer(tex.capacity() * 2).put(tex);
-//                        color = GLAllocation.createDirectFloatBuffer(color.capacity() * 2).put(color);
-//                    }
-//                    for (int j = 0; j < 3; j++) {
-//                        v++;
-//                        float x = feedbackBuffer.get();
-//                        float y = feedbackBuffer.get();
-//                        float z = feedbackBuffer.get();
-//
-//                        pos.put(x); //x
-//                        pos.put(y); //y
-//                        pos.put(z); //z
-//
-//                        color.put(feedbackBuffer.get());//R
-//                        color.put(feedbackBuffer.get());//G
-//                        color.put(feedbackBuffer.get());//B
-//                        color.put(feedbackBuffer.get());//A
-//
-//                        tex.put(feedbackBuffer.get()); // u
-//                        tex.put(feedbackBuffer.get()); // v
-//                        feedbackBuffer.get(); // unused
-//                        feedbackBuffer.get(); // unused
-//                    }
-//                    //face normal:
-//                    pos.position(pos.position() - 9);
-//                    pos.get(posv);
-//                    Vector3f v0 = new Vector3f(posv[0], posv[1], posv[2]);
-//                    Vector3f v1 = new Vector3f(posv[3], posv[4], posv[5]);
-//                    Vector3f v2 = new Vector3f(posv[6], posv[7], posv[8]);
-//
-//                    Vector3f edge1 = new Vector3f(v2).sub(v1);
-//                    Vector3f edge2 = new Vector3f(v0).sub(v1);
-//
-//                    Vector3f crsProd = edge1.cross(edge2, new Vector3f()); // Cross product between edge1 and edge2
-//
-//                    Vector3f normal = crsProd.normalize(); // Normalization of the vector
-//                    for (int i = 0; i < 3; i++) {
-//                        norm.put(normal.x);
-//                        norm.put(normal.y);
-//                        norm.put(normal.z);
-//                    }
-//                } else {
-//                    end = true;
-//                }
-//                if (feedbackBuffer.position() == feedbackBuffer.limit()) {
-//                    end = true;
-//                }
-//            }
         } else {
             texGL = Minecraft.getMinecraft().getRenderItem().getItemModelMesher().getModelManager().getTextureMap().getGlTextureId();
             for (BakedQuad bq : loq) {
@@ -264,6 +207,9 @@ public class ItemStackRenderToVAO implements InstanceableModel {
         vertexArrayBuffer = GL30.glGenVertexArrays();
         GL30.glBindVertexArray(vertexArrayBuffer);
 
+
+
+        makeBoundingBox(pos);
         pos.rewind();
         norm.rewind();
         tex.rewind();
@@ -325,6 +271,38 @@ public class ItemStackRenderToVAO implements InstanceableModel {
             hasEffect = true;
             effectModel = new ItemStackEffectModel(this, loq);
         }
+    }
+
+    public void makeBoundingBox(FloatBuffer vertexBuffer) {
+        // Initialize with extreme values
+        float minX= Float.MAX_VALUE, minY = Float.MAX_VALUE, minZ = Float.MAX_VALUE;
+        float maxX = -Float.MAX_VALUE, maxY = -Float.MAX_VALUE, maxZ = -Float.MAX_VALUE;
+
+        // Iterate over the FloatBuffer (assuming it's 3 floats per vertex: x, y, z)
+        for (int i = 0; i < vertexBuffer.limit(); i += 3) {
+            float x = vertexBuffer.get(i);
+            float y = vertexBuffer.get(i + 1);
+            float z = vertexBuffer.get(i + 2);
+
+            // Update min values
+            if (x < minX) minX = x;
+            if (y < minY) minY = y;
+            if (z < minZ) minZ = z;
+
+            // Update max values
+            if (x > maxX) maxX = x;
+            if (y > maxY) maxY = y;
+            if (z > maxZ) maxZ = z;
+        }
+
+        float width = maxX - minX;
+        float height = maxY - minZ;
+        float depth = maxZ - minZ;
+
+        float s = 0.5f / Math.max(Math.max(width,height),depth);
+
+        suggestedScale = new Vector3f(s,s,s);
+
     }
 
     @Override

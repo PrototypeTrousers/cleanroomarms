@@ -145,8 +145,8 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
         ap.negate();
 
         translate(itemArmMatrix, p);
-        rot.rotateX((float) (-Math.PI / 2));
-        scale(itemArmMatrix, 0.5f, 0.5f, 0.5f);
+        //rot.rotateX((float) (-Math.PI / 2));
+        scale(itemArmMatrix, itemvao.suggestedScale.x, itemvao.suggestedScale.y, itemvao.suggestedScale.z);
 
         Quaternion.rotateMatrix(itemArmMatrix, rot);
 
