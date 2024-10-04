@@ -136,22 +136,24 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
 
         itemArmMatrix.setIdentity();
         rot.setIndentity();
+        translate(itemArmMatrix, new Vector3f((float) x + 0.25f, (float) (y + (itemvao.rotateX ? itemvao.modelCenter.z : itemvao.modelCenter.x) + 0.1875), (float) z + 0.25f));
 
-        translate(itemArmMatrix, new Vector3f((float) x, (float) (y), (float) z));
-
-        Vector3f p = new Vector3f(-0.25f, 1f, 0.25f);
+        Vector3f p = new Vector3f(.5f, .5f, .5f);
         Vector3f ap = new Vector3f(p);
         ap.negate();
 
-        translate(itemArmMatrix, p);
-        if (itemvao.rotateX) {
-            rot.rotateX((float) (-Math.PI / 2));
-        }//
         scale(itemArmMatrix, itemvao.suggestedScale.x, itemvao.suggestedScale.y, itemvao.suggestedScale.z);
 
-        Quaternion.rotateMatrix(itemArmMatrix, rot);
+        if (itemvao.rotateX) {
+            translate(itemArmMatrix, p);
+            rot.rotateX((float) (-Math.PI / 2));
+            Quaternion.rotateMatrix(itemArmMatrix, rot);
+            translate(itemArmMatrix, ap);
 
-        translate(itemArmMatrix, ap);
+        }
+
+        //translate(itemArmMatrix, new Vector3f(0, 1 - 0.875f, 0));
+
 
         matrix4ftofloatarray(itemArmMatrix, mtx);
         ir.bufferModelMatrixData(mtx);

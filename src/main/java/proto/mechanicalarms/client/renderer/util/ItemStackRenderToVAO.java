@@ -37,6 +37,7 @@ public class ItemStackRenderToVAO implements InstanceableModel {
 
     public Vector3f suggestedScale;
     public boolean rotateX;
+    public Vector3f modelCenter;
 
     ItemStackEffectModel effectModel;
 
@@ -306,7 +307,7 @@ public class ItemStackRenderToVAO implements InstanceableModel {
         float s = 0.5f / Math.max(Math.max(width,height),depth);
 
         suggestedScale = new Vector3f(s,s,s);
-
+        modelCenter = new Vector3f((minX + maxX) / 2, (minY + maxY) / 2, (minZ + maxZ) / 2);
     }
 
     @Override
