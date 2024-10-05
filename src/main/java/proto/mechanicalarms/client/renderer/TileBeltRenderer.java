@@ -238,9 +238,9 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
 
         if (tileBeltBasic.isSlope()) {
             if (tileBeltBasic.getSlope() == Slope.UP) {
-                yOff = (float) (0.5f +  0.05 * tileBeltBasic.getProgress());
+                yOff = (float) (1f +  0.05 * tileBeltBasic.getProgress());
             } else {
-                yOff = (float) -(0.125f +  0.05 * tileBeltBasic.getProgress());
+                yOff = (float) (1f -  0.05 * tileBeltBasic.getProgress());
             }
         }
 

@@ -112,15 +112,20 @@ public class TileBeltBasic extends TileEntity implements ITickable {
         progress++;
         if (progress >= 20) {
             EnumFacing facing = front;
-            BlockPos targetPos;
             TileEntity frontTe;
             if (slope == Slope.HORIZONTAL) {
                 frontTe = world.getTileEntity(pos.offset(facing));
+                if (frontTe == null) {
+                    frontTe = world.getTileEntity(pos.offset(facing).down());
+                }
             } else {
                 if (slope == Slope.UP) {
                     frontTe = world.getTileEntity(pos.offset(facing).up());
                 } else {
                     frontTe = world.getTileEntity(pos.offset(facing).down());
+                    if (frontTe == null) {
+                        frontTe = world.getTileEntity(pos.offset(facing));
+                    }
                 }
             }
             if (frontTe != null) {
