@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import proto.mechanicalarms.client.renderer.ProtoTesselator;
 
-@Mixin(value = BufferBuilder.class, remap = true)
+@Mixin(value = BufferBuilder.class)
 public class BufferBuilderMixin {
 
     @Unique

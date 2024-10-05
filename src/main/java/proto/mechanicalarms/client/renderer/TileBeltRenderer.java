@@ -157,9 +157,6 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
         Vector3f ap = new Vector3f(p);
         ap.negate();
 
-
-
-
         if (itemvao.rotateX) {
             translate(itemArmMatrix, p);
             rot.rotateX((float) (-Math.PI / 2));
@@ -214,6 +211,10 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
         float zOff = 0;
         float yOff = 0;
 
+        Vector3f p = new Vector3f(0, 0.6f, 0f);
+        Vector3f ap = new Vector3f(p);
+        ap.negate();
+
         if (facing == EnumFacing.EAST) {
             rot.rotateY((float) (-Math.PI / 2));
             xOff = (float) (0.05 * tileBeltBasic.getProgress());
@@ -229,6 +230,10 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
         } else {
             zOff = (float) (0.75 + -0.05 * tileBeltBasic.getProgress());
             xOff += 0.25F;
+            if (tileBeltBasic.getSlope() == Slope.DOWN){
+                rot.rotateX((float) (-Math.PI / 2));
+
+            }
         }
 
         if (tileBeltBasic.isSlope()) {
@@ -239,8 +244,9 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
             }
         }
 
+        translate(translationMatrix, p);
         Quaternion.rotateMatrix(translationMatrix, rot);
-
+        translate(translationMatrix, ap);
         renderBase(tileBeltBasic);
 
         renderHoldingItem(tileBeltBasic, x + xOff, y + yOff, z + zOff);

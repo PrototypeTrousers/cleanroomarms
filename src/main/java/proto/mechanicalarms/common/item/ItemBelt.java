@@ -42,17 +42,6 @@ public class ItemBelt extends ItemBlock {
                 MechanicalArms.logger.info("Source pos set to " + source);
                 return EnumActionResult.FAIL;
             }
-
-            EnumFacing enumfacing = player.getHorizontalFacing();
-            if (tileEntity instanceof TileBeltBasic tbbte) {
-                tbbte.setFront(enumfacing);
-                if (!block.isReplaceable(worldIn, pos))
-                {
-                    tbbte.setSlope(hitY >= 0.5f? EnumFacing.UP : EnumFacing.DOWN);
-                } else {
-                    tbbte.setSlope(enumfacing);
-                }
-            }
         }
         return super.onItemUse(player, worldIn, pos, hand, facing, hitX, hitY, hitZ);
     }
@@ -71,8 +60,10 @@ public class ItemBelt extends ItemBlock {
                 EnumFacing enumfacing = player.getHorizontalFacing();
                 if (te instanceof TileBeltBasic tbbte) {
                     tbbte.setFront(enumfacing);
-                    if (!block.isReplaceable(world, pos) && !side.getAxis().isVertical()) {
-                        tbbte.setSlope(hitY >= 0.5f ? EnumFacing.UP : EnumFacing.DOWN);
+                    if (hitY >= 0.5f) {
+                        tbbte.setSlope(EnumFacing.UP);
+                    } if (player.getLookVec().y < -0.5){
+                        tbbte.setSlope(EnumFacing.DOWN);
                     } else {
                         tbbte.setSlope(enumfacing);
                     }
