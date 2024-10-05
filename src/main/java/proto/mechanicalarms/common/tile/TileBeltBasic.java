@@ -9,6 +9,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
@@ -111,7 +112,17 @@ public class TileBeltBasic extends TileEntity implements ITickable {
         progress++;
         if (progress >= 20) {
             EnumFacing facing = front;
-            TileEntity frontTe = world.getTileEntity(pos.offset(facing));
+            BlockPos targetPos;
+            TileEntity frontTe;
+            if (slope == Slope.HORIZONTAL) {
+                frontTe = world.getTileEntity(pos.offset(facing));
+            } else {
+                if (slope == Slope.UP) {
+                    frontTe = world.getTileEntity(pos.offset(facing).up());
+                } else {
+                    frontTe = world.getTileEntity(pos.offset(facing).down());
+                }
+            }
             if (frontTe != null) {
                 IItemHandler cap = frontTe.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, facing.getOpposite());
                 if ( cap != null) {
@@ -175,6 +186,10 @@ public class TileBeltBasic extends TileEntity implements ITickable {
         return capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY;
     }
 
+    public Slope getSlope() {
+        return slope;
+    }
+
     public class BeltItemHandler extends ItemStackHandler {
         public BeltItemHandler(int i) {
             super(i);
@@ -183,12 +198,8 @@ public class TileBeltBasic extends TileEntity implements ITickable {
         @Override
         protected void onContentsChanged(int slot) {
             TileBeltBasic.this.markDirty();
+            world.notifyBlockUpdate(pos, world.getBlockState(pos), world.getBlockState(pos), 3);
         }
     }
 
-    enum Slope {
-        UP,
-        HORIZONTAL,
-        DOWN
-    }
 }

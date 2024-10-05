@@ -11,6 +11,7 @@ import proto.mechanicalarms.client.renderer.util.Matrix4fStack;
 import proto.mechanicalarms.client.renderer.util.Quaternion;
 import proto.mechanicalarms.common.block.BlockBelt;
 import proto.mechanicalarms.common.proxy.ClientProxy;
+import proto.mechanicalarms.common.tile.Slope;
 import proto.mechanicalarms.common.tile.TileBeltBasic;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.init.Items;
@@ -211,6 +212,8 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
         EnumFacing facing = tileBeltBasic.getFront();
         float xOff = 0;
         float zOff = 0;
+        float yOff = 0;
+
         if (facing == EnumFacing.EAST) {
             rot.rotateY((float) (-Math.PI / 2));
             xOff = (float) (0.05 * tileBeltBasic.getProgress());
@@ -228,11 +231,19 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
             xOff += 0.25F;
         }
 
+        if (tileBeltBasic.isSlope()) {
+            if (tileBeltBasic.getSlope() == Slope.UP) {
+                yOff = (float) (0.5f +  0.05 * tileBeltBasic.getProgress());
+            } else {
+                yOff = (float) -(0.125f +  0.05 * tileBeltBasic.getProgress());
+            }
+        }
+
         Quaternion.rotateMatrix(translationMatrix, rot);
 
         renderBase(tileBeltBasic);
 
-        renderHoldingItem(tileBeltBasic, x + xOff, y, z + zOff);
+        renderHoldingItem(tileBeltBasic, x + xOff, y + yOff, z + zOff);
         //renderHoldingItem(tileBeltBasic, x, y, z);
 
 
