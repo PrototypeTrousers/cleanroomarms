@@ -133,31 +133,31 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
         //upload model matrix, light
 
         matrix4fStack.pushMatrix();
-        translate(matrix4fStack, new Vector3f((float) x  , (float) (y), (float) z));
-
-
         itemArmMatrix.setIdentity();
-        rot.setIndentity();
+        translate(matrix4fStack, new Vector3f((float) x +0.5f  , (float) (y), (float) z + 0.5f));
         itemArmMatrix.setScale(itemvao.suggestedScale.x);
 
-        translate(itemArmMatrix, new Vector3f((float) itemvao.modelCenter.x  ,
-                (float) (itemvao.modelCenter.y * 2/ itemvao.suggestedScale.x),
-                (float) itemvao.modelCenter.z + itemvao.zOffset));
 
-        Vector3f p = new Vector3f(.5f, .5f, .5f);
+
+        rot.setIndentity();
+
+        translate(itemArmMatrix, -itemvao.modelCenter.x, 0.6875f / itemvao.suggestedScale.x, -itemvao.modelCenter.z );
+
+        Vector3f p = new Vector3f(.5f, 0.0625f, .5f);
         Vector3f ap = new Vector3f(p);
         ap.negate();
 
 
 
 
-//        if (itemvao.rotateX) {
-//            translate(itemArmMatrix, p);
-//            rot.rotateX((float) (-Math.PI / 2));
-//            Quaternion.rotateMatrix(itemArmMatrix, rot);
-//            translate(itemArmMatrix, ap);
-//        }
-        //translate(itemArmMatrix, new Vector3f(0, 1 - 0.875f, 0));
+        if (itemvao.rotateX) {
+            translate(itemArmMatrix, p);
+            rot.rotateX((float) (-Math.PI / 2));
+            Quaternion.rotateMatrix(itemArmMatrix, rot);
+            translate(itemArmMatrix, ap);
+        }
+
+
         matrix4fStack.mul(itemArmMatrix);
 
         matrix4ftofloatarray(matrix4fStack, mtx);
