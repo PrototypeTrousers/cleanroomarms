@@ -183,11 +183,11 @@ public class MeshInstance implements InstanceableModel {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof MeshInstance that)) return false;
-        return Objects.equals(nodeName, that.nodeName);
+        return Objects.equals(vertexArrayBuffer, that.vertexArrayBuffer);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(nodeName);
+        return Objects.hashCode(vertexArrayBuffer);
     }
 }

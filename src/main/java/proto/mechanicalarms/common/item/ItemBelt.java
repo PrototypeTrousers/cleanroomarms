@@ -19,6 +19,7 @@ import net.minecraftforge.common.ForgeHooks;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 import org.apache.commons.lang3.tuple.Pair;
+import proto.mechanicalarms.common.tile.TileBeltBasic;
 
 public class ItemBelt extends ItemBlock {
 
@@ -41,21 +42,45 @@ public class ItemBelt extends ItemBlock {
                 MechanicalArms.logger.info("Source pos set to " + source);
                 return EnumActionResult.FAIL;
             }
+
+            EnumFacing enumfacing = player.getHorizontalFacing();
+            if (tileEntity instanceof TileBeltBasic tbbte) {
+                tbbte.setFront(enumfacing);
+                if (!block.isReplaceable(worldIn, pos))
+                {
+                    tbbte.setSlope(hitY >= 0.5f? EnumFacing.UP : EnumFacing.DOWN);
+                } else {
+                    tbbte.setSlope(enumfacing);
+                }
+            }
         }
         return super.onItemUse(player, worldIn, pos, hand, facing, hitX, hitY, hitZ);
     }
 
     @Override
     public boolean placeBlockAt(ItemStack stack, EntityPlayer player, World world, BlockPos pos, EnumFacing side, float hitX, float hitY, float hitZ, IBlockState newState) {
-        if (source != null && target != null && super.placeBlockAt(stack, player, world, pos, side, hitX, hitY, hitZ, newState)) {
-            TileEntity tileEntity1 = world.getTileEntity(pos);
-            if (tileEntity1 != null) {
-                ((TileArmBasic) tileEntity1).setSource(source.getKey(), source.getValue());
-                ((TileArmBasic) tileEntity1).setTarget(target.getKey(), target.getValue());
+        if (super.placeBlockAt(stack, player, world, pos, side, hitX, hitY, hitZ, newState)) {
+            TileEntity te = world.getTileEntity(pos);
+            if (te != null) {
+                if (source != null && target != null) {
+
+                    ((TileArmBasic) te).setSource(source.getKey(), source.getValue());
+                    ((TileArmBasic) te).setTarget(target.getKey(), target.getValue());
+                }
+
+                EnumFacing enumfacing = player.getHorizontalFacing();
+                if (te instanceof TileBeltBasic tbbte) {
+                    tbbte.setFront(enumfacing);
+                    if (!block.isReplaceable(world, pos) && !side.getAxis().isVertical()) {
+                        tbbte.setSlope(hitY >= 0.5f ? EnumFacing.UP : EnumFacing.DOWN);
+                    } else {
+                        tbbte.setSlope(enumfacing);
+                    }
+                }
             }
             return true;
         }
-        return super.placeBlockAt(stack, player, world, pos, side, hitX, hitY, hitZ, newState);
+        return false;
     }
 
     @Override

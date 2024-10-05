@@ -14,7 +14,6 @@ import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
 import org.jetbrains.annotations.Nullable;
-import proto.mechanicalarms.common.block.BlockBelt;
 
 
 public class TileBeltBasic extends TileEntity implements ITickable {
@@ -22,6 +21,8 @@ public class TileBeltBasic extends TileEntity implements ITickable {
     AxisAlignedBB renderBB;
     AxisAlignedBB pickerBB;
     int progress = 0;
+    EnumFacing front;
+    Slope slope;
 
     protected ItemStackHandler leftItemHandler = new BeltItemHandler(5);
     protected ItemStackHandler rightItemHandler = new BeltItemHandler(5);
@@ -31,6 +32,8 @@ public class TileBeltBasic extends TileEntity implements ITickable {
         super.writeToNBT(compound);
         compound.setTag("leftInventory", leftItemHandler.serializeNBT());
         compound.setTag("rightInventory", rightItemHandler.serializeNBT());
+        compound.setInteger("front", front.ordinal());
+        compound.setInteger("slope", slope.ordinal());
         return compound;
     }
 
@@ -39,6 +42,8 @@ public class TileBeltBasic extends TileEntity implements ITickable {
         super.readFromNBT(compound);
         leftItemHandler.deserializeNBT(compound.getCompoundTag("leftInventory"));
         rightItemHandler.deserializeNBT(compound.getCompoundTag("rightInventory"));
+        front = EnumFacing.byIndex(compound.getInteger("front"));
+        slope = Slope.values()[compound.getInteger("slope")];
     }
 
     @Override
@@ -105,7 +110,7 @@ public class TileBeltBasic extends TileEntity implements ITickable {
         }
         progress++;
         if (progress >= 20) {
-            EnumFacing facing = world.getBlockState(pos).getValue(BlockBelt.FACING);
+            EnumFacing facing = front;
             TileEntity frontTe = world.getTileEntity(pos.offset(facing));
             if (frontTe != null) {
                 IItemHandler cap = frontTe.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, facing.getOpposite());
@@ -133,6 +138,29 @@ public class TileBeltBasic extends TileEntity implements ITickable {
         return progress;
     }
 
+    public boolean isSlope(){
+        return slope != Slope.HORIZONTAL;
+    }
+
+    public void setSlope(EnumFacing enumFacing) {
+        if (enumFacing == EnumFacing.UP) {
+            this.slope = Slope.UP;
+        } else if (enumFacing == EnumFacing.DOWN ) {
+            this.slope = Slope.DOWN;
+        } else {
+            this.slope = Slope.HORIZONTAL;
+        }
+
+    }
+
+    public EnumFacing getFront() {
+        return front;
+    }
+
+    public void setFront(EnumFacing facing) {
+        this.front = facing;
+    }
+
     @Nullable
     @Override
     public <T> T getCapability(Capability<T> capability, @Nullable EnumFacing facing) {
@@ -156,5 +184,11 @@ public class TileBeltBasic extends TileEntity implements ITickable {
         protected void onContentsChanged(int slot) {
             TileBeltBasic.this.markDirty();
         }
+    }
+
+    enum Slope {
+        UP,
+        HORIZONTAL,
+        DOWN
     }
 }

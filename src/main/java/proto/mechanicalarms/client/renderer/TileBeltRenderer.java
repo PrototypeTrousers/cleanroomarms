@@ -47,7 +47,8 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
     Quaternion rot = Quaternion.createIdentity();
     Matrix4fStack matrix4fStack = new Matrix4fStack(10);
 
-    ModelInstance modelInstance = new ModelInstance(ClientProxy.belt);
+    ModelInstance baseBeltModel = new ModelInstance(ClientProxy.belt);
+    ModelInstance slopedBeltModel = new ModelInstance(ClientProxy.beltSlope);
 
     float partialTicks;
 
@@ -104,11 +105,19 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
 
     void renderBase(TileBeltBasic tileBeltBasic) {
         setRenderingTE(tileBeltBasic);
-        if (modelInstance.getRoot() == null) {
-            modelInstance.init();
+        NodeInstance ni;
+        if (tileBeltBasic.isSlope()) {
+            if (slopedBeltModel.getRoot() == null) {
+                slopedBeltModel.init();
+            }
+            ni = slopedBeltModel.getRoot();
+        } else {
+            if (baseBeltModel.getRoot() == null) {
+                baseBeltModel.init();
+            }
+            ni = baseBeltModel.getRoot();
         }
 
-        NodeInstance ni = modelInstance.getRoot();
         matrix4fStack.pushMatrix();
         matrix4fStack.mul(translationMatrix);
         traverseHierarchy(ni, tileBeltBasic);
@@ -199,7 +208,7 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
 
         y -= 0.5f;
 
-        EnumFacing facing = tileBeltBasic.getWorld().getBlockState(tileBeltBasic.getPos()).getValue(BlockBelt.FACING);
+        EnumFacing facing = tileBeltBasic.getFront();
         float xOff = 0;
         float zOff = 0;
         if (facing == EnumFacing.EAST) {
@@ -223,8 +232,8 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
 
         renderBase(tileBeltBasic);
 
-        //renderHoldingItem(tileBeltBasic, x + xOff, y, z + zOff);
-        renderHoldingItem(tileBeltBasic, x, y, z);
+        renderHoldingItem(tileBeltBasic, x + xOff, y, z + zOff);
+        //renderHoldingItem(tileBeltBasic, x, y, z);
 
 
         //renderPart(tileArmBasic, x, y, z, partialTicks, transformMatrix);
