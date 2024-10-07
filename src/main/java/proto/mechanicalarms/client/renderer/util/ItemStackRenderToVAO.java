@@ -61,156 +61,37 @@ public class ItemStackRenderToVAO implements InstanceableModel {
 
         int v = 0;
 
-        List<BakedQuad> loq = new ArrayList<>(model.getQuads(null, null, 0));
-        for (EnumFacing e : EnumFacing.VALUES) {
-            loq.addAll(model.getQuads(null, e, 0));
-        }
-
+        Tessellator origTess = Tessellator.getInstance();
+        Tessellator.INSTANCE = new ProtoTesselator(2097152, pos, tex, color, norm);
 
         //if an item model has no quads, attempt to capture its rendering
         //a missing item model has quads.
 
-        if (loq.isEmpty()) {
+        int originalTexId = GL11.glGetInteger(GL11.GL_TEXTURE_BINDING_2D);
 
-            Tessellator origTess = Tessellator.getInstance();
-            Tessellator.INSTANCE = new ProtoTesselator(2097152, pos, tex, color, norm);
-
-            //if an item model has no quads, attempt to capture its rendering
-            //a missing item model has quads.
-
-            int originalTexId = GL11.glGetInteger(GL11.GL_TEXTURE_BINDING_2D);
-
-            // Retrieve feedback data
-            if (model.isBuiltInRenderer()) {
-                GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
-                GlStateManager.enableRescaleNormal();
-                if (model instanceof IItemRenderer cc) {
-                    texGL = Minecraft.getMinecraft().getRenderItem().getItemModelMesher().getModelManager().getTextureMap().getGlTextureId();
-                    cc.renderItem(stack, ItemCameraTransforms.TransformType.NONE);
-                } else {
-                    stack.getItem().getTileEntityItemStackRenderer().renderByItem(stack);
-                    texGL = GL11.glGetInteger(GL11.GL_TEXTURE_BINDING_2D);
-                }
-            } else {
-                Minecraft.getMinecraft().getRenderItem().renderModel(model, stack);
+        // Retrieve feedback data
+        if (model.isBuiltInRenderer()) {
+            GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+            GlStateManager.enableRescaleNormal();
+            if (model instanceof IItemRenderer cc) {
                 texGL = Minecraft.getMinecraft().getRenderItem().getItemModelMesher().getModelManager().getTextureMap().getGlTextureId();
+                cc.renderItem(stack, ItemCameraTransforms.TransformType.NONE);
+            } else {
+                stack.getItem().getTileEntityItemStackRenderer().renderByItem(stack);
+                texGL = GL11.glGetInteger(GL11.GL_TEXTURE_BINDING_2D);
             }
-            v = ((ProtoTesselator) Tessellator.INSTANCE).getTvx();
-
-            Tessellator.INSTANCE = origTess;
-
-            GL11.glBindTexture(GL11.GL_TEXTURE_2D, originalTexId);
         } else {
+            Minecraft.getMinecraft().getRenderItem().renderModel(model, stack);
             texGL = Minecraft.getMinecraft().getRenderItem().getItemModelMesher().getModelManager().getTextureMap().getGlTextureId();
-            for (BakedQuad bq : loq) {
-                int[] quadData = bq.getVertexData();
-
-                for (int k = 0; k < 3; ++k) {
-                    v++;
-                    // Getting the offset for the current vertex.
-                    int vertexIndex = k * 7;
-                    pos.put(Float.intBitsToFloat(quadData[vertexIndex]));
-                    pos.put(Float.intBitsToFloat(quadData[vertexIndex + 1]));
-                    pos.put(Float.intBitsToFloat(quadData[vertexIndex + 2]));
-
-                    tex.put(Float.intBitsToFloat(quadData[vertexIndex + 4])); //texture
-                    tex.put(Float.intBitsToFloat(quadData[vertexIndex + 5])); //texture
-
-                    int col;
-                    if (bq.hasTintIndex()) {
-                        col = Minecraft.getMinecraft().getItemColors().colorMultiplier(stack, bq.getTintIndex());
-                    } else {
-                        col = quadData[vertexIndex + 3];
-                    }
-
-                    float r = ((col & 0xFF0000) >> 16) / 255F;
-                    float g = ((col & 0xFF00) >> 8) / 255F;
-                    float b = (col & 0xFF) / 255F;
-                    float a = ((col & 0xFF000000) >> 24) / 255F;
-
-                    color.put(r);
-                    color.put(g);
-                    color.put(b);
-                    color.put(a);
-
-                    int packedNormal = quadData[vertexIndex + 6];
-                    norm.put(((packedNormal) & 255) / 127.0F);
-                    norm.put(((packedNormal >> 8) & 255) / 127.0F);
-                    norm.put(((packedNormal >> 16) & 255) / 127.0F);
-
-                }
-                for (int k = 2; k < 4; ++k) {
-                    v++;
-                    // Getting the offset for the current vertex.
-                    int vertexIndex = k * 7;
-                    pos.put(Float.intBitsToFloat(quadData[vertexIndex]));
-                    pos.put(Float.intBitsToFloat(quadData[vertexIndex + 1]));
-                    pos.put(Float.intBitsToFloat(quadData[vertexIndex + 2]));
-
-                    tex.put(Float.intBitsToFloat(quadData[vertexIndex + 4])); //texture
-                    tex.put(Float.intBitsToFloat(quadData[vertexIndex + 5])); //texture
-
-                    int col;
-                    if (bq.hasTintIndex()) {
-                        col = Minecraft.getMinecraft().getItemColors().colorMultiplier(stack, bq.getTintIndex());
-                    } else {
-                        col = quadData[vertexIndex + 3];
-                    }
-
-                    float r = ((col & 0xFF0000) >> 16) / 255F;
-                    float g = ((col & 0xFF00) >> 8) / 255F;
-                    float b = (col & 0xFF) / 255F;
-                    float a = ((col & 0xFF000000) >> 24) / 255F;
-
-                    color.put(r);
-                    color.put(g);
-                    color.put(b);
-                    color.put(a);
-
-                    int packedNormal = quadData[vertexIndex + 6];
-                    norm.put(((packedNormal) & 255) / 127.0F);
-                    norm.put(((packedNormal >> 8) & 255) / 127.0F);
-                    norm.put(((packedNormal >> 16) & 255) / 127.0F);
-                }
-                v++;
-                // Getting the offset for the current vertex.
-                int vertexIndex = 0;
-                pos.put(Float.intBitsToFloat(quadData[vertexIndex]));
-                pos.put(Float.intBitsToFloat(quadData[vertexIndex + 1]));
-                pos.put(Float.intBitsToFloat(quadData[vertexIndex + 2]));
-
-                tex.put(Float.intBitsToFloat(quadData[vertexIndex + 4])); //texture
-                tex.put(Float.intBitsToFloat(quadData[vertexIndex + 5])); //texture
-
-
-                int col;
-                if (bq.hasTintIndex()) {
-                    col = Minecraft.getMinecraft().getItemColors().colorMultiplier(stack, bq.getTintIndex());
-                } else {
-                    col = quadData[vertexIndex + 3];
-                }
-
-                float r = ((col & 0xFF0000) >> 16) / 255F;
-                float g = ((col & 0xFF00) >> 8) / 255F;
-                float b = (col & 0xFF) / 255F;
-                float a = ((col & 0xFF000000) >> 24) / 255F;
-
-                color.put(r);
-                color.put(g);
-                color.put(b);
-                color.put(a);
-
-                int packedNormal = quadData[vertexIndex + 6];
-                norm.put(((packedNormal) & 255) / 127.0F);
-                norm.put(((packedNormal >> 8) & 255) / 127.0F);
-                norm.put(((packedNormal >> 16) & 255) / 127.0F);
-
-            }
         }
+        v = ((ProtoTesselator) Tessellator.INSTANCE).getTvx();
+
+        Tessellator.INSTANCE = origTess;
+
+        GL11.glBindTexture(GL11.GL_TEXTURE_2D, originalTexId);
 
         vertexArrayBuffer = GL30.glGenVertexArrays();
         GL30.glBindVertexArray(vertexArrayBuffer);
-
 
 
         makeBoundingBox(pos);
@@ -273,7 +154,7 @@ public class ItemStackRenderToVAO implements InstanceableModel {
 
         if (stack.hasEffect()) {
             hasEffect = true;
-            effectModel = new ItemStackEffectModel(this, loq);
+            //effectModel = new ItemStackEffectModel(this, loq);
         }
     }
 
