@@ -2,6 +2,7 @@ package proto.mechanicalarms.client.renderer;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenCustomHashMap;
 import net.minecraft.util.EnumFacing;
+import org.lwjgl3.opengl.GL11;
 import proto.mechanicalarms.client.renderer.instances.MeshInstance;
 import proto.mechanicalarms.client.renderer.instances.ModelInstance;
 import proto.mechanicalarms.client.renderer.instances.NodeInstance;
@@ -211,6 +212,8 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
         float zOff = 0;
         float yOff = 0;
 
+
+        //model origin
         Vector3f p = new Vector3f(0, 0.6f, 0f);
         Vector3f ap = new Vector3f(p);
         ap.negate();
@@ -230,17 +233,17 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
         } else {
             zOff = (float) (0.75 + -0.05 * tileBeltBasic.getProgress());
             xOff += 0.25F;
-            if (tileBeltBasic.getSlope() == Slope.DOWN){
-                rot.rotateX((float) (-Math.PI / 2));
 
-            }
         }
 
         if (tileBeltBasic.isSlope()) {
             if (tileBeltBasic.getSlope() == Slope.UP) {
-                yOff = (float) (1f +  0.05 * tileBeltBasic.getProgress());
+                yOff = (float) (1f + 0.05 * tileBeltBasic.getProgress());
             } else {
-                yOff = (float) (1f -  0.05 * tileBeltBasic.getProgress());
+                yOff = (float) (1f - 0.05 * tileBeltBasic.getProgress());
+            }
+            if (tileBeltBasic.getSlope() == Slope.DOWN) {
+                rot.rotateX((float) (-Math.PI / 2));
             }
         }
 

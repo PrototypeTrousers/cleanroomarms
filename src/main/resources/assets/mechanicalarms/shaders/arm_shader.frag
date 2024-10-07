@@ -17,7 +17,7 @@ void main(){
 
     vec4 color = vec4(col.rgb, 1) * texture2D(texture, texCoord) * texture2D(lightmap, lightCoord);
     // ambient
-    vec3 ambient = vec3(0.2, 0.2, 0.2);
+    vec3 ambient = vec3(0.2);
     // diffuse
     vec3 normal = normalize(fragNorm);
 
@@ -25,5 +25,5 @@ void main(){
     diff += max(dot(normal, normalize(lightPos1 - fragPos)), 0.0f);
     vec3 diffuse = diff * vec3(0.6, 0.6, 0.6);
 
-    FragColor = vec4((ambient + diffuse) * color.rgb, color.a);
+    FragColor = vec4((diffuse + ambient) * color.rgb, color.a);
 }

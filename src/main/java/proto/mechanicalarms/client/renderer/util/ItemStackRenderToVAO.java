@@ -54,10 +54,10 @@ public class ItemStackRenderToVAO implements InstanceableModel {
         IBakedModel model = mm.getOverrides().handleItemState(mm, stack, null, null);
         model = ForgeHooksClient.handleCameraTransforms(model, ItemCameraTransforms.TransformType.NONE, false);
 
-        FloatBuffer pos = GLAllocation.createDirectFloatBuffer(30000);
-        FloatBuffer norm = GLAllocation.createDirectFloatBuffer(30000);
-        FloatBuffer tex = GLAllocation.createDirectFloatBuffer(20000);
-        FloatBuffer color = GLAllocation.createDirectFloatBuffer(40000);
+        FloatBuffer pos = GLAllocation.createDirectFloatBuffer(300000);
+        FloatBuffer norm = GLAllocation.createDirectFloatBuffer(300000);
+        FloatBuffer tex = GLAllocation.createDirectFloatBuffer(200000);
+        FloatBuffer color = GLAllocation.createDirectFloatBuffer(400000);
 
         int v = 0;
 

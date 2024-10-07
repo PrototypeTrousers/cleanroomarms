@@ -60,7 +60,7 @@ public class ItemBelt extends ItemBlock {
                 EnumFacing enumfacing = player.getHorizontalFacing();
                 if (te instanceof TileBeltBasic tbbte) {
                     tbbte.setFront(enumfacing);
-                    if (hitY >= 0.5f) {
+                    if (side.getHorizontalIndex() != -1 && hitY >= 0.5f) {
                         tbbte.setSlope(EnumFacing.UP);
                     } if (player.getLookVec().y < -0.5){
                         tbbte.setSlope(EnumFacing.DOWN);
