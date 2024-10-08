@@ -104,9 +104,14 @@ public class ProtoTesselator extends Tessellator {
                                     break;
                                 case NORMAL:
                                     int packedNormal = byteBuffer.getInt();
-                                    norm.put(((packedNormal) & 255) / 127.0F);
-                                    norm.put(((packedNormal >> 8) & 255) / 127.0F);
-                                    norm.put(((packedNormal >> 16) & 255) / 127.0F);
+                                    int x = ((byte) (packedNormal & 0xFF)) / 127;
+                                    int y = ((byte) (packedNormal >> 8 & 0xFF) / 127);
+                                    int z = ((byte) (packedNormal >> 16 & 0xFF) / 127);
+
+
+                                    norm.put((float) x);
+                                    norm.put((float) y);
+                                    norm.put((float) z);
                                     break;
                                 default:
                                     break;
