@@ -18,14 +18,14 @@ out vec4 col;
 
 uniform mat4 projection;
 uniform mat4 view;
+uniform mat4 sunRotation;
 
 void main() {
     gl_Position = projection * view * in_transform * vec4(in_pos, 1);
 
     fragPos = vec3(in_transform * vec4(in_pos, 1.0));
     fragNorm = mat3(transpose(inverse(in_transform))) * in_normal;
-    lightPos0 = (vec4(0.2 + fragPos.x, 1 + fragPos.y, -0.7 + fragPos.z, 1)).xyz;
-    lightPos1 = (vec4(-0.2 + fragPos.x, 1 + fragPos.y, 0.7 + fragPos.z, 1)).xyz;
+    lightPos0 = (vec4(0, 100, 0, 1) * sunRotation).xyz;
 
     //0 and 1 are used for the p and q coordinates because p defaults to 0 and q defaults to 1
     texCoord = in_texcoord.st;
