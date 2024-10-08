@@ -113,10 +113,19 @@ public class InstanceRender {
         base_vao.release();
     }
 
-    public static Matrix4f getSunRotationMatrix(float celestialAngle) {
+    public static Matrix4f getSunRotationMatrix(float radians) {
         Matrix4f rotationMatrix = new Matrix4f();
+        float cosTheta = (float)Math.cos(-radians);
+        float sinTheta = (float)Math.sin(-radians);
+
+        // Create a new 4x4 identity matrix
         rotationMatrix.setIdentity();
-        rotationMatrix.rotZ((float) (Math.PI - celestialAngle));
+
+        // Set rotation values for Z-axis rotation
+        rotationMatrix.m00 = cosTheta;
+        rotationMatrix.m01 = -sinTheta;
+        rotationMatrix.m10 = sinTheta;
+        rotationMatrix.m11 = cosTheta;
         return rotationMatrix;
     }
 

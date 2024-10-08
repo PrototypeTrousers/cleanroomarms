@@ -1,16 +1,12 @@
 package proto.mechanicalarms.client.renderer.instances;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GLAllocation;
-import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.ResourceLocation;
 import org.lwjgl3.opengl.*;
 import proto.mechanicalarms.client.events.Tick;
 import proto.mechanicalarms.client.renderer.util.ItemStackRenderToVAO;
 
 import java.nio.FloatBuffer;
-import java.util.List;
 
 public class ItemStackEffectModel implements InstanceableModel {
 
@@ -25,81 +21,19 @@ public class ItemStackEffectModel implements InstanceableModel {
 
     private ItemStack stack;
 
-    public ItemStackEffectModel(ItemStackRenderToVAO parent, List<BakedQuad> loq) {
+    public ItemStackEffectModel(ItemStackRenderToVAO parent) {
         posBuffer = parent.posBuffer;
         normalBuffer = parent.normalBuffer;
         lightBuffer = parent.lightBuffer;
         modelTransform = parent.modelTransform;
         vertexCount = parent.vertexCount;
         stack = parent.getStack();
-        setupVAO(loq);
+        setupVAO();
     }
 
-    public void setupVAO(List<BakedQuad> loq) {
-
+    public void setupVAO() {
         FloatBuffer tex = GLAllocation.createDirectFloatBuffer(2000);
         FloatBuffer color = GLAllocation.createDirectFloatBuffer(4000);
-
-        int v=0;
-        for (BakedQuad bq : loq) {
-            int[] quadData = bq.getVertexData();
-
-            for (int k = 0; k < 3; ++k) {
-                v++;
-                // Getting the offset for the current vertex.
-                int vertexIndex = k * 7;
-                tex.put(Float.intBitsToFloat(quadData[vertexIndex + 4])); //texture
-                tex.put(Float.intBitsToFloat(quadData[vertexIndex + 5])); //texture
-
-                int col = -8372020;
-                float r = ((col & 0xFF0000) >> 16) / 255F;
-                float g = ((col & 0xFF00) >> 8) / 255F;
-                float b = (col & 0xFF) / 255F;
-                float a = ((col & 0xFF000000) >> 24) / 255F;
-
-                color.put(r);
-                color.put(g);
-                color.put(b);
-                color.put(a);
-
-            }
-            for (int k = 2; k < 4; ++k) {
-                v++;
-                // Getting the offset for the current vertex.
-                int vertexIndex = k * 7;
-
-                tex.put(Float.intBitsToFloat(quadData[vertexIndex + 4])); //texture
-                tex.put(Float.intBitsToFloat(quadData[vertexIndex + 5])); //texture
-
-                int col = -8372020;
-                float r = ((col & 0xFF0000) >> 16) / 255F;
-                float g = ((col & 0xFF00) >> 8) / 255F;
-                float b = (col & 0xFF) / 255F;
-                float a = ((col & 0xFF000000) >> 24) / 255F;
-
-                color.put(r);
-                color.put(g);
-                color.put(b);
-                color.put(a);
-            }
-            v++;
-            // Getting the offset for the current vertex.
-            int vertexIndex = 0;
-
-            tex.put(Float.intBitsToFloat(quadData[vertexIndex + 4])); //texture
-            tex.put(Float.intBitsToFloat(quadData[vertexIndex + 5])); //texture
-
-            int col = -8372020;
-            float r = ((col & 0xFF0000) >> 16) / 255F;
-            float g = ((col & 0xFF00) >> 8) / 255F;
-            float b = (col & 0xFF) / 255F;
-            float a = ((col & 0xFF000000) >> 24) / 255F;
-
-            color.put(r);
-            color.put(g);
-            color.put(b);
-            color.put(a);
-        }
 
         vertexArrayBuffer = GL30.glGenVertexArrays();
         GL30.glBindVertexArray(vertexArrayBuffer);
@@ -151,8 +85,6 @@ public class ItemStackEffectModel implements InstanceableModel {
         }
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
         GL30.glBindVertexArray(0);
-        this.vertexCount = v;
-
     }
 
     @Override

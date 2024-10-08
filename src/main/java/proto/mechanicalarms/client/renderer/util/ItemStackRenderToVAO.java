@@ -154,7 +154,7 @@ public class ItemStackRenderToVAO implements InstanceableModel {
 
         if (stack.hasEffect()) {
             hasEffect = true;
-            //effectModel = new ItemStackEffectModel(this, loq);
+            effectModel = new ItemStackEffectModel(this);
         }
     }
 
