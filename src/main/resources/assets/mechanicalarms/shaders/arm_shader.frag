@@ -18,7 +18,7 @@ void main(){
 
     vec4 color = vec4(col.rgb, 1) * texture2D(texture, texCoord) * texture2D(lightmap, lightCoord);
     // ambient
-    vec3 ambient = vec3(0.2);
+    vec3 ambient = vec3(0.4);
     // diffuse
     vec3 normal = normalize(fragNorm);
 
