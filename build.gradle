@@ -4,28 +4,29 @@ buildscript {
         maven { url = 'https://repo.spongepowered.org/repository/maven-public' }
         maven { url = 'https://maven.outlands.top/releases' }
         mavenCentral()
+        mavenLocal()
         gradlePluginPortal()
     }
     dependencies {
-        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '6.10.+', changing: true
+        classpath group: 'com.cleanroommc', name: 'CleanroomGradle', version: '0.0.1+', changing: true
         classpath "net.kyori:blossom:2.1.0"
-        classpath "org.spongepowered:mixingradle:0.7.+"
+        //classpath "org.spongepowered:mixingradle:0.7.+"
         classpath 'com.gradleup.shadow:shadow-gradle-plugin:8.3.3'
     }
 }
-apply plugin: 'net.minecraftforge.gradle'
+apply plugin: 'java'
+apply plugin: 'com.cleanroommc.gradle'
 apply plugin: 'eclipse'
 apply plugin: 'maven-publish'
-apply plugin: 'java'
 apply plugin: 'net.kyori.blossom'
-apply plugin: 'org.spongepowered.mixin'
+//apply plugin: 'org.spongepowered.mixin'
 apply plugin: 'com.gradleup.shadow'
 
-reobf {
-    shadowJar {}
-}
+//reobf {
+//    shadowJar {}
+//}
 
-jar.finalizedBy(reobfShadowJar)
+//jar.finalizedBy(reobfShadowJar)
 
 
 tasks.named('shadowJar', com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar) {
@@ -40,45 +41,45 @@ archivesBaseName = mod_id
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
-minecraft {
-
-    mappings channel: mappings_channel, version: mappings_version
-
-    accessTransformer = file('src/main/resources/META-INF/arm_at.cfg')
-
-    legacy {
-        fixClasspath = true
-        extractMappings = true
-        attachMappings = true
-    }
-
-    runs {
-        client {
-            workingDirectory project.file('run/client')
-
-            property 'forge.logging.markers', 'REGISTRIES'
-            property 'forge.logging.console.level', 'debug'
-            mods {
-                "${mod_id}" {
-                    source sourceSets.main
-                }
-            }
-        }
-
-        server {
-            workingDirectory project.file('run/server')
-
-            property 'forge.logging.markers', 'REGISTRIES'
-            property 'forge.logging.console.level', 'debug'
-
-            mods {
-                "${mod_id}" {
-                    source sourceSets.main
-                }
-            }
-        }
-    }
-}
+//minecraft {
+//
+//    mappings channel: mappings_channel, version: mappings_version
+//
+//    accessTransformer = file('src/main/resources/META-INF/arm_at.cfg')
+//
+//    legacy {
+//        fixClasspath = true
+//        extractMappings = true
+//        attachMappings = true
+//    }
+//
+//    runs {
+//        client {
+//            workingDirectory project.file('run/client')
+//
+//            property 'forge.logging.markers', 'REGISTRIES'
+//            property 'forge.logging.console.level', 'debug'
+//            mods {
+//                "${mod_id}" {
+//                    source sourceSets.main
+//                }
+//            }
+//        }
+//
+//        server {
+//            workingDirectory project.file('run/server')
+//
+//            property 'forge.logging.markers', 'REGISTRIES'
+//            property 'forge.logging.console.level', 'debug'
+//
+//            mods {
+//                "${mod_id}" {
+//                    source sourceSets.main
+//                }
+//            }
+//        }
+//    }
+//}
 
 sourceSets {
     main {
@@ -103,7 +104,7 @@ sourceSets {
     }
 }
 
-mixin {add sourceSets.main, mod_id + ".mixins.refmap.json"}
+//mixin {add sourceSets.main, mod_id + ".mixins.refmap.json"}
 repositories {
     maven {
         name 'Cleanroom Maven'
@@ -124,7 +125,7 @@ repositories {
 }
 
 dependencies {
-    minecraft "com.cleanroommc:cleanroom:${cleanroom_version}"
+//    minecraft "com.cleanroommc:cleanroom:${cleanroom_version}"
 
     shadow("de.javagl:jgltf-model:2.0.4")
     shadow("org.joml:joml:1.10.8")
@@ -137,9 +138,9 @@ dependencies {
 
     annotationProcessor ('com.cleanroommc:sponge-mixin:0.18.5+mixin.0.8.5')
 
-    implementation fg.deobf("curse.maven:ie-231951:2974106")
-    implementation fg.deobf("curse.maven:avaritia-261348:3143349")
-    implementation fg.deobf("curse.maven:CodeChicken-242818:2779848")
+    implementation "curse.maven:ie-231951:2974106"
+    implementation "curse.maven:avaritia-261348:3143349"
+    implementation "curse.maven:CodeChicken-242818:2779848"
     implementation "curse.maven:Fugue-1005815:5667350"
     implementation "curse.maven:AR-236542:4671856"
     implementation "curse.maven:libVulpes-236541:3801015"
@@ -169,7 +170,7 @@ jar {
     }
 }
 
-jar.finalizedBy('reobfJar')
+//jar.finalizedBy('reobfJar')
 
 publishing {
     publications {
