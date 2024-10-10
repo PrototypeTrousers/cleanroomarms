@@ -83,6 +83,9 @@ java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
 sourceSets {
     main {
+        java {
+            srcDir 'src/minecraft'
+        }
         resources {
             srcDir 'src/generated/resources'
         }
