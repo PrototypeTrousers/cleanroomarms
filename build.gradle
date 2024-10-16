@@ -107,6 +107,10 @@ sourceSets {
     }
 }
 
+configurations.configureEach {
+    exclude group:'net.minecraft', module:'client'
+    exclude group:'net.minecraft', module:'mappings_stable'
+}
 //mixin {add sourceSets.main, mod_id + ".mixins.refmap.json"}
 repositories {
     maven {
