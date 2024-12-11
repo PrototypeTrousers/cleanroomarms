@@ -140,7 +140,7 @@ dependencies {
     implementation fg.deobf("curse.maven:ie-231951:2974106")
     implementation fg.deobf("curse.maven:avaritia-261348:3143349")
     implementation fg.deobf("curse.maven:CodeChicken-242818:2779848")
-    implementation "curse.maven:Fugue-1005815:5667350"
+    implementation "curse.maven:Fugue-1005815:5977040"
     implementation "curse.maven:AR-236542:4671856"
     implementation "curse.maven:libVulpes-236541:3801015"
     implementation "curse.maven:Galacticraft-564236:4671122"

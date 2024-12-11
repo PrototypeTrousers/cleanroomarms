@@ -103,15 +103,26 @@ public class ProtoTesselator extends Tessellator {
                                     color.put(a);
                                     break;
                                 case NORMAL:
+                                    Matrix4f invTranspose = new Matrix4f(modelViewMatrixStack);
+                                    invTranspose.invert();
+                                    invTranspose.transpose();
+
                                     int packedNormal = byteBuffer.getInt();
                                     int x = ((byte) (packedNormal & 0xFF)) / 127;
                                     int y = ((byte) (packedNormal >> 8 & 0xFF) / 127);
                                     int z = ((byte) (packedNormal >> 16 & 0xFF) / 127);
 
+                                    // Create a vector from the normal data
+                                    Vector3f normalVec = new Vector3f(x, y, z);
 
-                                    norm.put((float) x);
-                                    norm.put((float) y);
-                                    norm.put((float) z);
+                                    // Transform the normal using inverse transpose matrix
+                                    invTranspose.transform(normalVec);
+                                    normalVec.normalize();
+
+                                    norm.put(normalVec.x);
+                                    norm.put(normalVec.y);
+                                    norm.put(normalVec.z);
+
                                     break;
                                 default:
                                     break;
