@@ -171,6 +171,44 @@ jar {
 
 jar.finalizedBy('reobfJar')
 
+
+task copyDependenciesToLocalMaven {
+    group = "Custom Tasks"
+    description = "Copies downloaded dependencies and their transitive dependencies from both runtimeClasspath and compileClasspath to the local Maven repository."
+
+    doLast {
+        def localMavenRepo = new File(System.getProperty('user.home'), '.m2/repository')
+
+        // Helper method to copy artifacts
+        def copyArtifacts = { configuration ->
+            configuration.resolvedConfiguration.resolvedArtifacts.each { artifact ->
+                def groupPath = artifact.moduleVersion.id.group.replace('.', '/')
+                def artifactId = artifact.name
+                def version = artifact.moduleVersion.id.version
+                def destDir = new File(localMavenRepo, "$groupPath/$artifactId/$version")
+
+                destDir.mkdirs()
+
+                def destFile = new File(destDir, "${artifactId}-${version}.${artifact.extension}")
+                if (!destFile.exists()) {
+                    copy {
+                        from artifact.file
+                        into destDir
+                        rename { "${artifactId}-${version}.${artifact.extension}" }
+                    }
+                    println "Copied: $artifactId-$version to $destDir"
+                } else {
+                    println "Already exists: $artifactId-$version in $destDir"
+                }
+            }
+        }
+
+        // Process both runtimeClasspath and compileClasspath
+        copyArtifacts(configurations.runtimeClasspath)
+        copyArtifacts(configurations.compileClasspath)
+    }
+}
+
 publishing {
     publications {
         mavenJava(MavenPublication) {
