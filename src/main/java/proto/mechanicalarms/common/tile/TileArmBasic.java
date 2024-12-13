@@ -21,7 +21,7 @@ public class TileArmBasic extends TileArmBase {
 
 
 
-    protected ItemStackHandler itemHandler = new ItemStackHandler(1);
+
 
     public TileArmBasic() {
         super(2.3f, InteractionType.ITEM);

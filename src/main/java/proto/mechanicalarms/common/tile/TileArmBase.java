@@ -1,5 +1,14 @@
 package proto.mechanicalarms.common.tile;
 
+import com.cleanroommc.modularui.api.IGuiHolder;
+import com.cleanroommc.modularui.drawable.GuiTextures;
+import com.cleanroommc.modularui.factory.GuiData;
+import com.cleanroommc.modularui.screen.ModularPanel;
+import com.cleanroommc.modularui.value.sync.DoubleSyncValue;
+import com.cleanroommc.modularui.value.sync.GuiSyncManager;
+import com.cleanroommc.modularui.widgets.ItemSlot;
+import com.cleanroommc.modularui.widgets.ProgressWidget;
+import net.minecraftforge.items.ItemStackHandler;
 import proto.mechanicalarms.common.logic.behavior.*;
 import proto.mechanicalarms.common.logic.movement.MotorCortex;
 import net.minecraft.nbt.NBTTagCompound;
@@ -16,11 +25,15 @@ import static proto.mechanicalarms.common.logic.behavior.Action.DELIVER;
 import static proto.mechanicalarms.common.logic.behavior.Action.RETRIEVE;
 import static net.minecraftforge.common.util.Constants.NBT.TAG_FLOAT;
 
-public abstract class TileArmBase extends TileEntity implements ITickable {
+public abstract class TileArmBase extends TileEntity implements ITickable, IGuiHolder {
     private final Targeting targeting = new Targeting();
     private final MotorCortex motorCortex;
     private final WorkStatus workStatus = new WorkStatus();
+    protected ItemStackHandler itemHandler = new ArmItemHandler(1);
     private Vec3d armPoint;
+
+    private int progress = 0;
+
 
     public TileArmBase(float armSize, InteractionType interactionType) {
         super();
@@ -84,6 +97,19 @@ public abstract class TileArmBase extends TileEntity implements ITickable {
         return compound;
     }
 
+    @Override
+    public ModularPanel buildUI(GuiData guiData, GuiSyncManager guiSyncManager) {
+        ModularPanel panel = ModularPanel.defaultPanel("tutorial_gui");
+        panel.child(new ProgressWidget()
+                        .size(20)
+                        .leftRel(0.5f).topRelAnchor(0.25f, 0.5f)
+                        .texture(GuiTextures.PROGRESS_ARROW, 20)
+                        .value(new DoubleSyncValue(() -> this.progress / 100.0, val -> this.progress = (int) (val * 100))));
+        panel.child(new ItemSlot().slot(itemHandler, 0));
+        panel.bindPlayerInventory();
+        return panel;
+    }
+
     public abstract ActionResult interact(Action retrieve, Pair<BlockPos, EnumFacing> blkFacePair);
 
     @Override
@@ -117,6 +143,9 @@ public abstract class TileArmBase extends TileEntity implements ITickable {
                 }
             }
         }
+        if (!getWorld().isRemote && this.progress++ == 100) {
+            this.progress = 0;
+        }
     }
 
     private void updateWorkStatus(ActionTypes type, Action action) {
@@ -146,5 +175,17 @@ public abstract class TileArmBase extends TileEntity implements ITickable {
 
     public boolean hasOutput() {
         return targeting.hasOutput();
+    }
+
+    public class ArmItemHandler extends ItemStackHandler {
+        public ArmItemHandler(int i) {
+            super(i);
+        }
+
+        @Override
+        protected void onContentsChanged(int slot) {
+            markDirty();
+            world.notifyBlockUpdate(pos, world.getBlockState(pos), world.getBlockState(pos), 3);
+        }
     }
 }

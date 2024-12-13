@@ -1,5 +1,10 @@
 package proto.mechanicalarms.common.block;
 
+import com.cleanroommc.modularui.factory.TileEntityGuiFactory;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.EnumHand;
+import org.jetbrains.annotations.NotNull;
 import proto.mechanicalarms.MechanicalArms;
 import proto.mechanicalarms.common.tile.TileArmBasic;
 import net.minecraft.block.Block;
@@ -68,5 +73,13 @@ public class BlockArm extends Block implements ITileEntityProvider {
             }
         }
         super.getDrops(drops, world, pos, state, fortune);
+    }
+
+    @Override
+    public boolean onBlockActivated(World worldIn, @NotNull BlockPos pos, @NotNull IBlockState state, @NotNull EntityPlayer playerIn, @NotNull EnumHand hand, @NotNull EnumFacing facing, float hitX, float hitY, float hitZ) {
+        if (!worldIn.isRemote) {
+            TileEntityGuiFactory.open(playerIn, pos);
+        }
+        return true;
     }
 }

@@ -1,5 +1,13 @@
 package proto.mechanicalarms.common.tile;
 
+import com.cleanroommc.modularui.api.IGuiHolder;
+import com.cleanroommc.modularui.drawable.GuiTextures;
+import com.cleanroommc.modularui.factory.GuiData;
+import com.cleanroommc.modularui.screen.ModularPanel;
+import com.cleanroommc.modularui.value.sync.DoubleSyncValue;
+import com.cleanroommc.modularui.value.sync.GuiSyncManager;
+import com.cleanroommc.modularui.widgets.ItemSlot;
+import com.cleanroommc.modularui.widgets.ProgressWidget;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -17,7 +25,7 @@ import net.minecraftforge.items.ItemStackHandler;
 import org.jetbrains.annotations.Nullable;
 
 
-public class TileBeltBasic extends TileEntity implements ITickable {
+public class TileBeltBasic extends TileEntity implements ITickable, IGuiHolder {
 
     AxisAlignedBB renderBB;
     AxisAlignedBB pickerBB;
@@ -71,6 +79,19 @@ public class TileBeltBasic extends TileEntity implements ITickable {
     public void onDataPacket(NetworkManager net, SPacketUpdateTileEntity packet) {
         // Here we get the packet from the server and read it into our client side tile entity
         this.readFromNBT(packet.getNbtCompound());
+    }
+
+    @Override
+    public ModularPanel buildUI(GuiData guiData, GuiSyncManager guiSyncManager) {
+        ModularPanel panel = ModularPanel.defaultPanel("tutorial_gui");
+        panel.child(new ProgressWidget()
+                .size(20)
+                .leftRel(0.5f).topRelAnchor(0.25f, 0.5f)
+                .texture(GuiTextures.PROGRESS_ARROW, 20)
+                .value(new DoubleSyncValue(() -> this.progress / 100.0, val -> this.progress = (int) (val * 100))));
+        panel.child(new ItemSlot().slot(leftItemHandler, 0));
+        panel.bindPlayerInventory();
+        return panel;
     }
 
     public ItemStackHandler getleftItemHandler() {
@@ -202,7 +223,7 @@ public class TileBeltBasic extends TileEntity implements ITickable {
 
         @Override
         protected void onContentsChanged(int slot) {
-            TileBeltBasic.this.markDirty();
+            markDirty();
             world.notifyBlockUpdate(pos, world.getBlockState(pos), world.getBlockState(pos), 3);
         }
     }

@@ -22,10 +22,11 @@ apply plugin: 'org.spongepowered.mixin'
 apply plugin: 'com.gradleup.shadow'
 
 reobf {
-    shadowJar {}
+    //shadowJar {}
 }
 
-jar.finalizedBy(reobfShadowJar)
+//jar.finalizedBy(reobfShadowJar)
+//jar.finalizedBy('reobfJar')
 
 
 tasks.named('shadowJar', com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar) {
@@ -135,7 +136,10 @@ dependencies {
     annotationProcessor 'com.google.guava:guava:33.0.0-jre'
     annotationProcessor 'com.google.code.gson:gson:2.10.1'
 
-    annotationProcessor ('com.cleanroommc:sponge-mixin:0.18.5+mixin.0.8.5')
+    annotationProcessor ('com.cleanroommc:sponge-mixin:0.20.7+mixin.0.8.7')
+
+    //also add the mod jar to the run mod folder...
+    compileOnly('curse.maven:modularui-624243:5153414-sources-5153415')
 
     implementation fg.deobf("curse.maven:ie-231951:2974106")
     implementation fg.deobf("curse.maven:avaritia-261348:3143349")
@@ -168,9 +172,6 @@ jar {
         ])
     }
 }
-
-jar.finalizedBy('reobfJar')
-
 
 task copyDependenciesToLocalMaven {
     group = "Custom Tasks"

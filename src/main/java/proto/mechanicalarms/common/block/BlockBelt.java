@@ -1,5 +1,6 @@
 package proto.mechanicalarms.common.block;
 
+import com.cleanroommc.modularui.factory.TileEntityGuiFactory;
 import net.minecraft.block.Block;
 import net.minecraft.block.ITileEntityProvider;
 import net.minecraft.block.material.Material;
@@ -95,6 +96,11 @@ public class BlockBelt extends Block implements ITileEntityProvider {
             if (te instanceof TileBeltBasic tbb) {
                 tbb.getleftItemHandler().setStackInSlot(0, playerIn.getHeldItem(hand).copy());
             }
+        } else {
+            if (!worldIn.isRemote) {
+                TileEntityGuiFactory.open(playerIn, pos);
+            }
+            return true;
         }
         return super.onBlockActivated(worldIn, pos, state, playerIn, hand, facing, hitX, hitY, hitZ);
     }
