@@ -125,9 +125,13 @@ public abstract class TileArmBase extends TileEntity implements ITickable, IGuiH
                     updateWorkStatus(ActionTypes.INTERACTION, RETRIEVE);
                 }
             } else if (workStatus.getAction() == DELIVER) {
-                ActionResult result = motorCortex.move(armPoint, targeting.getTargetVec(), targeting.getTargetFacing());
-                if (result == ActionResult.SUCCESS) {
-                    updateWorkStatus(ActionTypes.INTERACTION, DELIVER);
+                if (itemHandler.getStackInSlot(0).isEmpty()){
+                    updateWorkStatus(ActionTypes.MOVEMENT, RETRIEVE);
+                } else {
+                    ActionResult result = motorCortex.move(armPoint, targeting.getTargetVec(), targeting.getTargetFacing());
+                    if (result == ActionResult.SUCCESS) {
+                        updateWorkStatus(ActionTypes.INTERACTION, DELIVER);
+                    }
                 }
             }
         } else if (workStatus.getType() == ActionTypes.INTERACTION) {

@@ -22,11 +22,11 @@ apply plugin: 'org.spongepowered.mixin'
 apply plugin: 'com.gradleup.shadow'
 
 reobf {
-    //shadowJar {}
+    shadowJar {}
 }
 
-//jar.finalizedBy(reobfShadowJar)
-//jar.finalizedBy('reobfJar')
+jar.finalizedBy(reobfShadowJar)
+jar.finalizedBy('reobfJar')
 
 
 tasks.named('shadowJar', com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar) {

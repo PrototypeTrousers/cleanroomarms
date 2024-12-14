@@ -19,6 +19,8 @@ import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.util.Map;
 
+import static org.lwjgl.opengl.GL11.GL_TEXTURE;
+
 public class InstanceRender {
 
     public static final Shader base_vao = ShaderManager.loadShader(new ResourceLocation(MechanicalArms.MODID, "shaders/arm_shader")).withUniforms(ShaderManager.LIGHTMAP).withUniforms();
@@ -26,6 +28,8 @@ public class InstanceRender {
     protected static final FloatBuffer MODELVIEW_MATRIX_BUFFER = GLAllocation.createDirectFloatBuffer(16);
     protected static final FloatBuffer PROJECTION_MATRIX_BUFFER = GLAllocation.createDirectFloatBuffer(16);
     protected static final FloatBuffer SUN_MATRIX_BUFFER = GLAllocation.createDirectFloatBuffer(16);
+    protected static final ByteBuffer GLINT_BUFFER = GLAllocation.createDirectByteBuffer(2).put((byte) 15).put((byte) 15).rewind();
+
 
 
     public static InstanceRender INSTANCE = new InstanceRender();
@@ -152,7 +156,6 @@ public class InstanceRender {
     static void renderGlintPass(InstanceData instanceData, InstanceableModel im, float f, float angle) {
         instanceData.rewindBuffers();
 
-
         im = ((ItemStackRenderToVAO) im).getEffectModel();
 
         GL30.glBindVertexArray(im.getVertexArrayBufferId());
@@ -161,12 +164,12 @@ public class InstanceRender {
         GL15.glBufferData(GL15.GL_ARRAY_BUFFER, instanceData.modelMatrixBuffer, GL15.GL_DYNAMIC_DRAW);
 
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, im.getBlockLightBufferId());
-        GL15.glBufferData(GL15.GL_ARRAY_BUFFER, instanceData.blockLightBuffer, GL15.GL_DYNAMIC_DRAW);
+        GL15.glBufferData(GL15.GL_ARRAY_BUFFER, GLINT_BUFFER, GL15.GL_DYNAMIC_DRAW);
 
         int instanceTextureId = im.getTexGlId();
         GL11.glBindTexture(GL11.GL_TEXTURE_2D, instanceTextureId);
 
-        GlStateManager.matrixMode(5890);
+        GlStateManager.matrixMode(GL_TEXTURE);
         GlStateManager.pushMatrix();
         GlStateManager.scale(8.0F, 8.0F, 8.0F);
         GlStateManager.translate(f, 0.0F, 0.0F);

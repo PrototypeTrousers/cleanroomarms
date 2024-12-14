@@ -7,6 +7,7 @@ import proto.mechanicalarms.client.events.Tick;
 import proto.mechanicalarms.client.renderer.util.ItemStackRenderToVAO;
 
 import java.nio.FloatBuffer;
+import java.util.Arrays;
 
 public class ItemStackEffectModel implements InstanceableModel {
 
@@ -26,19 +27,18 @@ public class ItemStackEffectModel implements InstanceableModel {
         normalBuffer = parent.normalBuffer;
         lightBuffer = parent.lightBuffer;
         modelTransform = parent.modelTransform;
+        texBuffer = parent.texBuffer;
         vertexCount = parent.vertexCount;
         stack = parent.getStack();
         setupVAO();
     }
 
     public void setupVAO() {
-        FloatBuffer tex = GLAllocation.createDirectFloatBuffer(2000);
         FloatBuffer color = GLAllocation.createDirectFloatBuffer(4000);
 
         vertexArrayBuffer = GL30.glGenVertexArrays();
         GL30.glBindVertexArray(vertexArrayBuffer);
 
-        tex.rewind();
         color.rewind();
 
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, posBuffer);
@@ -50,9 +50,7 @@ public class ItemStackEffectModel implements InstanceableModel {
                 0);
         GL20.glEnableVertexAttribArray(0);
 
-        texBuffer = GL15.glGenBuffers();
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, texBuffer);
-        GL15.glBufferData(GL15.GL_ARRAY_BUFFER, tex, GL15.GL_STATIC_DRAW);
         GL20.glVertexAttribPointer(1, 2, GL11.GL_FLOAT, false, 8, 0);
         GL20.glEnableVertexAttribArray(1);
 
@@ -61,8 +59,6 @@ public class ItemStackEffectModel implements InstanceableModel {
         GL20.glEnableVertexAttribArray(2);
 
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, lightBuffer);
-        GL15.glBufferData(GL15.GL_ARRAY_BUFFER, 2, GL15.GL_STATIC_DRAW);
-
         //Light
         GL20.glVertexAttribPointer(3, 2, GL11.GL_UNSIGNED_BYTE, false, 2, 0);
         GL20.glEnableVertexAttribArray(3);
@@ -72,6 +68,25 @@ public class ItemStackEffectModel implements InstanceableModel {
 
         colorBuffer = GL15.glGenBuffers();
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, colorBuffer);
+
+        float[] fullcolor = new float[vertexCount * 4];
+
+        int col = -8372020;
+        float r = ((col & 0xFF0000) >> 16) / 255F;
+        float g = ((col & 0xFF00) >> 8) / 255F;
+        float b = (col & 0xFF) / 255F;
+        float a = ((col & 0xFF000000) >> 24) / 255F;
+
+        for (int i = 0; i < fullcolor.length; i += 4) {
+            fullcolor[i] = r;
+            fullcolor[i + 1] = g;
+            fullcolor[i + 2] = b;
+            fullcolor[i + 3] = a;
+        }
+
+        color.put(fullcolor);
+        color.rewind();
+
         GL15.glBufferData(GL15.GL_ARRAY_BUFFER, color, GL15.GL_STATIC_DRAW);
         GL20.glVertexAttribPointer(8, 4, GL11.GL_FLOAT, true, 16, 0);
         GL20.glEnableVertexAttribArray(8);
