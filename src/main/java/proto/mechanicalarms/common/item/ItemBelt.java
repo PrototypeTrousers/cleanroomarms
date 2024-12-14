@@ -23,9 +23,6 @@ import proto.mechanicalarms.common.tile.TileBeltBasic;
 
 public class ItemBelt extends ItemBlock {
 
-    Pair<BlockPos, EnumFacing> source;
-    Pair<BlockPos, EnumFacing> target;
-
     public ItemBelt(Block block) {
         super(block);
         setRegistryName(MechanicalArms.MODID, "belt_basic");
@@ -34,15 +31,6 @@ public class ItemBelt extends ItemBlock {
 
     @Override
     public EnumActionResult onItemUse(EntityPlayer player, World worldIn, BlockPos pos, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
-        TileEntity tileEntity = worldIn.getTileEntity(pos);
-        if (tileEntity != null) {
-            IItemHandler handler = tileEntity.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
-            if (handler != null) {
-                this.source = Pair.of(pos, facing);
-                MechanicalArms.logger.info("Source pos set to " + source);
-                return EnumActionResult.FAIL;
-            }
-        }
         return super.onItemUse(player, worldIn, pos, hand, facing, hitX, hitY, hitZ);
     }
 
@@ -51,18 +39,12 @@ public class ItemBelt extends ItemBlock {
         if (super.placeBlockAt(stack, player, world, pos, side, hitX, hitY, hitZ, newState)) {
             TileEntity te = world.getTileEntity(pos);
             if (te != null) {
-                if (source != null && target != null) {
-
-                    ((TileArmBasic) te).setSource(source.getKey(), source.getValue());
-                    ((TileArmBasic) te).setTarget(target.getKey(), target.getValue());
-                }
-
                 EnumFacing enumfacing = player.getHorizontalFacing();
                 if (te instanceof TileBeltBasic tbbte) {
                     tbbte.setFront(enumfacing);
                     if (side.getHorizontalIndex() != -1 && hitY >= 0.5f) {
                         tbbte.setSlope(EnumFacing.UP);
-                    } if (player.getLookVec().y < -0.5){
+                    } else if (player.getLookVec().y < -0.5 && pos.getY() < (int) player.posY ){
                         tbbte.setSlope(EnumFacing.DOWN);
                     } else {
                         tbbte.setSlope(enumfacing);
@@ -72,31 +54,5 @@ public class ItemBelt extends ItemBlock {
             return true;
         }
         return false;
-    }
-
-    @Override
-    public boolean onBlockStartBreak(ItemStack itemstack, BlockPos pos, EntityPlayer player) {
-        TileEntity tileEntity = player.world.getTileEntity(pos);
-        if (tileEntity != null) {
-            RayTraceResult rayTraceResult = ForgeHooks.rayTraceEyes(player, player.getEntityAttribute(EntityPlayer.REACH_DISTANCE).getAttributeValue());
-            if (rayTraceResult != null && rayTraceResult.typeOfHit == RayTraceResult.Type.BLOCK) {
-                IItemHandler handler = tileEntity.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
-                if (handler != null) {
-                    target = Pair.of(pos, rayTraceResult.sideHit);
-                    MechanicalArms.logger.info("Target pos set to " + target);
-                }
-            }
-            return true;
-        }
-        return super.onBlockStartBreak(itemstack, pos, player);
-    }
-
-    @Override
-    public void onUpdate(ItemStack stack, World worldIn, Entity entityIn, int itemSlot, boolean isSelected) {
-        if (!isSelected) {
-            source = null;
-            target = null;
-        }
-        super.onUpdate(stack, worldIn, entityIn, itemSlot, isSelected);
     }
 }
