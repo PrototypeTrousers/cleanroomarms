@@ -1,8 +1,13 @@
 package proto.mechanicalarms.client.renderer;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenCustomHashMap;
+import net.minecraft.client.renderer.BufferBuilder;
+import net.minecraft.init.Items;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
-import org.lwjgl3.opengl.GL11;
+import net.minecraft.world.EnumSkyBlock;
+import net.minecraft.world.chunk.Chunk;
+import net.minecraftforge.client.model.animation.FastTESR;
 import proto.mechanicalarms.client.renderer.instances.MeshInstance;
 import proto.mechanicalarms.client.renderer.instances.ModelInstance;
 import proto.mechanicalarms.client.renderer.instances.NodeInstance;
@@ -10,16 +15,9 @@ import proto.mechanicalarms.client.renderer.util.ItemStackHasher;
 import proto.mechanicalarms.client.renderer.util.ItemStackRenderToVAO;
 import proto.mechanicalarms.client.renderer.util.Matrix4fStack;
 import proto.mechanicalarms.client.renderer.util.Quaternion;
-import proto.mechanicalarms.common.block.BlockBelt;
 import proto.mechanicalarms.common.proxy.ClientProxy;
 import proto.mechanicalarms.common.tile.Slope;
 import proto.mechanicalarms.common.tile.TileBeltBasic;
-import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.init.Items;
-import net.minecraft.item.ItemStack;
-import net.minecraft.world.EnumSkyBlock;
-import net.minecraft.world.chunk.Chunk;
-import net.minecraftforge.client.model.animation.FastTESR;
 
 import javax.vecmath.Matrix4f;
 import javax.vecmath.Vector3f;
@@ -28,36 +26,27 @@ import java.util.function.Supplier;
 
 
 public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
+    private static final Object2ObjectOpenCustomHashMap<ItemStack, ItemStackRenderToVAO> modelCache = new Object2ObjectOpenCustomHashMap<>(new ItemStackHasher());
+    private final Matrix4f tempModelMatrix = new Matrix4f();
     InstanceRender ir = InstanceRender.INSTANCE;
     TileBeltBasic renderingTE;
-
     float[] mtx = new float[16];
     float[] mtx2 = new float[16];
-
     Matrix4f baseMotorMatrix = new Matrix4f();
     Matrix4f firstArmMatrix = new Matrix4f();
     Matrix4f secondArmMatrix = new Matrix4f();
-
     Matrix4f handMatrix = new Matrix4f();
     Matrix4f itemArmMatrix = new Matrix4f();
-
-    private final Matrix4f tempModelMatrix = new Matrix4f();
     Matrix4f transformMatrix = new Matrix4f();
     Matrix4f translationMatrix = new Matrix4f();
     byte s;
     byte b;
     Quaternion rot = Quaternion.createIdentity();
     Matrix4fStack matrix4fStack = new Matrix4fStack(10);
-
     ModelInstance baseBeltModel = new ModelInstance(ClientProxy.belt);
     ModelInstance slopedBeltModel = new ModelInstance(ClientProxy.beltSlope);
-
     float partialTicks;
-
     ItemStack fakeStack = new ItemStack(Items.END_CRYSTAL);
-
-
-    private static Object2ObjectOpenCustomHashMap<ItemStack, ItemStackRenderToVAO> modelCache = new Object2ObjectOpenCustomHashMap<>(new ItemStackHasher());
 
     public TileBeltRenderer() {
         super();
@@ -97,12 +86,12 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
         }
     }
 
-    void setRenderingTE(TileBeltBasic tileBeltBasic) {
-        renderingTE = tileBeltBasic;
-    }
-
     public Supplier<TileBeltBasic> getRenderingTE() {
         return () -> renderingTE;
+    }
+
+    void setRenderingTE(TileBeltBasic tileBeltBasic) {
+        renderingTE = tileBeltBasic;
     }
 
     void renderBase(TileBeltBasic tileBeltBasic) {
@@ -145,14 +134,13 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
 
         matrix4fStack.pushMatrix();
         itemArmMatrix.setIdentity();
-        translate(matrix4fStack, new Vector3f((float) x +0.5f  , (float) (y), (float) z + 0.5f));
+        translate(matrix4fStack, new Vector3f((float) x + 0.5f, (float) (y), (float) z + 0.5f));
         itemArmMatrix.setScale(itemvao.suggestedScale.x);
-
 
 
         rot.setIndentity();
 
-        translate(itemArmMatrix, -itemvao.modelCenter.x, 0.6875f / itemvao.suggestedScale.x, -itemvao.modelCenter.z );
+        translate(itemArmMatrix, -itemvao.modelCenter.x, 0.6875f / itemvao.suggestedScale.x, -itemvao.modelCenter.z);
 
         Vector3f p = new Vector3f(.5f, 0.0625f, .5f);
         Vector3f ap = new Vector3f(p);
@@ -164,26 +152,51 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
             Quaternion.rotateMatrix(itemArmMatrix, rot);
             translate(itemArmMatrix, ap);
         }
+        EnumFacing facing = tileBeltBasic.getFront();
+        float itemProgress = (float) (-0.5F + 0.05 * tileBeltBasic.getProgress());
 
-        if (tileBeltBasic.getSlope() == Slope.DOWN) {
-            translate(itemArmMatrix, p);
-            if (tileBeltBasic.getFront() == EnumFacing.NORTH) {
-                rot.rotateX((float) (-Math.PI / 4));
-            } else if(tileBeltBasic.getFront() == EnumFacing.SOUTH) {
-                rot.rotateX((float) (Math.PI / 4));
-            }
-            Quaternion.rotateMatrix(itemArmMatrix, rot);
-            translate(itemArmMatrix, ap);
-        } else if (tileBeltBasic.getSlope() == Slope.UP) {
-            translate(itemArmMatrix, p);
-            if (tileBeltBasic.getFront() == EnumFacing.NORTH) {
-                rot.rotateX((float) (Math.PI / 4));
-            } else if(tileBeltBasic.getFront() == EnumFacing.SOUTH) {
-                rot.rotateX((float) (-Math.PI / 4));
-            }
-            Quaternion.rotateMatrix(itemArmMatrix, rot);
-            translate(itemArmMatrix, ap);
+        if (facing == EnumFacing.NORTH) {
+            translate(itemArmMatrix, 0F,0F, -itemProgress);
         }
+        if (facing == EnumFacing.SOUTH) {
+            translate(itemArmMatrix, 0F,0F, itemProgress);
+            rot.rotateY((float) (Math.PI));
+        }
+        if (facing == EnumFacing.EAST) {
+            translate(itemArmMatrix, itemProgress,0F, 0F);
+            rot.rotateY((float) (-Math.PI / 2));
+        } else if (facing == EnumFacing.WEST) {
+            translate(itemArmMatrix, -itemProgress,0F, 0F);
+            rot.rotateY((float) (Math.PI / 2));
+        }
+
+        float yProgress = 0;
+        if (tileBeltBasic.getSlope() == Slope.DOWN) {
+            yProgress = 1.5F - itemProgress;
+
+            if (tileBeltBasic.getFront() == EnumFacing.NORTH) {
+                rot.rotateX((float) (Math.PI / 4));
+            } else if (tileBeltBasic.getFront() == EnumFacing.SOUTH) {
+                rot.rotateX((float) (-Math.PI / 4));
+            }
+
+        } else if (tileBeltBasic.getSlope() == Slope.UP) {
+            yProgress = 0.5F + itemProgress;
+            if (tileBeltBasic.getFront() == EnumFacing.NORTH) {
+                rot.rotateX((float) (Math.PI / 4));
+            } else if (tileBeltBasic.getFront() == EnumFacing.SOUTH) {
+                rot.rotateX((float) (-Math.PI / 4));
+            }
+        }
+
+        translate(itemArmMatrix, 0F,yProgress,0F);
+
+
+        translate(itemArmMatrix, p);
+        Quaternion.rotateMatrix(itemArmMatrix, rot);
+
+        translate(itemArmMatrix, ap);
+
 
 
         matrix4fStack.mul(itemArmMatrix);
@@ -238,29 +251,21 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
         Vector3f ap = new Vector3f(p);
         ap.negate();
 
-        //item progress in belt, interpolate later.
-        float progressAmount = (float) (0.05 * tileBeltBasic.getProgress());
+        Vector3f itemPos = new Vector3f(0F, 0F, (float) (0.05 * tileBeltBasic.getProgress()));
 
-        if (facing == EnumFacing.NORTH) {
-            zOff = -progressAmount;
-        } else if (facing == EnumFacing.SOUTH) {
-            zOff = progressAmount;
+        if (facing == EnumFacing.SOUTH) {
             rot.rotateY((float) (Math.PI));
         }
         if (facing == EnumFacing.EAST) {
             rot.rotateY((float) (-Math.PI / 2));
-            xOff = progressAmount;
         } else if (facing == EnumFacing.WEST) {
             rot.rotateY((float) (Math.PI / 2));
-            xOff = -progressAmount;
         }
 
+
         if (tileBeltBasic.isSlope()) {
-            if (tileBeltBasic.getSlope() == Slope.UP) {
-                yOff = (float) (0.5 + 0.05 * tileBeltBasic.getProgress());
-            } else if (tileBeltBasic.getSlope() == Slope.DOWN) {
+            if (tileBeltBasic.getSlope() == Slope.DOWN) {
                 rot.rotateX((float) (-Math.PI / 2));
-                yOff = (float) (1f - 0.05 * tileBeltBasic.getProgress());
             }
         }
 
@@ -307,7 +312,6 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
         matrix.m23 = z;
         return matrix;
     }
-
 
 
     public void translate(Matrix4f mat, float x, float y, float z) {
