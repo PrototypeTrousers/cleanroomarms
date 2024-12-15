@@ -107,6 +107,7 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
 
         matrix4fStack.pushMatrix();
         matrix4fStack.mul(translationMatrix);
+        matrix4fStack.mul(beltBseMtx);
         traverseHierarchy(ni, tileBeltBasic);
         matrix4fStack.popMatrix();
         setRenderingTE(null);
@@ -132,7 +133,7 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
         itemBeltMtx.setIdentity();
 
 
-        translate(matrix4fStack, new Vector3f((float) x, (float) (y) + 0.1875F, (float) z));
+        translate(matrix4fStack, new Vector3f((float) x, (float) (y), (float) z));
 
         rot.setIndentity();
 
@@ -258,9 +259,9 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
             }
         }
 
-        translate(matrix4fStack, p);
-        Quaternion.rotateMatrix(matrix4fStack, rot);
-        translate(matrix4fStack, ap);
+        translate(beltBseMtx, p);
+        Quaternion.rotateMatrix(beltBseMtx, rot);
+        translate(beltBseMtx, ap);
         matrix4fStack.popMatrix();
 
         renderBase(tileBeltBasic);
