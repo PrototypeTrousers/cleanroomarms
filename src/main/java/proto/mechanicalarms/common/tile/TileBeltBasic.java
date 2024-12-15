@@ -29,6 +29,8 @@ public class TileBeltBasic extends TileEntity implements ITickable, IGuiHolder {
     AxisAlignedBB renderBB;
     AxisAlignedBB pickerBB;
     int progress = 0;
+    int previousProgress = 0;
+
     EnumFacing front;
     Slope slope;
 
@@ -126,10 +128,10 @@ public class TileBeltBasic extends TileEntity implements ITickable, IGuiHolder {
             }
         }
         if (leftItemHandler.getStackInSlot(0).isEmpty()) {
-            progress = 0;
+            previousProgress = progress = 0;
             return;
         }
-        progress++;
+        previousProgress = progress++;
         if (progress >= 20) {
             EnumFacing facing = front;
             TileEntity frontTe;
@@ -153,14 +155,14 @@ public class TileBeltBasic extends TileEntity implements ITickable, IGuiHolder {
                 if ( cap != null) {
                     if (cap.insertItem(0, leftItemHandler.extractItem(0,1, true), true) != leftItemHandler.getStackInSlot(0)){
                         cap.insertItem(0,leftItemHandler.extractItem(0,1,false),false);
-                        progress = 0;
+                        previousProgress = progress = 0;
                     } else {
-                        progress = 20;
+                        previousProgress = progress = 20;
                     }
                     return;
                 }
             }
-            progress = 0;
+            previousProgress = progress = 0;
         }
     }
 
@@ -170,8 +172,11 @@ public class TileBeltBasic extends TileEntity implements ITickable, IGuiHolder {
         pickerBB = new AxisAlignedBB(this.pos);
     }
 
-    public double getProgress() {
+    public int getProgress() {
         return progress;
+    }
+    public int getPreviousProgress() {
+        return previousProgress;
     }
 
     public boolean isSlope(){
