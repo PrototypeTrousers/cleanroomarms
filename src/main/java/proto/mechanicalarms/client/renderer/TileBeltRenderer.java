@@ -31,13 +31,9 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
     InstanceRender ir = InstanceRender.INSTANCE;
     TileBeltBasic renderingTE;
     float[] mtx = new float[16];
-    float[] mtx2 = new float[16];
-    Matrix4f baseMotorMatrix = new Matrix4f();
-    Matrix4f firstArmMatrix = new Matrix4f();
-    Matrix4f secondArmMatrix = new Matrix4f();
-    Matrix4f handMatrix = new Matrix4f();
-    Matrix4f itemArmMatrix = new Matrix4f();
-    Matrix4f transformMatrix = new Matrix4f();
+
+    Matrix4f itemBeltMtx = new Matrix4f();
+    Matrix4f beltBseMtx = new Matrix4f();
     Matrix4f translationMatrix = new Matrix4f();
     byte s;
     byte b;
@@ -133,73 +129,68 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
         //upload model matrix, light
 
         matrix4fStack.pushMatrix();
-        itemArmMatrix.setIdentity();
-        translate(matrix4fStack, new Vector3f((float) x + 0.5f, (float) (y), (float) z + 0.5f));
-        itemArmMatrix.setScale(itemvao.suggestedScale.x);
+        itemBeltMtx.setIdentity();
 
+
+        translate(matrix4fStack, new Vector3f((float) x, (float) (y) + 0.1875F, (float) z));
 
         rot.setIndentity();
 
-        translate(itemArmMatrix, -itemvao.modelCenter.x, 0.6875f / itemvao.suggestedScale.x, -itemvao.modelCenter.z);
-
-        Vector3f p = new Vector3f(.5f, 0.0625f, .5f);
+        Vector3f p = new Vector3f(itemvao.modelCenter.x, itemvao.modelCenter.y, itemvao.modelCenter.z);
         Vector3f ap = new Vector3f(p);
         ap.negate();
 
         if (itemvao.rotateX) {
-            translate(itemArmMatrix, p);
             rot.rotateX((float) (-Math.PI / 2));
-            Quaternion.rotateMatrix(itemArmMatrix, rot);
-            translate(itemArmMatrix, ap);
         }
+
         EnumFacing facing = tileBeltBasic.getFront();
         float itemProgress = (float) (-0.5F + 0.05 * tileBeltBasic.getProgress());
+        Vector3f vecProgress = new Vector3f();
 
         if (facing == EnumFacing.NORTH) {
-            translate(itemArmMatrix, 0F,0F, -itemProgress);
+            vecProgress.z = -itemProgress;
         }
         if (facing == EnumFacing.SOUTH) {
-            translate(itemArmMatrix, 0F,0F, itemProgress);
+            vecProgress.z = itemProgress;
             rot.rotateY((float) (Math.PI));
         }
         if (facing == EnumFacing.EAST) {
-            translate(itemArmMatrix, itemProgress,0F, 0F);
+            vecProgress.x = itemProgress;
             rot.rotateY((float) (-Math.PI / 2));
         } else if (facing == EnumFacing.WEST) {
-            translate(itemArmMatrix, -itemProgress,0F, 0F);
+            vecProgress.x = -itemProgress;
             rot.rotateY((float) (Math.PI / 2));
         }
 
         float yProgress = 0;
         if (tileBeltBasic.getSlope() == Slope.DOWN) {
-            yProgress = 1.5F - itemProgress;
-
+            yProgress = .5F - itemProgress;
             if (tileBeltBasic.getFront() == EnumFacing.NORTH) {
-                rot.rotateX((float) (Math.PI / 4));
+                rot.rotateX((float) (-Math.PI / 4));
             } else if (tileBeltBasic.getFront() == EnumFacing.SOUTH) {
                 rot.rotateX((float) (-Math.PI / 4));
             }
 
         } else if (tileBeltBasic.getSlope() == Slope.UP) {
-            yProgress = 0.5F + itemProgress;
+            yProgress = .5F + itemProgress;
             if (tileBeltBasic.getFront() == EnumFacing.NORTH) {
                 rot.rotateX((float) (Math.PI / 4));
             } else if (tileBeltBasic.getFront() == EnumFacing.SOUTH) {
-                rot.rotateX((float) (-Math.PI / 4));
+                rot.rotateX((float) (Math.PI / 4));
             }
         }
 
-        translate(itemArmMatrix, 0F,yProgress,0F);
+        translate(itemBeltMtx, vecProgress.x, yProgress, vecProgress.z);
+
+        translate(itemBeltMtx, p);
+        Quaternion.rotateMatrix(itemBeltMtx, rot);
+        itemBeltMtx.setScale(itemvao.suggestedScale.x);
+
+        translate(itemBeltMtx, ap);
 
 
-        translate(itemArmMatrix, p);
-        Quaternion.rotateMatrix(itemArmMatrix, rot);
-
-        translate(itemArmMatrix, ap);
-
-
-
-        matrix4fStack.mul(itemArmMatrix);
+        matrix4fStack.mul(itemBeltMtx);
 
         matrix4ftofloatarray(matrix4fStack, mtx);
         matrix4fStack.popMatrix();
@@ -237,8 +228,8 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
         rot.setIndentity();
 
         translate(translationMatrix, (float) x + 0.5F, (float) y, (float) z + 0.5F);
-
-        y -= 0.5f;
+        matrix4fStack.pushMatrix();
+        beltBseMtx.setIdentity();
 
         EnumFacing facing = tileBeltBasic.getFront();
         float xOff = 0;
@@ -250,8 +241,6 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
         Vector3f p = new Vector3f(0, 0.6f, 0f);
         Vector3f ap = new Vector3f(p);
         ap.negate();
-
-        Vector3f itemPos = new Vector3f(0F, 0F, (float) (0.05 * tileBeltBasic.getProgress()));
 
         if (facing == EnumFacing.SOUTH) {
             rot.rotateY((float) (Math.PI));
@@ -269,15 +258,15 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
             }
         }
 
-        translate(translationMatrix, p);
-        Quaternion.rotateMatrix(translationMatrix, rot);
-        translate(translationMatrix, ap);
+        translate(matrix4fStack, p);
+        Quaternion.rotateMatrix(matrix4fStack, rot);
+        translate(matrix4fStack, ap);
+        matrix4fStack.popMatrix();
+
         renderBase(tileBeltBasic);
 
-        renderHoldingItem(tileBeltBasic, x + xOff, y + yOff, z + zOff);
-        //renderHoldingItem(tileBeltBasic, x, y, z);
 
-        //renderPart(tileArmBasic, x, y, z, partialTicks, transformMatrix);
+        renderHoldingItem(tileBeltBasic, x + xOff, y + yOff, z + zOff);
     }
 
     Matrix4f fbToM4f(FloatBuffer fb, Matrix4f mat) {
