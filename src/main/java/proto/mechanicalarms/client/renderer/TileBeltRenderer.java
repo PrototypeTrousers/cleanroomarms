@@ -166,20 +166,13 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
 
         float yProgress = 0;
         if (tileBeltBasic.getSlope() == Slope.DOWN) {
-            yProgress = .5F - itemProgress;
-            if (tileBeltBasic.getFront() == EnumFacing.NORTH) {
-                rot.rotateX((float) (-Math.PI / 4));
-            } else if (tileBeltBasic.getFront() == EnumFacing.SOUTH) {
-                rot.rotateX((float) (-Math.PI / 4));
-            }
+            yProgress = 1.1875F - (float) (0.05 * tileBeltBasic.getProgress());
+            rot.rotateX((float) (-Math.PI / 4));
+
 
         } else if (tileBeltBasic.getSlope() == Slope.UP) {
-            yProgress = .5F + itemProgress;
-            if (tileBeltBasic.getFront() == EnumFacing.NORTH) {
-                rot.rotateX((float) (Math.PI / 4));
-            } else if (tileBeltBasic.getFront() == EnumFacing.SOUTH) {
-                rot.rotateX((float) (Math.PI / 4));
-            }
+            yProgress = (float) (0.1875F + 0.05 * tileBeltBasic.getProgress());
+            rot.rotateX((float) (Math.PI / 4));
         }
 
         translate(itemBeltMtx, vecProgress.x, yProgress, vecProgress.z);
