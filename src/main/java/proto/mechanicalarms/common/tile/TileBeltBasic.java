@@ -21,6 +21,7 @@ import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 
@@ -34,26 +35,26 @@ public class TileBeltBasic extends TileEntity implements ITickable, IGuiHolder {
     EnumFacing front;
     Slope slope;
 
-    protected ItemStackHandler leftItemHandler = new BeltItemHandler(5);
-    protected ItemStackHandler rightItemHandler = new BeltItemHandler(5);
+    protected ItemStackHandler mainItemHandler = new BeltItemHandler(5);
+    protected ItemStackHandler sideItemHandler = new BeltItemHandler(1, mainItemHandler);
 
     @Override
     public NBTTagCompound writeToNBT(NBTTagCompound compound) {
         super.writeToNBT(compound);
-        compound.setTag("leftInventory", leftItemHandler.serializeNBT());
-        compound.setTag("rightInventory", rightItemHandler.serializeNBT());
+        compound.setTag("mainInventory", mainItemHandler.serializeNBT());
         compound.setInteger("front", front.ordinal());
         compound.setInteger("slope", slope.ordinal());
+        compound.setInteger("progress", progress);
         return compound;
     }
 
     @Override
     public void readFromNBT(NBTTagCompound compound) {
         super.readFromNBT(compound);
-        leftItemHandler.deserializeNBT(compound.getCompoundTag("leftInventory"));
-        rightItemHandler.deserializeNBT(compound.getCompoundTag("rightInventory"));
+        mainItemHandler.deserializeNBT(compound.getCompoundTag("mainInventory"));
         front = EnumFacing.byIndex(compound.getInteger("front"));
         slope = Slope.values()[compound.getInteger("slope")];
+        previousProgress = progress = compound.getInteger("progress");
     }
 
     @Override
@@ -90,17 +91,17 @@ public class TileBeltBasic extends TileEntity implements ITickable, IGuiHolder {
                 .leftRel(0.5f).topRelAnchor(0.25f, 0.5f)
                 .texture(GuiTextures.PROGRESS_ARROW, 20)
                 .value(new DoubleSyncValue(() -> this.progress / 100.0, val -> this.progress = (int) (val * 100))));
-        panel.child(new ItemSlot().slot(leftItemHandler, 0));
+        panel.child(new ItemSlot().slot(mainItemHandler, 0));
         panel.bindPlayerInventory();
         return panel;
     }
 
-    public ItemStackHandler getleftItemHandler() {
-        return leftItemHandler;
+    public ItemStackHandler getMainItemHandler() {
+        return mainItemHandler;
     }
 
-    public ItemStackHandler getRightItemHandler() {
-        return rightItemHandler;
+    public ItemStackHandler getSideItemHandler() {
+        return sideItemHandler;
     }
 
     @Override
@@ -120,14 +121,14 @@ public class TileBeltBasic extends TileEntity implements ITickable, IGuiHolder {
     @Override
     public void update() {
         for (EntityItem e : this.getWorld().getEntitiesWithinAABB(EntityItem.class, pickerBB)) {
-            if (leftItemHandler.insertItem(0, e.getItem(), true) != e.getItem()) {
+            if (mainItemHandler.insertItem(0, e.getItem(), true) != e.getItem()) {
                 ItemStack insert = e.getItem().copy();
                 insert.setCount(1);
-                leftItemHandler.insertItem(0, insert, false);
+                mainItemHandler.insertItem(0, insert, false);
                 e.getItem().shrink(1);
             }
         }
-        if (leftItemHandler.getStackInSlot(0).isEmpty()) {
+        if (mainItemHandler.getStackInSlot(0).isEmpty()) {
             previousProgress = progress = 0;
             return;
         }
@@ -153,8 +154,8 @@ public class TileBeltBasic extends TileEntity implements ITickable, IGuiHolder {
             if (frontTe != null) {
                 IItemHandler cap = frontTe.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, facing.getOpposite());
                 if ( cap != null) {
-                    if (cap.insertItem(0, leftItemHandler.extractItem(0,1, true), true) != leftItemHandler.getStackInSlot(0)){
-                        cap.insertItem(0,leftItemHandler.extractItem(0,1,false),false);
+                    if (cap.insertItem(0, mainItemHandler.extractItem(0,1, true), true) != mainItemHandler.getStackInSlot(0)){
+                        cap.insertItem(0, mainItemHandler.extractItem(0,1,false),false);
                         previousProgress = progress = 0;
                     } else {
                         previousProgress = progress = 20;
@@ -206,7 +207,10 @@ public class TileBeltBasic extends TileEntity implements ITickable, IGuiHolder {
     @Override
     public <T> T getCapability(Capability<T> capability, @Nullable EnumFacing facing) {
         if (capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
-            return (T) leftItemHandler;
+            if (this.front.rotateYCCW() == facing || this.front.rotateY() == facing) {
+                return (T) sideItemHandler;
+            }
+            return (T) mainItemHandler;
         }
         return super.getCapability(capability, facing);
     }
@@ -221,14 +225,73 @@ public class TileBeltBasic extends TileEntity implements ITickable, IGuiHolder {
     }
 
     public class BeltItemHandler extends ItemStackHandler {
+
+        ItemStackHandler main;
+
         public BeltItemHandler(int i) {
             super(i);
+        }
+
+        public BeltItemHandler(int i, ItemStackHandler mainHandler) {
+            super(i);
+            main = mainHandler;
+        }
+
+        @Override
+        public void setStackInSlot(int slot, @NotNull ItemStack stack) {
+            if (main != null) {
+                main.setStackInSlot(0, stack);
+                return;
+            }
+            super.setStackInSlot(slot, stack);
+        }
+
+        @NotNull
+        @Override
+        public ItemStack getStackInSlot(int slot) {
+            if (main != null) {
+                return main.getStackInSlot(0);
+            }
+            return super.getStackInSlot(slot);
+        }
+
+        @Override
+        public int getSlots() {
+            if (main != null) {
+                return 1;
+            }
+            return super.getSlots();
+        }
+
+        @NotNull
+        @Override
+        public ItemStack insertItem(int slot, @NotNull ItemStack stack, boolean simulate) {
+            if (main != null) {
+                ItemStack returnStack = main.insertItem(0, stack, simulate);
+                if (!simulate && returnStack.isEmpty()) {
+                    progress = 10;
+                    previousProgress = 10;
+                }
+                return returnStack;
+            }
+            return super.insertItem(slot, stack, simulate);
+        }
+
+        @NotNull
+        @Override
+        public ItemStack extractItem(int slot, int amount, boolean simulate) {
+            return super.extractItem(slot, amount, simulate);
         }
 
         @Override
         protected void onContentsChanged(int slot) {
             markDirty();
             world.notifyBlockUpdate(pos, world.getBlockState(pos), world.getBlockState(pos), 3);
+        }
+
+        enum SIDE {
+            L,
+            R;
         }
     }
 
