@@ -137,7 +137,7 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
 
         rot.setIndentity();
 
-        Vector3f p = new Vector3f(0.5F, 0.5F, 0.5F);
+        Vector3f p = new Vector3f(0.5F,itemvao.rotateX ? itemvao.modelCenter.z : itemvao.modelCenter.y,0.5F);
         Vector3f ap = new Vector3f(p);
         ap.negate();
 
@@ -145,9 +145,16 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
 
 
         if (itemvao.rotateX) {
-            rot.rotateX((float) (-Math.PI / 2));
-            if (facing == EnumFacing.EAST || facing == EnumFacing.WEST){
-                rot.rotateY((float) (-Math.PI / 2));
+            if (facing == EnumFacing.NORTH) {
+                rot.rotateX((float) (-Math.PI / 2));
+            }
+            else if (facing == EnumFacing.EAST){
+                rot.rotateZ((float) (-Math.PI / 2));
+            }else if (facing == EnumFacing.WEST){
+                rot.rotateZ((float) (Math.PI / 2));
+            }
+            else {
+                rot.rotateX((float) (Math.PI / 2));
             }
         }
 
@@ -172,12 +179,12 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
 
         float yProgress = 0;
         if (tileBeltBasic.getSlope() == Slope.DOWN) {
-            yProgress = 1.1875F - (float) (lerp(tileBeltBasic.getPreviousProgress(), tileBeltBasic.getProgress(), partialTicks) * 0.05);
+            yProgress = 1.0625F - (float) (lerp(tileBeltBasic.getPreviousProgress(), tileBeltBasic.getProgress(), partialTicks) * 0.05);
             rot.rotateX((float) (-Math.PI / 4));
 
 
         } else if (tileBeltBasic.getSlope() == Slope.UP) {
-            yProgress = (float) (0.1875F + lerp(tileBeltBasic.getPreviousProgress(), tileBeltBasic.getProgress(), partialTicks) * 0.05);
+            yProgress = (float) (0.0625F + lerp(tileBeltBasic.getPreviousProgress(), tileBeltBasic.getProgress(), partialTicks) * 0.05);
             rot.rotateX((float) (Math.PI / 4));
         }
 
