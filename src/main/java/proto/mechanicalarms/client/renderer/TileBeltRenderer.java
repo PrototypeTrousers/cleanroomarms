@@ -114,7 +114,7 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
     }
 
     void renderHoldingItem(TileBeltBasic tileBeltBasic, double x, double y, double z) {
-        ItemStack curStack = tileBeltBasic.getleftItemHandler().getStackInSlot(0);
+        ItemStack curStack = tileBeltBasic.getMainItemHandler().getStackInSlot(0);
 
         if (curStack.isEmpty()) {
             return;
@@ -137,15 +137,21 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
 
         rot.setIndentity();
 
-        Vector3f p = new Vector3f(itemvao.modelCenter.x, itemvao.modelCenter.y, itemvao.modelCenter.z);
+        Vector3f p = new Vector3f(0.5F, 0.5F, 0.5F);
         Vector3f ap = new Vector3f(p);
         ap.negate();
 
+        EnumFacing facing = tileBeltBasic.getFront();
+
+
         if (itemvao.rotateX) {
             rot.rotateX((float) (-Math.PI / 2));
+            if (facing == EnumFacing.EAST || facing == EnumFacing.WEST){
+                rot.rotateY((float) (-Math.PI / 2));
+            }
         }
 
-        EnumFacing facing = tileBeltBasic.getFront();
+
         float itemProgress = (float) (-0.5F + lerp(tileBeltBasic.getPreviousProgress(), tileBeltBasic.getProgress(), partialTicks) * 0.05);
         Vector3f vecProgress = new Vector3f();
 
