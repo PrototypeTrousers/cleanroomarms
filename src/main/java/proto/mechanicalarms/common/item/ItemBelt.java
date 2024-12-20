@@ -55,33 +55,42 @@ public class ItemBelt extends ItemBlock {
 
     private boolean tryConnectToAdjacentBelt(World world, BlockPos pos, TileBeltBasic tbbte, EnumFacing facing) {
         TileEntity forwardAbove = world.getTileEntity(pos.offset(facing).up());
-        TileEntity oppositeAbove = world.getTileEntity(pos.offset(facing.getOpposite()).up());
-        TileEntity forward = world.getTileEntity(pos.offset(facing));
-
-        if (forwardAbove instanceof TileBeltBasic) {
+        if (forwardAbove instanceof TileBeltBasic fb) {
             tbbte.setFront(facing);
             tbbte.setSlope(EnumFacing.UP);
             return true;
         }
-
-        if (oppositeAbove instanceof TileBeltBasic) {
+        TileEntity oppositeAbove = world.getTileEntity(pos.offset(facing.getOpposite()).up());
+        if (oppositeAbove instanceof TileBeltBasic ob) {
             tbbte.setFront(facing);
             tbbte.setSlope(EnumFacing.DOWN);
             return true;
         }
-
-        if (forward instanceof TileBeltBasic) {
+        TileEntity forward = world.getTileEntity(pos.offset(facing));
+        if (forward instanceof TileBeltBasic fb) {
             tbbte.setFront(facing);
             tbbte.setSlope(facing);
             return true;
+        }
+        TileEntity backwardsAbove = world.getTileEntity(pos.offset(facing.getOpposite()).up());
+        if (backwardsAbove instanceof TileBeltBasic ba) {
+            if (ba.getFront() == facing) {
+                tbbte.setFront(facing);
+                tbbte.setSlope(EnumFacing.DOWN);
+                return true;
+            }
         }
 
         return false;
     }
 
     private void determineSlope(TileBeltBasic tbbte, EnumFacing side, float hitY, EntityPlayer player, BlockPos pos) {
-        if (side.getHorizontalIndex() != -1 && hitY >= 0.5f) {
-            tbbte.setSlope(EnumFacing.UP);
+        if (side.getHorizontalIndex() != -1 ) {
+            if (hitY >= 0.5f) {
+                tbbte.setSlope(EnumFacing.UP);
+            } else {
+                tbbte.setSlope(EnumFacing.DOWN);
+            }
         } else {
             tbbte.setSlope(tbbte.getFront());
         }
