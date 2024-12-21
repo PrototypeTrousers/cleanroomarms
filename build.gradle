@@ -140,6 +140,7 @@ dependencies {
 
     //also add the mod jar to the run mod folder...
     compileOnly('curse.maven:modularui-624243:5153414-sources-5153415')
+    //implementation fg.deobf("curse.maven:plonk-345779:4480769")
 
 //    implementation fg.deobf("curse.maven:ie-231951:2974106")
 //    implementation fg.deobf("curse.maven:avaritia-261348:3143349")

@@ -11,6 +11,7 @@ import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
 import net.minecraftforge.client.ForgeHooksClient;
+import net.minecraftforge.client.model.BakedItemModel;
 import org.lwjgl3.opengl.*;
 import proto.mechanicalarms.client.renderer.ProtoTesselator;
 import proto.mechanicalarms.client.renderer.instances.InstanceableModel;
@@ -35,9 +36,12 @@ public class ItemStackRenderToVAO implements InstanceableModel {
     public int vertexArrayBuffer;
     public boolean hasEffect;
 
+    public RenderType renderType;
+
     public Vector3f suggestedScale;
     public boolean rotateX;
     public Vector3f modelCenter;
+    public Vector3f dimensions;
 
     ItemStackEffectModel effectModel;
     public float xOffset;
@@ -53,7 +57,7 @@ public class ItemStackRenderToVAO implements InstanceableModel {
     public synchronized void setupVAO(ItemStack stack) {
         IBakedModel mm = Minecraft.getMinecraft().getRenderItem().getItemModelMesher().getItemModel(stack);
         IBakedModel model = mm.getOverrides().handleItemState(mm, stack, null, null);
-        model = ForgeHooksClient.handleCameraTransforms(model, ItemCameraTransforms.TransformType.NONE, false);
+        model = ForgeHooksClient.handleCameraTransforms(model, ItemCameraTransforms.TransformType.FIXED, false);
 
         FloatBuffer pos = GLAllocation.createDirectFloatBuffer(300000);
         FloatBuffer norm = GLAllocation.createDirectFloatBuffer(300000);
@@ -81,9 +85,15 @@ public class ItemStackRenderToVAO implements InstanceableModel {
                 stack.getItem().getTileEntityItemStackRenderer().renderByItem(stack);
                 texGL = GL11.glGetInteger(GL11.GL_TEXTURE_BINDING_2D);
             }
+            renderType = RenderType.BUILTIN;
         } else {
             Minecraft.getMinecraft().getRenderItem().renderModel(model, stack);
             texGL = Minecraft.getMinecraft().getRenderItem().getItemModelMesher().getModelManager().getTextureMap().getGlTextureId();
+            if ((model instanceof BakedItemModel)) {
+                renderType = RenderType.ITEM;
+            } else {
+                renderType = RenderType.BLOCK;
+            }
         }
         v = ((ProtoTesselator) Tessellator.INSTANCE).getTvx();
 
@@ -161,7 +171,7 @@ public class ItemStackRenderToVAO implements InstanceableModel {
 
     public void makeBoundingBox(FloatBuffer vertexBuffer) {
         // Initialize with extreme values
-        float minX= Float.MAX_VALUE, minY = Float.MAX_VALUE, minZ = Float.MAX_VALUE;
+        float minX = Float.MAX_VALUE, minY = Float.MAX_VALUE, minZ = Float.MAX_VALUE;
         float maxX = -Float.MAX_VALUE, maxY = -Float.MAX_VALUE, maxZ = -Float.MAX_VALUE;
 
         // Iterate over the FloatBuffer (assuming it's 3 floats per vertex: x, y, z)
@@ -190,22 +200,29 @@ public class ItemStackRenderToVAO implements InstanceableModel {
         }
 
 
-        if(width > 1) {
+        if (width > 1) {
             xOffset = -minX;
-        } if (height>1){
+        }
+        if (height > 1) {
             yOffset = -minY;
-        }if (depth > 1) {
+        }
+        if (depth > 1) {
             if (minZ < 0) {
                 zOffset = -minZ;
             }
         }
 
 
-        float s = 0.5f / Math.max(Math.max(width,height),depth);
+        float s = 0.5f / Math.max(Math.max(width, height), depth);
+        if (s< 0.5f) {
+            if (renderType == RenderType.BLOCK){
+                renderType = RenderType.OVERSIZEDBLOCK;
+            }
+        }
 
-        suggestedScale = new Vector3f(s,s,s);
+        suggestedScale = new Vector3f(s, s, s);
         modelCenter = new Vector3f((minX + maxX) / 2, (minY + maxY) / 2, (minZ + maxZ) / 2);
-
+        dimensions = new Vector3f(width, height, depth);
     }
 
     @Override
@@ -273,3 +290,5 @@ public class ItemStackRenderToVAO implements InstanceableModel {
         return hash;
     }
 }
+
+

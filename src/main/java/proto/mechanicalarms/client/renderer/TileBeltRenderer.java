@@ -2,6 +2,7 @@ package proto.mechanicalarms.client.renderer;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenCustomHashMap;
 import net.minecraft.client.renderer.BufferBuilder;
+import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
@@ -11,10 +12,7 @@ import net.minecraftforge.client.model.animation.FastTESR;
 import proto.mechanicalarms.client.renderer.instances.MeshInstance;
 import proto.mechanicalarms.client.renderer.instances.ModelInstance;
 import proto.mechanicalarms.client.renderer.instances.NodeInstance;
-import proto.mechanicalarms.client.renderer.util.ItemStackHasher;
-import proto.mechanicalarms.client.renderer.util.ItemStackRenderToVAO;
-import proto.mechanicalarms.client.renderer.util.Matrix4fStack;
-import proto.mechanicalarms.client.renderer.util.Quaternion;
+import proto.mechanicalarms.client.renderer.util.*;
 import proto.mechanicalarms.common.proxy.ClientProxy;
 import proto.mechanicalarms.common.tile.Slope;
 import proto.mechanicalarms.common.tile.TileBeltBasic;
@@ -132,12 +130,26 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
         matrix4fStack.pushMatrix();
         itemBeltMtx.setIdentity();
 
+        Vector3f p;
 
-        translate(matrix4fStack, new Vector3f((float) x, (float) (y), (float) z));
+        if (itemvao.renderType == RenderType.OVERSIZEDBLOCK) {
+            p = new Vector3f(0.5f, itemvao.modelCenter.y * itemvao.suggestedScale.y + itemvao.modelCenter.z * itemvao.suggestedScale.y, 0.5f);
+            translate(matrix4fStack, new Vector3f((float) x, (float) (y - 0.05), (float) z));
+        }else if (itemvao.renderType == RenderType.BLOCK) {
+            p = new Vector3f(0.5f, 0.5F ,0.5f);
+            translate(matrix4fStack, new Vector3f((float) x, (float) (y - 0.05), (float) z));
+        } else if (itemvao.renderType == RenderType.ITEM) {
+            p = new Vector3f(0.5f, 0.5F ,0.5f);
+
+            translate(matrix4fStack, new Vector3f((float) x, (float) (y - 0.275), (float) z));
+        } else {
+            p = new Vector3f(0.5f, 0.5F ,0.5f);
+
+            translate(matrix4fStack, new Vector3f((float) x, (float) (y - 0.05), (float) z));
+        }
 
         rot.setIndentity();
 
-        Vector3f p = new Vector3f(0.5F,itemvao.rotateX ? itemvao.modelCenter.z : itemvao.modelCenter.y,0.5F);
         Vector3f ap = new Vector3f(p);
         ap.negate();
 
@@ -157,7 +169,6 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
                 rot.rotateX((float) (Math.PI / 2));
             }
         }
-
 
         float itemProgress = (float) (-0.5F + lerp(tileBeltBasic.getPreviousProgress(), tileBeltBasic.getProgress(), partialTicks) * 0.05);
         Vector3f vecProgress = new Vector3f();
@@ -191,8 +202,10 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
         translate(itemBeltMtx, vecProgress.x, yProgress, vecProgress.z);
 
         translate(itemBeltMtx, p);
-        Quaternion.rotateMatrix(itemBeltMtx, rot);
         itemBeltMtx.setScale(itemvao.suggestedScale.x);
+
+        Quaternion.rotateMatrix(itemBeltMtx, rot);
+
 
         translate(itemBeltMtx, ap);
 
