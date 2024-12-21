@@ -56,21 +56,19 @@ public class ItemBelt extends ItemBlock {
     private boolean tryConnectToAdjacentBelt(World world, BlockPos pos, TileBeltBasic tbbte, EnumFacing facing) {
         TileEntity forwardAbove = world.getTileEntity(pos.offset(facing).up());
         if (forwardAbove instanceof TileBeltBasic fb) {
-            tbbte.setFront(facing);
-            tbbte.setSlope(EnumFacing.UP);
-            return true;
+            if (fb.getFront() == facing) {
+                tbbte.setFront(facing);
+                tbbte.setSlope(EnumFacing.UP);
+                return true;
+            }
         }
         TileEntity oppositeAbove = world.getTileEntity(pos.offset(facing.getOpposite()).up());
         if (oppositeAbove instanceof TileBeltBasic ob) {
-            tbbte.setFront(facing);
-            tbbte.setSlope(EnumFacing.DOWN);
-            return true;
-        }
-        TileEntity forward = world.getTileEntity(pos.offset(facing));
-        if (forward instanceof TileBeltBasic fb) {
-            tbbte.setFront(facing);
-            tbbte.setSlope(facing);
-            return true;
+            if (ob.getFront() == facing) {
+                tbbte.setFront(facing);
+                tbbte.setSlope(EnumFacing.DOWN);
+                return true;
+            }
         }
         TileEntity backwardsAbove = world.getTileEntity(pos.offset(facing.getOpposite()).up());
         if (backwardsAbove instanceof TileBeltBasic ba) {
