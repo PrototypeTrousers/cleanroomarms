@@ -132,38 +132,48 @@ public class TileBeltBasic extends TileEntity implements ITickable, IGuiHolder {
             previousProgress = progress = 0;
             return;
         }
-        previousProgress = progress++;
-        if (progress >= 20) {
-            EnumFacing facing = front;
-            TileEntity frontTe;
-            if (slope == Slope.HORIZONTAL) {
-                frontTe = world.getTileEntity(pos.offset(facing));
-                if (frontTe == null) {
-                    frontTe = world.getTileEntity(pos.offset(facing).down());
-                }
-            } else {
-                if (slope == Slope.UP) {
-                    frontTe = world.getTileEntity(pos.offset(facing).up());
-                } else {
-                    frontTe = world.getTileEntity(pos.offset(facing).down());
+        if (!this.world.isRemote) {
+            if (progress >= 19) {
+                EnumFacing facing = front;
+                TileEntity frontTe;
+                if (slope == Slope.HORIZONTAL) {
+                    frontTe = world.getTileEntity(pos.offset(facing));
                     if (frontTe == null) {
-                        frontTe = world.getTileEntity(pos.offset(facing));
+                        frontTe = world.getTileEntity(pos.offset(facing).down());
                     }
-                }
-            }
-            if (frontTe != null) {
-                IItemHandler cap = frontTe.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, facing.getOpposite());
-                if ( cap != null) {
-                    if (cap.insertItem(0, mainItemHandler.extractItem(0,1, true), true) != mainItemHandler.getStackInSlot(0)){
-                        cap.insertItem(0, mainItemHandler.extractItem(0,1,false),false);
-                        previousProgress = progress = 0;
+                } else {
+                    if (slope == Slope.UP) {
+                        frontTe = world.getTileEntity(pos.offset(facing).up());
                     } else {
-                        previousProgress = progress = 20;
+                        frontTe = world.getTileEntity(pos.offset(facing).down());
+                        if (frontTe == null) {
+                            frontTe = world.getTileEntity(pos.offset(facing));
+                        }
                     }
-                    return;
                 }
+                if (frontTe != null) {
+                    IItemHandler cap = frontTe.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, facing.getOpposite());
+                    if (cap != null) {
+                        if (cap.insertItem(0, mainItemHandler.extractItem(0, 1, true), true) != mainItemHandler.getStackInSlot(0)) {
+                            cap.insertItem(0, mainItemHandler.extractItem(0, 1, false), false);
+                            //previousProgress = progress = 0;
+                        } else {
+                            previousProgress = progress = 19;
+                        }
+                        return;
+                    }
+                }
+                previousProgress = progress = 0;
+            } else {
+                previousProgress = progress++;
             }
-            previousProgress = progress = 0;
+        } else {
+            if (progress == 19) {
+                previousProgress = 19;
+            }
+            if (progress < 18) {
+                previousProgress = ++progress;
+            }
         }
     }
 
@@ -266,6 +276,9 @@ public class TileBeltBasic extends TileEntity implements ITickable, IGuiHolder {
         @NotNull
         @Override
         public ItemStack insertItem(int slot, @NotNull ItemStack stack, boolean simulate) {
+            if(stack.isEmpty()) {
+                return ItemStack.EMPTY;
+            }
             if (main != null) {
                 ItemStack returnStack = main.insertItem(0, stack, simulate);
                 if (!simulate && returnStack.isEmpty()) {
@@ -274,7 +287,12 @@ public class TileBeltBasic extends TileEntity implements ITickable, IGuiHolder {
                 }
                 return returnStack;
             }
-            return super.insertItem(slot, stack, simulate);
+            ItemStack returnStack = super.insertItem(slot, stack, simulate);
+//            if (returnStack.isEmpty()) {
+//                progress = 5;
+//                previousProgress = 5;
+//            }
+            return returnStack;
         }
 
         @NotNull
