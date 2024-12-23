@@ -2,7 +2,6 @@ package proto.mechanicalarms.client.renderer;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenCustomHashMap;
 import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
@@ -130,22 +129,12 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
         matrix4fStack.pushMatrix();
         itemBeltMtx.setIdentity();
 
-        Vector3f p;
+        Vector3f p = new Vector3f(0.5f, 0.5F, 0.5f);
 
-        if (itemvao.renderType == RenderType.OVERSIZEDBLOCK) {
-            p = new Vector3f(0.5f, itemvao.modelCenter.y * itemvao.suggestedScale.y + itemvao.modelCenter.z * itemvao.suggestedScale.y, 0.5f);
+        if (itemvao.renderType == RenderType.BLOCK) {
             translate(matrix4fStack, new Vector3f((float) x, (float) (y - 0.05), (float) z));
-        }else if (itemvao.renderType == RenderType.BLOCK) {
-            p = new Vector3f(0.5f, 0.5F ,0.5f);
-            translate(matrix4fStack, new Vector3f((float) x, (float) (y - 0.05), (float) z));
-        } else if (itemvao.renderType == RenderType.ITEM) {
-            p = new Vector3f(0.5f, 0.5F ,0.5f);
-
-            translate(matrix4fStack, new Vector3f((float) x, (float) (y - 0.275), (float) z));
         } else {
-            p = new Vector3f(0.5f, 0.5F ,0.5f);
-
-            translate(matrix4fStack, new Vector3f((float) x, (float) (y - 0.05), (float) z));
+            translate(matrix4fStack, new Vector3f((float) x, (float) (y - 0.25), (float) z));
         }
 
         rot.setIndentity();
@@ -156,16 +145,14 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
         EnumFacing facing = tileBeltBasic.getFront();
 
 
-        if (itemvao.rotateX) {
+        if (itemvao.renderType == RenderType.ITEM) {
             if (facing == EnumFacing.NORTH) {
                 rot.rotateX((float) (-Math.PI / 2));
-            }
-            else if (facing == EnumFacing.EAST){
+            } else if (facing == EnumFacing.EAST) {
                 rot.rotateZ((float) (-Math.PI / 2));
-            }else if (facing == EnumFacing.WEST){
+            } else if (facing == EnumFacing.WEST) {
                 rot.rotateZ((float) (Math.PI / 2));
-            }
-            else {
+            } else {
                 rot.rotateX((float) (Math.PI / 2));
             }
         }

@@ -5,13 +5,14 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GLAllocation;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
+import net.minecraft.client.renderer.block.model.ItemTransformVec3f;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.EnumFacing;
 import net.minecraftforge.client.ForgeHooksClient;
 import net.minecraftforge.client.model.BakedItemModel;
+import net.minecraftforge.client.model.ModelLoader;
+import org.lwjgl.input.Mouse;
 import org.lwjgl3.opengl.*;
 import proto.mechanicalarms.client.renderer.ProtoTesselator;
 import proto.mechanicalarms.client.renderer.instances.InstanceableModel;
@@ -19,8 +20,6 @@ import proto.mechanicalarms.client.renderer.instances.ItemStackEffectModel;
 
 import javax.vecmath.Vector3f;
 import java.nio.FloatBuffer;
-import java.util.ArrayList;
-import java.util.List;
 
 public class ItemStackRenderToVAO implements InstanceableModel {
 
@@ -59,6 +58,31 @@ public class ItemStackRenderToVAO implements InstanceableModel {
         IBakedModel model = mm.getOverrides().handleItemState(mm, stack, null, null);
         model = ForgeHooksClient.handleCameraTransforms(model, ItemCameraTransforms.TransformType.FIXED, false);
 
+        Mouse.setGrabbed(false);
+        ItemTransformVec3f ft = model.getItemCameraTransforms().fixed;
+        ItemTransformVec3f gt = model.getItemCameraTransforms().gui;
+
+        if (model instanceof BakedItemModel) {
+            renderType = RenderType.ITEM;
+        } else {
+            if (gt.rotation.x == 30 && (gt.rotation.y == 45 || gt.rotation.y == 225)) {
+                renderType = RenderType.BLOCK;
+            } else {
+                renderType = RenderType.ITEM;
+            }
+        }
+//        if (ft.rotation.x == 0 && ft.rotation.z == 0 && ft.rotation.y % 180== 0) {
+//            if (gt.rotation.x != 0 || gt.rotation.z != 0 || gt.rotation.y != 0) {
+//                renderType = RenderType.ITEM;
+//            }
+//            else {
+//                renderType = RenderType.BLOCK;
+//            }
+//        }
+//        else {
+//            renderType = RenderType.ITEM;
+//        }
+
         FloatBuffer pos = GLAllocation.createDirectFloatBuffer(300000);
         FloatBuffer norm = GLAllocation.createDirectFloatBuffer(300000);
         FloatBuffer tex = GLAllocation.createDirectFloatBuffer(200000);
@@ -85,15 +109,9 @@ public class ItemStackRenderToVAO implements InstanceableModel {
                 stack.getItem().getTileEntityItemStackRenderer().renderByItem(stack);
                 texGL = GL11.glGetInteger(GL11.GL_TEXTURE_BINDING_2D);
             }
-            renderType = RenderType.BUILTIN;
         } else {
             Minecraft.getMinecraft().getRenderItem().renderModel(model, stack);
             texGL = Minecraft.getMinecraft().getRenderItem().getItemModelMesher().getModelManager().getTextureMap().getGlTextureId();
-            if ((model instanceof BakedItemModel)) {
-                renderType = RenderType.ITEM;
-            } else {
-                renderType = RenderType.BLOCK;
-            }
         }
         v = ((ProtoTesselator) Tessellator.INSTANCE).getTvx();
 
@@ -214,11 +232,6 @@ public class ItemStackRenderToVAO implements InstanceableModel {
 
 
         float s = 0.5f / Math.max(Math.max(width, height), depth);
-        if (s< 0.5f) {
-            if (renderType == RenderType.BLOCK){
-                renderType = RenderType.OVERSIZEDBLOCK;
-            }
-        }
 
         suggestedScale = new Vector3f(s, s, s);
         modelCenter = new Vector3f((minX + maxX) / 2, (minY + maxY) / 2, (minZ + maxZ) / 2);
