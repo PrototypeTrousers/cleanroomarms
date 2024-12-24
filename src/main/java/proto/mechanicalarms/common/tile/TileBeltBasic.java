@@ -45,6 +45,7 @@ public class TileBeltBasic extends TileEntity implements ITickable, IGuiHolder {
         compound.setInteger("front", front.ordinal());
         compound.setInteger("slope", slope.ordinal());
         compound.setInteger("progress", progress);
+        compound.setInteger("previousProgress", previousProgress);
         return compound;
     }
 
@@ -54,7 +55,8 @@ public class TileBeltBasic extends TileEntity implements ITickable, IGuiHolder {
         mainItemHandler.deserializeNBT(compound.getCompoundTag("mainInventory"));
         front = EnumFacing.byIndex(compound.getInteger("front"));
         slope = Slope.values()[compound.getInteger("slope")];
-        previousProgress = progress = compound.getInteger("progress");
+        previousProgress = compound.getInteger("progress");
+        previousProgress = compound.getInteger("previousProgress");
     }
 
     @Override
@@ -120,6 +122,7 @@ public class TileBeltBasic extends TileEntity implements ITickable, IGuiHolder {
 
     @Override
     public void update() {
+
         for (EntityItem e : this.getWorld().getEntitiesWithinAABB(EntityItem.class, pickerBB)) {
             if (mainItemHandler.insertItem(0, e.getItem(), true) != e.getItem()) {
                 ItemStack insert = e.getItem().copy();
@@ -128,12 +131,20 @@ public class TileBeltBasic extends TileEntity implements ITickable, IGuiHolder {
                 e.getItem().shrink(1);
             }
         }
+        if (this.world.isBlockPowered(this.getPos())) {
+            return;
+        }
         if (mainItemHandler.getStackInSlot(0).isEmpty()) {
-            previousProgress = progress = 0;
+            previousProgress = -1;
+            progress = 0;
             return;
         }
         if (!this.world.isRemote) {
-            if (progress >= 19) {
+            if (progress < 19) {
+                previousProgress = progress;
+                progress++;
+            }
+            if (progress == 19) {
                 EnumFacing facing = front;
                 TileEntity frontTe;
                 if (slope == Slope.HORIZONTAL) {
@@ -156,23 +167,14 @@ public class TileBeltBasic extends TileEntity implements ITickable, IGuiHolder {
                     if (cap != null) {
                         if (cap.insertItem(0, mainItemHandler.extractItem(0, 1, true), true) != mainItemHandler.getStackInSlot(0)) {
                             cap.insertItem(0, mainItemHandler.extractItem(0, 1, false), false);
-                            //previousProgress = progress = 0;
-                        } else {
-                            previousProgress = progress = 19;
                         }
-                        return;
                     }
                 }
-                previousProgress = progress = 0;
-            } else {
-                previousProgress = progress++;
             }
         } else {
-            if (progress == 19) {
-                previousProgress = 19;
-            }
-            if (progress < 18) {
-                previousProgress = ++progress;
+            if (progress < 19) {
+                previousProgress = progress;
+                progress++;
             }
         }
     }
@@ -287,11 +289,10 @@ public class TileBeltBasic extends TileEntity implements ITickable, IGuiHolder {
                 }
                 return returnStack;
             }
+
             ItemStack returnStack = super.insertItem(slot, stack, simulate);
-//            if (returnStack.isEmpty()) {
-//                progress = 5;
-//                previousProgress = 5;
-//            }
+            progress =0;
+            previousProgress = -1;
             return returnStack;
         }
 

@@ -157,7 +157,7 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
             }
         }
 
-        float itemProgress = -0.5F + lerp(tileBeltBasic.getPreviousProgress(), tileBeltBasic.getProgress(), partialTicks) * 1/19F;
+        float itemProgress = -0.5F + lerp(tileBeltBasic.getPreviousProgress(), tileBeltBasic.getProgress(), partialTicks) / 20F;
         Vector3f vecProgress = new Vector3f();
 
         if (facing == EnumFacing.NORTH) {
@@ -372,9 +372,6 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
     }
 
     private float lerp(float previous, float current, float partialTick) {
-        if (previous == 0) {
-            int i = 0;
-        }
         return (previous * (1.0F - partialTick)) + (current * partialTick);
     }
 

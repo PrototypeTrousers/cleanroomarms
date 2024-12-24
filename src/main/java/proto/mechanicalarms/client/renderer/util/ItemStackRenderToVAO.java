@@ -11,8 +11,6 @@ import net.minecraft.client.renderer.block.model.ItemTransformVec3f;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.client.ForgeHooksClient;
 import net.minecraftforge.client.model.BakedItemModel;
-import net.minecraftforge.client.model.ModelLoader;
-import org.lwjgl.input.Mouse;
 import org.lwjgl3.opengl.*;
 import proto.mechanicalarms.client.renderer.ProtoTesselator;
 import proto.mechanicalarms.client.renderer.instances.InstanceableModel;
@@ -58,7 +56,6 @@ public class ItemStackRenderToVAO implements InstanceableModel {
         IBakedModel model = mm.getOverrides().handleItemState(mm, stack, null, null);
         model = ForgeHooksClient.handleCameraTransforms(model, ItemCameraTransforms.TransformType.FIXED, false);
 
-        Mouse.setGrabbed(false);
         ItemTransformVec3f ft = model.getItemCameraTransforms().fixed;
         ItemTransformVec3f gt = model.getItemCameraTransforms().gui;
 
