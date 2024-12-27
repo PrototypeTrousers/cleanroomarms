@@ -135,13 +135,13 @@ public class TileBeltBasic extends TileEntity implements ITickable, IGuiHolder {
             return;
         }
         if (mainItemHandler.getStackInSlot(0).isEmpty()) {
-            previousProgress = -1;
+            previousProgress = 0;
             progress = 0;
             return;
         }
         if (!this.world.isRemote) {
             if (progress < 19) {
-                previousProgress = progress;
+                previousProgress++;
                 progress++;
             }
             if (progress == 19) {
@@ -167,14 +167,18 @@ public class TileBeltBasic extends TileEntity implements ITickable, IGuiHolder {
                     if (cap != null) {
                         if (cap.insertItem(0, mainItemHandler.extractItem(0, 1, true), true) != mainItemHandler.getStackInSlot(0)) {
                             cap.insertItem(0, mainItemHandler.extractItem(0, 1, false), false);
+                            progress = 0;
                         }
                     }
                 }
+                previousProgress = progress;
             }
         } else {
             if (progress < 19) {
                 previousProgress = progress;
                 progress++;
+            } else {
+                previousProgress = progress;
             }
         }
     }
@@ -291,8 +295,10 @@ public class TileBeltBasic extends TileEntity implements ITickable, IGuiHolder {
             }
 
             ItemStack returnStack = super.insertItem(slot, stack, simulate);
-            progress =0;
-            previousProgress = -1;
+            if (returnStack.isEmpty()) {
+                previousProgress = -1;
+                progress = 0;
+            }
             return returnStack;
         }
 
