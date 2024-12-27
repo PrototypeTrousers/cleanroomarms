@@ -5,6 +5,7 @@ import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.ModelRegistryEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
@@ -49,23 +50,25 @@ public class ClientProxy extends CommonProxy {
     @SubscribeEvent
     public static void onDebugOverlay(RenderGameOverlayEvent.Text event)
     {
-        BlockPos blockpos = new BlockPos(Minecraft.getMinecraft().getRenderViewEntity().posX,
-                Minecraft.getMinecraft().getRenderViewEntity().getEntityBoundingBox().minY,
-                Minecraft.getMinecraft().getRenderViewEntity().posZ);
+        Minecraft mc = Minecraft.getMinecraft();
 
         World w = Minecraft.getMinecraft().getIntegratedServer().getEntityWorld();
         int tickIdx = 0;
-        TileEntity te = Minecraft.getMinecraft().getIntegratedServer().getEntityWorld().getTileEntity(blockpos);
 
-        List<TileEntity> tickableTileEntities = w.tickableTileEntities;
-        for (int i = 0; i < tickableTileEntities.size(); i++) {
-            TileEntity t = tickableTileEntities.get(i);
-            if (t == te) {
-                tickIdx = i;
+        if (mc.objectMouseOver != null && mc.objectMouseOver.typeOfHit == RayTraceResult.Type.BLOCK && mc.objectMouseOver.getBlockPos() != null)
+        {
+            BlockPos blockpos1 = mc.objectMouseOver.getBlockPos();
+            TileEntity te = Minecraft.getMinecraft().getIntegratedServer().getEntityWorld().getTileEntity(blockpos1);
+            List<TileEntity> tickableTileEntities = w.tickableTileEntities;
+            for (int i = 0; i < tickableTileEntities.size(); i++) {
+                TileEntity t = tickableTileEntities.get(i);
+                if (t == te) {
+                    tickIdx = i;
+                }
             }
         }
 
-        event.getRight().add(String.valueOf(tickIdx));
+        event.getRight().add("Tile Ticking Index: " + tickIdx);
     }
 
 }
