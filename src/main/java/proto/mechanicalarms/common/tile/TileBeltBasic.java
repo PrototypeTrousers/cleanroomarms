@@ -37,6 +37,7 @@ public class TileBeltBasic extends TileEntity implements ITickable, IGuiHolder {
 
     protected ItemStackHandler mainItemHandler = new BeltItemHandler(5);
     protected ItemStackHandler sideItemHandler = new BeltItemHandler(1, mainItemHandler);
+    protected boolean justtookitem;
 
     @Override
     public NBTTagCompound writeToNBT(NBTTagCompound compound) {
@@ -122,6 +123,12 @@ public class TileBeltBasic extends TileEntity implements ITickable, IGuiHolder {
 
     @Override
     public void update() {
+        if (progress == 0 && justtookitem) {
+            progress = 0;
+            previousProgress = -1;
+            justtookitem = false;
+            return;
+        }
 
         for (EntityItem e : this.getWorld().getEntitiesWithinAABB(EntityItem.class, pickerBB)) {
             if (mainItemHandler.insertItem(0, e.getItem(), true) != e.getItem()) {
@@ -298,6 +305,7 @@ public class TileBeltBasic extends TileEntity implements ITickable, IGuiHolder {
             if (returnStack.isEmpty()) {
                 previousProgress = -1;
                 progress = 0;
+                justtookitem = true;
             }
             return returnStack;
         }
