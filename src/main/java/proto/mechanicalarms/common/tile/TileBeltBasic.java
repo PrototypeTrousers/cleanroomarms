@@ -55,7 +55,7 @@ public class TileBeltBasic extends TileEntity implements ITickable, IGuiHolder {
         mainItemHandler.deserializeNBT(compound.getCompoundTag("mainInventory"));
         front = EnumFacing.byIndex(compound.getInteger("front"));
         slope = Slope.values()[compound.getInteger("slope")];
-        previousProgress = compound.getInteger("progress");
+        progress = compound.getInteger("progress");
         previousProgress = compound.getInteger("previousProgress");
     }
 
