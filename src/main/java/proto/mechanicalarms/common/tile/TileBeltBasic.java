@@ -139,6 +139,7 @@ public class TileBeltBasic extends TileEntity implements ITickable, IGuiHolder {
             }
         }
         if (this.world.isBlockPowered(this.getPos())) {
+            this.previousProgress = progress;
             return;
         }
         if (mainItemHandler.getStackInSlot(0).isEmpty()) {

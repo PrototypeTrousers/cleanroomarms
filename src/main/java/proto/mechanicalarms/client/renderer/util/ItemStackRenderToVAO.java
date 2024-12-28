@@ -11,6 +11,7 @@ import net.minecraft.client.renderer.block.model.ItemTransformVec3f;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.client.ForgeHooksClient;
 import net.minecraftforge.client.model.BakedItemModel;
+import org.lwjgl.input.Mouse;
 import org.lwjgl3.opengl.*;
 import proto.mechanicalarms.client.renderer.ProtoTesselator;
 import proto.mechanicalarms.client.renderer.instances.InstanceableModel;
@@ -54,15 +55,34 @@ public class ItemStackRenderToVAO implements InstanceableModel {
     public synchronized void setupVAO(ItemStack stack) {
         IBakedModel mm = Minecraft.getMinecraft().getRenderItem().getItemModelMesher().getItemModel(stack);
         IBakedModel model = mm.getOverrides().handleItemState(mm, stack, null, null);
-        model = ForgeHooksClient.handleCameraTransforms(model, ItemCameraTransforms.TransformType.FIXED, false);
+        model = ForgeHooksClient.handleCameraTransforms(model, ItemCameraTransforms.TransformType.NONE, false);
 
         ItemTransformVec3f ft = model.getItemCameraTransforms().fixed;
         ItemTransformVec3f gt = model.getItemCameraTransforms().gui;
+        ItemTransformVec3f groundt = model.getItemCameraTransforms().ground;
 
         if (model instanceof BakedItemModel) {
             renderType = RenderType.ITEM;
-        } else {
+        } else if (model.isBuiltInRenderer()) {
             if (gt.rotation.x == 30 && (gt.rotation.y == 45 || gt.rotation.y == 225)) {
+                renderType = RenderType.BLOCK;
+            } else if (ft.rotation.y > 0 && ft.rotation.y % 90 == 0) {
+                renderType =RenderType.ITEM;
+            } else {
+                renderType = RenderType.BLOCK;
+            }
+        }
+        else {
+            if (groundt.rotation.x == 0) {
+                if (ft.rotation.x > 0 && ft.rotation.x % 90 == 0) {
+                    renderType = RenderType.BLOCK;
+                }else if (ft.rotation.x == 0) {
+                    renderType = RenderType.BLOCK;
+                } else if (ft.rotation.y > 0 && ft.rotation.y % 90 == 0) {
+                    renderType = RenderType.ITEM;
+                }
+
+            } else if (gt.rotation.x == 30 && (gt.rotation.y == 45 || gt.rotation.y == 225)) {
                 renderType = RenderType.BLOCK;
             } else {
                 renderType = RenderType.ITEM;
