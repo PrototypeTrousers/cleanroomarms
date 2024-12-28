@@ -12,6 +12,8 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import proto.mechanicalarms.MechanicalArms;
+import proto.mechanicalarms.common.tile.TileBeltBasic;
+import proto.mechanicalarms.common.tile.TileSplitter;
 
 public class ItemSplitter extends ItemBlock {
 
@@ -30,10 +32,12 @@ public class ItemSplitter extends ItemBlock {
     public boolean placeBlockAt(ItemStack stack, EntityPlayer player, World world, BlockPos pos, EnumFacing side, float hitX, float hitY, float hitZ, IBlockState newState) {
         if (super.placeBlockAt(stack, player, world, pos, side, hitX, hitY, hitZ, newState)) {
             TileEntity te = world.getTileEntity(pos);
-            return true;
+            if (te instanceof TileSplitter splitter) {
+                EnumFacing playerFacing = player.getHorizontalFacing();
+                splitter.setFront(playerFacing);
+                return true;
+            }
         }
         return false;
     }
-
-
 }

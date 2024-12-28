@@ -3,6 +3,7 @@ package proto.mechanicalarms.client.renderer;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenCustomHashMap;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.world.EnumSkyBlock;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.client.model.animation.FastTESR;
@@ -14,7 +15,7 @@ import proto.mechanicalarms.client.renderer.util.ItemStackRenderToVAO;
 import proto.mechanicalarms.client.renderer.util.Matrix4fStack;
 import proto.mechanicalarms.client.renderer.util.Quaternion;
 import proto.mechanicalarms.common.proxy.ClientProxy;
-import proto.mechanicalarms.common.tile.TileArmBasic;
+import proto.mechanicalarms.common.tile.Slope;
 import proto.mechanicalarms.common.tile.TileSplitter;
 
 import javax.vecmath.Matrix4f;
@@ -29,8 +30,8 @@ public class TileSplitterRender extends FastTESR<TileSplitter> {
 
     float[] mtx = new float[16];
 
-    Matrix4f handMatrix = new Matrix4f();
-    Matrix4f itemArmMatrix = new Matrix4f();
+    Matrix4f itemBeltMtx = new Matrix4f();
+    Matrix4f splitterBseMtx = new Matrix4f();
 
     private final Matrix4f tempModelMatrix = new Matrix4f();
     Matrix4f translationMatrix = new Matrix4f();
@@ -98,8 +99,10 @@ public class TileSplitterRender extends FastTESR<TileSplitter> {
         }
 
         NodeInstance ni = modelInstance.getRoot();
+
         matrix4fStack.pushMatrix();
         matrix4fStack.mul(translationMatrix);
+        matrix4fStack.mul(splitterBseMtx);
         traverseHierarchy(ni, tileSplitter);
         matrix4fStack.popMatrix();
         setRenderingTE(null);
@@ -133,15 +136,39 @@ public class TileSplitterRender extends FastTESR<TileSplitter> {
         this.partialTicks = partialTicks;
 
         translationMatrix.setIdentity();
-        translate(translationMatrix, (float) x, (float) y, (float) z);
+        rot.setIndentity();
+
+        translate(translationMatrix, (float) x + 0.5F, (float) y, (float) z + 0.5F);
+        matrix4fStack.pushMatrix();
+        splitterBseMtx.setIdentity();
+
+        EnumFacing facing = tileSplitter.getFront();
+        float xOff = 0;
+        float zOff = 0;
+        float yOff = 0;
+
+
+        //model origin
+        Vector3f p = new Vector3f(0, 0.6f, 0f);
+        Vector3f ap = new Vector3f(p);
+        ap.negate();
+
+        if (facing == EnumFacing.SOUTH) {
+            rot.rotateY((float) (Math.PI));
+        }
+        if (facing == EnumFacing.EAST) {
+            rot.rotateY((float) (-Math.PI / 2));
+        } else if (facing == EnumFacing.WEST) {
+            rot.rotateY((float) (Math.PI / 2));
+        }
+
+
+        translate(splitterBseMtx, p);
+        Quaternion.rotateMatrix(splitterBseMtx, rot);
+        translate(splitterBseMtx, ap);
+        matrix4fStack.popMatrix();
 
         renderBase(tileSplitter);
-//        renderBaseMotor(tileArmBasic,x ,y, z);
-//        renderFirstArm(tileArmBasic,x ,y, z);
-//        renderSecondArm(tileArmBasic,x ,y, z);
-//        renderHand(tileArmBasic,x ,y, z);
-//        renderHoldingItem(tileArmBasic, x, y, z);
-        //renderPart(tileArmBasic, x, y, z, partialTicks, transformMatrix);
     }
 
     Matrix4f fbToM4f(FloatBuffer fb, Matrix4f mat) {

@@ -42,7 +42,6 @@ public class TileSplitter extends TileEntity implements ITickable, IGuiHolder {
         super.writeToNBT(compound);
         compound.setTag("mainInventory", mainItemHandler.serializeNBT());
         compound.setInteger("front", front.ordinal());
-        compound.setInteger("slope", slope.ordinal());
         compound.setInteger("progress", progress);
         compound.setInteger("previousProgress", previousProgress);
         return compound;
@@ -53,7 +52,6 @@ public class TileSplitter extends TileEntity implements ITickable, IGuiHolder {
         super.readFromNBT(compound);
         mainItemHandler.deserializeNBT(compound.getCompoundTag("mainInventory"));
         front = EnumFacing.byIndex(compound.getInteger("front"));
-        slope = Slope.values()[compound.getInteger("slope")];
         progress = compound.getInteger("progress");
         previousProgress = compound.getInteger("previousProgress");
     }
