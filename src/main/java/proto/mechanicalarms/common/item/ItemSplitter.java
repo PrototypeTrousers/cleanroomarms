@@ -44,22 +44,22 @@ public class ItemSplitter extends ItemBlock {
             }
 
             EnumFacing playerFacing = player.getHorizontalFacing();
-            BlockPos blockpos = pos.offset(playerFacing);
+            BlockPos dummyPos = pos.offset(playerFacing.rotateY());
             ItemStack itemstack = player.getHeldItem(hand);
 
-            if (player.canPlayerEdit(pos, facing, itemstack) && player.canPlayerEdit(blockpos, facing, itemstack)) {
-                IBlockState iblockstate1 = worldIn.getBlockState(blockpos);
-                boolean flag1 = iblockstate1.getBlock().isReplaceable(worldIn, blockpos);
+            if (player.canPlayerEdit(pos, facing, itemstack) && player.canPlayerEdit(dummyPos, facing, itemstack)) {
+                IBlockState iblockstate1 = worldIn.getBlockState(dummyPos);
+                boolean flag1 = iblockstate1.getBlock().isReplaceable(worldIn, dummyPos);
                 boolean flag2 = flag || worldIn.isAirBlock(pos);
-                boolean flag3 = flag1 || worldIn.isAirBlock(blockpos);
+                boolean flag3 = flag1 || worldIn.isAirBlock(dummyPos);
 
-                if (flag2 && flag3 && worldIn.getBlockState(pos.down()).isTopSolid() && worldIn.getBlockState(blockpos.down()).isTopSolid()) {
+                if (flag2 && flag3 && worldIn.getBlockState(pos.down()).isTopSolid() && worldIn.getBlockState(dummyPos.down()).isTopSolid()) {
                     IBlockState iblockstate2 = Blocks.SPLITTER.getDefaultState();
-                    worldIn.setBlockState(pos, iblockstate2.withProperty(BlockSplitter.controller, true), 2);
-                    worldIn.setBlockState(blockpos, iblockstate2);
+                    worldIn.setBlockState(pos, iblockstate2.withProperty(BlockSplitter.controller, true), 10);
+                    worldIn.setBlockState(dummyPos, iblockstate2);
                     SoundType soundtype = iblockstate2.getBlock().getSoundType(iblockstate2, worldIn, pos, player);
                     worldIn.playSound(null, pos, soundtype.getPlaceSound(), SoundCategory.BLOCKS, (soundtype.getVolume() + 1.0F) / 2.0F, soundtype.getPitch() * 0.8F);
-                    TileEntity tileentity = worldIn.getTileEntity(blockpos);
+                    TileEntity tileentity = worldIn.getTileEntity(dummyPos);
 
                     if (tileentity instanceof TileSplitter) {
                         ((TileSplitter) tileentity).setFront(playerFacing);
@@ -69,12 +69,10 @@ public class ItemSplitter extends ItemBlock {
 
                     if (tileentity1 instanceof TileSplitter) {
                         ((TileSplitter) tileentity1).setFront(playerFacing);
-
-                        worldIn.markTileEntityForRemoval(tileentity1);
                     }
 
                     worldIn.notifyNeighborsRespectDebug(pos, block, false);
-                    worldIn.notifyNeighborsRespectDebug(blockpos, iblockstate1.getBlock(), false);
+                    worldIn.notifyNeighborsRespectDebug(dummyPos, iblockstate1.getBlock(), false);
 
                     if (player instanceof EntityPlayerMP) {
                         CriteriaTriggers.PLACED_BLOCK.trigger((EntityPlayerMP) player, pos, itemstack);

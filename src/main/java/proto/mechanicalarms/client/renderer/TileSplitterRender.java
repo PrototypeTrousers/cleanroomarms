@@ -138,7 +138,7 @@ public class TileSplitterRender extends FastTESR<TileSplitter> {
         translationMatrix.setIdentity();
         rot.setIndentity();
 
-        translate(translationMatrix, (float) x + 0.5F, (float) y, (float) z + 0.5F);
+        translate(translationMatrix, (float) x +1, (float) y, (float) z +0.5F );
         matrix4fStack.pushMatrix();
         splitterBseMtx.setIdentity();
 
@@ -149,7 +149,7 @@ public class TileSplitterRender extends FastTESR<TileSplitter> {
 
 
         //model origin
-        Vector3f p = new Vector3f(0, 0.6f, 0f);
+        Vector3f p = new Vector3f(-0.5F, 0f, 0F);
         Vector3f ap = new Vector3f(p);
         ap.negate();
 
