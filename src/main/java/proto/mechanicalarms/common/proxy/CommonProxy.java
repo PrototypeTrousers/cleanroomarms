@@ -5,6 +5,7 @@ import proto.mechanicalarms.common.block.Blocks;
 import proto.mechanicalarms.common.item.Items;
 import proto.mechanicalarms.common.tile.TileArmBasic;
 import proto.mechanicalarms.common.tile.TileBeltBasic;
+import proto.mechanicalarms.common.tile.TileSplitter;
 import proto.mechanicalarms.common.tile.Tiles;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
@@ -23,6 +24,7 @@ public class CommonProxy
 	{
 		event.getRegistry().registerAll( Blocks.ARM_BASE );
 		event.getRegistry().registerAll( Blocks.BELT_BASE );
+		event.getRegistry().registerAll( Blocks.SPLITTER );
 	}
 
 	@SubscribeEvent
@@ -30,6 +32,7 @@ public class CommonProxy
 	{
 		event.getRegistry().registerAll( Items.ARM_BASE );
 		event.getRegistry().registerAll( Items.BELT_BASE );
+		event.getRegistry().registerAll( Items.SPLITTER );
 	}
 
 	@SubscribeEvent
@@ -37,6 +40,7 @@ public class CommonProxy
 	{
 		GameRegistry.registerTileEntity( TileArmBasic.class, new ResourceLocation( MechanicalArms.MODID, "tilearm") );
 		GameRegistry.registerTileEntity( TileBeltBasic.class, new ResourceLocation( MechanicalArms.MODID, "tilebelt") );
+		GameRegistry.registerTileEntity( TileSplitter.class, new ResourceLocation( MechanicalArms.MODID, "tilesplitter") );
 	}
 
 	public void preInit()

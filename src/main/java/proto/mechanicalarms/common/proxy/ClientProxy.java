@@ -20,9 +20,11 @@ import proto.mechanicalarms.MechanicalArms;
 import proto.mechanicalarms.client.events.Tick;
 import proto.mechanicalarms.client.renderer.TileArmRenderer;
 import proto.mechanicalarms.client.renderer.TileBeltRenderer;
+import proto.mechanicalarms.client.renderer.TileSplitterRender;
 import proto.mechanicalarms.common.item.Items;
 import proto.mechanicalarms.common.tile.TileArmBasic;
 import proto.mechanicalarms.common.tile.TileBeltBasic;
+import proto.mechanicalarms.common.tile.TileSplitter;
 
 import java.util.List;
 
@@ -32,31 +34,22 @@ public class ClientProxy extends CommonProxy {
     public static final ModelResourceLocation base = new ModelResourceLocation(new ResourceLocation(MechanicalArms.MODID, "models/block/fullarm.glb"), "");
     public static final ModelResourceLocation belt = new ModelResourceLocation(new ResourceLocation(MechanicalArms.MODID, "models/block/belt.glb"), "");
     public static final ModelResourceLocation beltSlope = new ModelResourceLocation(new ResourceLocation(MechanicalArms.MODID, "models/block/beltslope.glb"), "");
+    public static final ModelResourceLocation splitter = new ModelResourceLocation(new ResourceLocation(MechanicalArms.MODID, "models/block/splitter.glb"), "");
+
     @SubscribeEvent
     public static void registerModels(ModelRegistryEvent event) {
         ModelLoader.setCustomModelResourceLocation(Items.ARM_BASE, 0, new ModelResourceLocation(new ResourceLocation(MechanicalArms.MODID, "models/block/completearm.obj"), "inventory"));
         ModelLoader.setCustomModelResourceLocation(Items.BELT_BASE, 0, new ModelResourceLocation(new ResourceLocation(MechanicalArms.MODID, "models/block/belt.obj"), "inventory"));
     }
 
-    @Override
-    public void preInit() {
-        OBJLoader.INSTANCE.addDomain(MechanicalArms.MODID);
-        ClientRegistry.bindTileEntitySpecialRenderer(TileArmBasic.class, new TileArmRenderer());
-        ClientRegistry.bindTileEntitySpecialRenderer(TileBeltBasic.class, new TileBeltRenderer());
-        MinecraftForge.EVENT_BUS.register(Tick.INSTANCE);
-        super.preInit();
-    }
-
     @SubscribeEvent
-    public static void onDebugOverlay(RenderGameOverlayEvent.Text event)
-    {
+    public static void onDebugOverlay(RenderGameOverlayEvent.Text event) {
         Minecraft mc = Minecraft.getMinecraft();
 
         World w = Minecraft.getMinecraft().getIntegratedServer().getEntityWorld();
         int tickIdx = 0;
 
-        if (mc.objectMouseOver != null && mc.objectMouseOver.typeOfHit == RayTraceResult.Type.BLOCK && mc.objectMouseOver.getBlockPos() != null)
-        {
+        if (mc.objectMouseOver != null && mc.objectMouseOver.typeOfHit == RayTraceResult.Type.BLOCK && mc.objectMouseOver.getBlockPos() != null) {
             BlockPos blockpos1 = mc.objectMouseOver.getBlockPos();
             TileEntity te = Minecraft.getMinecraft().getIntegratedServer().getEntityWorld().getTileEntity(blockpos1);
             List<TileEntity> tickableTileEntities = w.tickableTileEntities;
@@ -67,8 +60,17 @@ public class ClientProxy extends CommonProxy {
                 }
             }
         }
-
         event.getRight().add("Tile Ticking Index: " + tickIdx);
+    }
+
+    @Override
+    public void preInit() {
+        OBJLoader.INSTANCE.addDomain(MechanicalArms.MODID);
+        ClientRegistry.bindTileEntitySpecialRenderer(TileArmBasic.class, new TileArmRenderer());
+        ClientRegistry.bindTileEntitySpecialRenderer(TileBeltBasic.class, new TileBeltRenderer());
+        ClientRegistry.bindTileEntitySpecialRenderer(TileSplitter.class, new TileSplitterRender());
+        MinecraftForge.EVENT_BUS.register(Tick.INSTANCE);
+        super.preInit();
     }
 
 }

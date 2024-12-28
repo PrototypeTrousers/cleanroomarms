@@ -88,17 +88,6 @@ public class ItemStackRenderToVAO implements InstanceableModel {
                 renderType = RenderType.ITEM;
             }
         }
-//        if (ft.rotation.x == 0 && ft.rotation.z == 0 && ft.rotation.y % 180== 0) {
-//            if (gt.rotation.x != 0 || gt.rotation.z != 0 || gt.rotation.y != 0) {
-//                renderType = RenderType.ITEM;
-//            }
-//            else {
-//                renderType = RenderType.BLOCK;
-//            }
-//        }
-//        else {
-//            renderType = RenderType.ITEM;
-//        }
 
         FloatBuffer pos = GLAllocation.createDirectFloatBuffer(300000);
         FloatBuffer norm = GLAllocation.createDirectFloatBuffer(300000);
