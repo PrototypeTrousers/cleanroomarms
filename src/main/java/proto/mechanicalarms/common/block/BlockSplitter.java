@@ -4,6 +4,8 @@ import com.cleanroommc.modularui.factory.TileEntityGuiFactory;
 import net.minecraft.block.Block;
 import net.minecraft.block.ITileEntityProvider;
 import net.minecraft.block.material.Material;
+import net.minecraft.block.properties.PropertyBool;
+import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
@@ -18,21 +20,39 @@ import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
 import proto.mechanicalarms.MechanicalArms;
-import proto.mechanicalarms.common.tile.TileArmBasic;
 import proto.mechanicalarms.common.tile.TileSplitter;
 
 import javax.annotation.Nullable;
 
 public class BlockSplitter extends Block implements ITileEntityProvider {
 
+    public static final PropertyBool controller = PropertyBool.create("controller");
+
     public BlockSplitter() {
         super(Material.IRON);
         setRegistryName(MechanicalArms.MODID, "splitter");
+        setDefaultState(this.blockState.getBaseState().withProperty(controller, false));
+    }
+
+    @NotNull
+    public IBlockState getStateFromMeta(int meta) {
+        return this.getDefaultState().withProperty(controller, meta == 1);
+    }
+
+    @NotNull
+    @Override
+    protected BlockStateContainer createBlockState() {
+        return new BlockStateContainer(this, controller);
     }
 
     @Override
-    public boolean hasTileEntity() {
-        return true;
+    public int getMetaFromState(@NotNull IBlockState blockState) {
+        return blockState.getValue(controller) ? 1 : 0;
+    }
+
+    @Override
+    public boolean hasTileEntity(@NotNull IBlockState blockState) {
+        return blockState.getValue(controller);
     }
 
     @Override

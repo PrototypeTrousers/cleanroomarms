@@ -57,10 +57,11 @@ public class ClientProxy extends CommonProxy {
                 TileEntity t = tickableTileEntities.get(i);
                 if (t == te) {
                     tickIdx = i;
+                    event.getRight().add("Tile Ticking Index: " + tickIdx);
+                    break;
                 }
             }
         }
-        event.getRight().add("Tile Ticking Index: " + tickIdx);
     }
 
     @Override
