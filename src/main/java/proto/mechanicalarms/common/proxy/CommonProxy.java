@@ -3,10 +3,7 @@ package proto.mechanicalarms.common.proxy;
 import proto.mechanicalarms.MechanicalArms;
 import proto.mechanicalarms.common.block.Blocks;
 import proto.mechanicalarms.common.item.Items;
-import proto.mechanicalarms.common.tile.TileArmBasic;
-import proto.mechanicalarms.common.tile.TileBeltBasic;
-import proto.mechanicalarms.common.tile.TileSplitter;
-import proto.mechanicalarms.common.tile.Tiles;
+import proto.mechanicalarms.common.tile.*;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraft.util.ResourceLocation;
@@ -41,6 +38,7 @@ public class CommonProxy
 		GameRegistry.registerTileEntity( TileArmBasic.class, new ResourceLocation( MechanicalArms.MODID, "tilearm") );
 		GameRegistry.registerTileEntity( TileBeltBasic.class, new ResourceLocation( MechanicalArms.MODID, "tilebelt") );
 		GameRegistry.registerTileEntity( TileSplitter.class, new ResourceLocation( MechanicalArms.MODID, "tilesplitter") );
+		GameRegistry.registerTileEntity( TileSplitterDummy.class, new ResourceLocation( MechanicalArms.MODID, "tilesplitterdummy") );
 	}
 
 	public void preInit()

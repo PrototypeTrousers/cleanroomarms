@@ -21,6 +21,7 @@ import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
 import proto.mechanicalarms.MechanicalArms;
 import proto.mechanicalarms.common.tile.TileSplitter;
+import proto.mechanicalarms.common.tile.TileSplitterDummy;
 
 import javax.annotation.Nullable;
 
@@ -52,7 +53,7 @@ public class BlockSplitter extends Block implements ITileEntityProvider {
 
     @Override
     public boolean hasTileEntity(@NotNull IBlockState blockState) {
-        return blockState.getValue(controller);
+        return true;
     }
 
     @Override
@@ -62,22 +63,22 @@ public class BlockSplitter extends Block implements ITileEntityProvider {
 
     @Override
     public void breakBlock(World worldIn, BlockPos pos, IBlockState state) {
-        if (state.getValue(controller)) {
-            TileEntity te = worldIn.getTileEntity(pos);
-            if (te instanceof TileSplitter ts) {
-                worldIn.setBlockToAir(pos.offset(ts.getFront().rotateY()));
-            }
-        } else{
-            for (EnumFacing e : EnumFacing.HORIZONTALS) {
-                BlockPos p = pos.offset(e);
-                TileEntity te = worldIn.getTileEntity(p);
-                if (te instanceof TileSplitter ts) {
-                    if (ts.getFront() == e.rotateY()) {
-                        worldIn.setBlockToAir(pos.offset(e));
-                    }
-                }
-            }
-        }
+//        if (state.getValue(controller)) {
+//            TileEntity te = worldIn.getTileEntity(pos);
+//            if (te instanceof TileSplitter ts) {
+//                worldIn.setBlockToAir(pos.offset(ts.getFront().rotateY()));
+//            }
+//        } else{
+//            for (EnumFacing e : EnumFacing.HORIZONTALS) {
+//                BlockPos p = pos.offset(e);
+//                TileEntity te = worldIn.getTileEntity(p);
+//                if (te instanceof TileSplitter ts) {
+//                    if (ts.getFront() == e.rotateY()) {
+//                        worldIn.setBlockToAir(pos.offset(e));
+//                    }
+//                }
+//            }
+//        }
         super.breakBlock(worldIn, pos, state);
     }
 
@@ -97,7 +98,10 @@ public class BlockSplitter extends Block implements ITileEntityProvider {
     @Nullable
     @Override
     public TileEntity createNewTileEntity(World worldIn, int meta) {
-        return new TileSplitter();
+        if (meta == 1) {
+            return new TileSplitter();
+        }
+        return new TileSplitterDummy();
     }
 
     @Override
