@@ -61,10 +61,8 @@ public class TileSplitterDummy extends TileEntity {
         this.readFromNBT(packet.getNbtCompound());
     }
 
-    @Override
-    public void onLoad() {
-        super.onLoad();
-        //controller = world.getTileEntity(pos.offset(front.rotateYCCW()));
+    public void setController(TileEntity controller) {
+        this.controller = controller;
     }
 
     @Nullable

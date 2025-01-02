@@ -60,16 +60,17 @@ public class ItemSplitter extends ItemBlock {
                     worldIn.setBlockState(pos, iblockstate2.withProperty(BlockSplitter.controller, true), 10);
                     SoundType soundtype = iblockstate2.getBlock().getSoundType(iblockstate2, worldIn, pos, player);
                     worldIn.playSound(null, pos, soundtype.getPlaceSound(), SoundCategory.BLOCKS, (soundtype.getVolume() + 1.0F) / 2.0F, soundtype.getPitch() * 0.8F);
-                    TileEntity tileentity = worldIn.getTileEntity(dummyPos);
-
-                    if (tileentity instanceof TileSplitterDummy) {
-                        ((TileSplitterDummy) tileentity).setFront(playerFacing);
-                    }
-
                     TileEntity tileentity1 = worldIn.getTileEntity(pos);
 
-                    if (tileentity1 instanceof TileSplitter) {
-                        ((TileSplitter) tileentity1).setFront(playerFacing);
+                    if (tileentity1 instanceof TileSplitter tileSplitter) {
+                        tileSplitter.setFront(playerFacing);
+                    }
+
+                    TileEntity tileentity = worldIn.getTileEntity(dummyPos);
+
+                    if (tileentity instanceof TileSplitterDummy splitterDummy) {
+                        splitterDummy.setFront(playerFacing);
+                        splitterDummy.setController(tileentity1);
                     }
 
                     worldIn.notifyNeighborsRespectDebug(pos, block, false);
