@@ -63,22 +63,17 @@ public class BlockSplitter extends Block implements ITileEntityProvider {
 
     @Override
     public void breakBlock(World worldIn, BlockPos pos, IBlockState state) {
-//        if (state.getValue(controller)) {
-//            TileEntity te = worldIn.getTileEntity(pos);
-//            if (te instanceof TileSplitter ts) {
-//                worldIn.setBlockToAir(pos.offset(ts.getFront().rotateY()));
-//            }
-//        } else{
-//            for (EnumFacing e : EnumFacing.HORIZONTALS) {
-//                BlockPos p = pos.offset(e);
-//                TileEntity te = worldIn.getTileEntity(p);
-//                if (te instanceof TileSplitter ts) {
-//                    if (ts.getFront() == e.rotateY()) {
-//                        worldIn.setBlockToAir(pos.offset(e));
-//                    }
-//                }
-//            }
-//        }
+        if (state.getValue(controller)) {
+            TileEntity te = worldIn.getTileEntity(pos);
+            if (te instanceof TileSplitter ts) {
+                worldIn.setBlockToAir(pos.offset(ts.getFront().rotateY()));
+            }
+        } else{
+            TileEntity te = worldIn.getTileEntity(pos);
+            if (te instanceof TileSplitterDummy ts) {
+                worldIn.setBlockToAir(pos.offset(ts.getFront().rotateYCCW()));
+            }
+        }
         super.breakBlock(worldIn, pos, state);
     }
 

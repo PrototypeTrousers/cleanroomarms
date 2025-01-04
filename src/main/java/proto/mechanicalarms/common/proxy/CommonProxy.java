@@ -19,17 +19,17 @@ public class CommonProxy
 	@SubscribeEvent
 	public static void registerBlocks( RegistryEvent.Register<Block> event )
 	{
-		event.getRegistry().registerAll( Blocks.ARM_BASE );
-		event.getRegistry().registerAll( Blocks.BELT_BASE );
-		event.getRegistry().registerAll( Blocks.SPLITTER );
+		event.getRegistry().register( Blocks.ARM_BASE );
+		event.getRegistry().register( Blocks.BELT_BASE );
+		event.getRegistry().register( Blocks.SPLITTER );
 	}
 
 	@SubscribeEvent
 	public static void registerItems( RegistryEvent.Register<Item> event )
 	{
-		event.getRegistry().registerAll( Items.ARM_BASE );
-		event.getRegistry().registerAll( Items.BELT_BASE );
-		event.getRegistry().registerAll( Items.SPLITTER );
+		event.getRegistry().register( Items.ARM_BASE );
+		event.getRegistry().register( Items.BELT_BASE );
+		event.getRegistry().register( Items.SPLITTER );
 	}
 
 	@SubscribeEvent
