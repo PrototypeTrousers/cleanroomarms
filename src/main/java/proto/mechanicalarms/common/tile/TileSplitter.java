@@ -130,11 +130,11 @@ public class TileSplitter extends TileEntity implements ITickable, IGuiHolder {
             if (!emptyRight)
                 updateProgressForHandler(rightItemHandler);
 
-            if (progressLeft == 5) {
+            if (progressLeft >= 3) {
                 transferItemsToFront(leftItemHandler);
                 updatePreviousProgress();
             }
-            if (progressRight == 5) {
+            if (progressRight >= 3) {
                 transferItemsToFront(rightItemHandler);
                 updatePreviousProgress();
             }
@@ -172,12 +172,12 @@ public class TileSplitter extends TileEntity implements ITickable, IGuiHolder {
 
     private void updateProgressForHandler(ItemStackHandler handler) {
         if (handler == leftItemHandler) {
-            if (progressLeft < 5) {
+            if (progressLeft < 3) {
                 previousProgressLeft ++;
                 progressLeft++;
             }
         } else {
-            if (progressRight < 5) {
+            if (progressRight < 3) {
                 previousProgressRight++;
                 progressRight++;
             }
