@@ -43,7 +43,13 @@ public class TileBeltBasic extends TileEntity implements ITickable, IGuiHolder {
     public NBTTagCompound writeToNBT(NBTTagCompound compound) {
         super.writeToNBT(compound);
         compound.setTag("mainInventory", mainItemHandler.serializeNBT());
+        if (front == null) {
+            front = EnumFacing.NORTH;
+        }
         compound.setInteger("front", front.ordinal());
+        if (slope == null) {
+            slope = Slope.HORIZONTAL;
+        }
         compound.setInteger("slope", slope.ordinal());
         compound.setInteger("progress", progress);
         compound.setInteger("previousProgress", previousProgress);
@@ -225,6 +231,7 @@ public class TileBeltBasic extends TileEntity implements ITickable, IGuiHolder {
 
     public void setFront(EnumFacing facing) {
         this.front = facing;
+        markDirty();
     }
 
     @Nullable

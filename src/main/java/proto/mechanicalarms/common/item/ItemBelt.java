@@ -47,8 +47,8 @@ public class ItemBelt extends ItemBlock {
                     tbbte.setFront(playerFacing);
                     determineSlope(tbbte, side, hitY, player, pos);
                 }
+                return true;
             }
-            return true;
         }
         return false;
     }

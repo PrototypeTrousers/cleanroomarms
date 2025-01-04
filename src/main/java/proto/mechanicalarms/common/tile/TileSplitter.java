@@ -29,6 +29,7 @@ public class TileSplitter extends TileEntity implements ITickable, IGuiHolder {
     protected ItemStackHandler leftItemHandler = new SplitterItemHandler(1);
     protected ItemStackHandler rightItemHandler = new SplitterItemHandler(1);
     protected long insertedTick;
+    Side lastOutputSide = Side.L;
     AxisAlignedBB renderBB;
     AxisAlignedBB pickerBB;
     int progressLeft = 0;
@@ -115,15 +116,19 @@ public class TileSplitter extends TileEntity implements ITickable, IGuiHolder {
         }
 
         // If no items in either handler, reset progress
-        if (leftItemHandler.getStackInSlot(0).isEmpty() && rightItemHandler.getStackInSlot(0).isEmpty()) {
+        boolean emptyLeft = leftItemHandler.getStackInSlot(0).isEmpty();
+        boolean emptyRight = rightItemHandler.getStackInSlot(0).isEmpty();
+        if (emptyLeft && emptyRight) {
             resetProgress();
             return;
         }
 
         // Handle item progress updates and item transfer logic for both sides
         if (!this.world.isRemote) {
-            updateProgressForHandler(leftItemHandler);
-            updateProgressForHandler(rightItemHandler);
+            if (!emptyLeft)
+                updateProgressForHandler(leftItemHandler);
+            if (!emptyRight)
+                updateProgressForHandler(rightItemHandler);
 
             if (progressLeft == 19) {
                 transferItemsToFront(leftItemHandler);
@@ -181,11 +186,15 @@ public class TileSplitter extends TileEntity implements ITickable, IGuiHolder {
 
     private void transferItemsToFront(ItemStackHandler handler) {
         TileEntity frontTe;
-        if (handler == leftItemHandler) {
+
+        if (lastOutputSide == Side.R) {
             frontTe = world.getTileEntity(pos.offset(front.rotateY()).offset(front));
+            lastOutputSide = Side.L;
         } else {
             frontTe = world.getTileEntity(pos.offset(front));
+            lastOutputSide = Side.R;
         }
+
 
         if (frontTe != null) {
             IItemHandler cap = frontTe.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, front.getOpposite());
@@ -283,6 +292,10 @@ public class TileSplitter extends TileEntity implements ITickable, IGuiHolder {
             }
             return super.insertItem(slot, stack, simulate);
         }
+    }
+
+    enum Side {
+        L, R;
     }
 }
 
