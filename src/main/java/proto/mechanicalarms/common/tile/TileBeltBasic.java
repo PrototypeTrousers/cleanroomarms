@@ -35,7 +35,7 @@ public class TileBeltBasic extends TileEntity implements ITickable, IGuiHolder {
     EnumFacing front;
     Slope slope;
 
-    protected ItemStackHandler mainItemHandler = new BeltItemHandler(5);
+    protected ItemStackHandler mainItemHandler = new BeltItemHandler(1);
     protected ItemStackHandler sideItemHandler = new BeltItemHandler(1, mainItemHandler);
     protected long insertedTick;
 
@@ -269,6 +269,16 @@ public class TileBeltBasic extends TileEntity implements ITickable, IGuiHolder {
         }
 
         @Override
+        public int getSlotLimit(int slot) {
+            return 1;
+        }
+
+        @Override
+        protected int getStackLimit(int slot, @NotNull ItemStack stack) {
+            return 1;
+        }
+
+        @Override
         public void setStackInSlot(int slot, @NotNull ItemStack stack) {
             if (main != null) {
                 main.setStackInSlot(0, stack);
@@ -303,8 +313,8 @@ public class TileBeltBasic extends TileEntity implements ITickable, IGuiHolder {
             if (main != null) {
                 ItemStack returnStack = main.insertItem(0, stack, simulate);
                 if (!simulate && returnStack.isEmpty()) {
-                    progress = 2;
-                    previousProgress = 2;
+                    progress = 1;
+                    previousProgress = 1;
                     insertedTick = world.getTotalWorldTime();
                 }
                 return returnStack;
