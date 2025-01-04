@@ -27,50 +27,50 @@ import org.jetbrains.annotations.Nullable;
 
 public class TileSplitter extends TileEntity implements ITickable, IGuiHolder {
 
-    protected ItemStackHandler mainItemHandler = new BeltItemHandler(5);
-    protected ItemStackHandler sideItemHandler = new BeltItemHandler(1, mainItemHandler);
+    protected ItemStackHandler leftItemHandler = new SplitterItemHandler(1);
+    protected ItemStackHandler rightItemHandler = new SplitterItemHandler(1);
     protected long insertedTick;
     AxisAlignedBB renderBB;
     AxisAlignedBB pickerBB;
-    int progress = 0;
-    int previousProgress = 0;
+    int progressLeft = 0;
+    int progressRight = 0;
+    int previousProgressLeft = 0;
+    int previousProgressRight = 0;
     EnumFacing front;
     Slope slope;
 
     @Override
     public NBTTagCompound writeToNBT(NBTTagCompound compound) {
         super.writeToNBT(compound);
-        compound.setTag("mainInventory", mainItemHandler.serializeNBT());
+        compound.setTag("leftInventory", leftItemHandler.serializeNBT());
+        compound.setTag("rightInventory", rightItemHandler.serializeNBT());
         compound.setInteger("front", front.ordinal());
-        compound.setInteger("progress", progress);
-        compound.setInteger("previousProgress", previousProgress);
+        compound.setInteger("progressLeft", progressLeft);
+        compound.setInteger("progressRight", progressRight);
+        compound.setInteger("previousProgressLeft", previousProgressLeft);
+        compound.setInteger("previousProgressRight", previousProgressRight);
         return compound;
     }
 
     @Override
     public void readFromNBT(NBTTagCompound compound) {
         super.readFromNBT(compound);
-        mainItemHandler.deserializeNBT(compound.getCompoundTag("mainInventory"));
+        leftItemHandler.deserializeNBT(compound.getCompoundTag("leftInventory"));
+        rightItemHandler.deserializeNBT(compound.getCompoundTag("rightInventory"));
         front = EnumFacing.byIndex(compound.getInteger("front"));
-        progress = compound.getInteger("progress");
-        previousProgress = compound.getInteger("previousProgress");
+        progressLeft = compound.getInteger("progressLeft");
+        progressRight = compound.getInteger("progressRight");
+        previousProgressLeft = compound.getInteger("previousProgressLeft");
+        previousProgressRight = compound.getInteger("previousProgressRight");
     }
 
     @Override
     public NBTTagCompound getUpdateTag() {
-        // getUpdateTag() is called whenever the chunkdata is sent to the
-        // client. In contrast getUpdatePacket() is called when the tile entity
-        // itself wants to sync to the client. In many cases you want to send
-        // over the same information in getUpdateTag() as in getUpdatePacket().
         return writeToNBT(new NBTTagCompound());
     }
 
     @Override
     public SPacketUpdateTileEntity getUpdatePacket() {
-        // Prepare a packet for syncing our TE to the client. Since we only have to sync the stack
-        // and that's all we have we just write our entire NBT here. If you have a complex
-        // tile entity that doesn't need to have all information on the client you can write
-        // a more optimal NBT here.
         NBTTagCompound nbtTag = new NBTTagCompound();
         this.writeToNBT(nbtTag);
         return new SPacketUpdateTileEntity(getPos(), 1, nbtTag);
@@ -78,29 +78,18 @@ public class TileSplitter extends TileEntity implements ITickable, IGuiHolder {
 
     @Override
     public void onDataPacket(NetworkManager net, SPacketUpdateTileEntity packet) {
-        // Here we get the packet from the server and read it into our client side tile entity
         this.readFromNBT(packet.getNbtCompound());
     }
 
     @Override
     public ModularPanel buildUI(GuiData guiData, GuiSyncManager guiSyncManager) {
         ModularPanel panel = ModularPanel.defaultPanel("tutorial_gui");
-        panel.child(new ProgressWidget()
-                .size(20)
-                .leftRel(0.5f).topRelAnchor(0.25f, 0.5f)
-                .texture(GuiTextures.PROGRESS_ARROW, 20)
-                .value(new DoubleSyncValue(() -> this.progress / 100.0, val -> this.progress = (int) (val * 100))));
-        panel.child(new ItemSlot().slot(mainItemHandler, 0));
+        panel.child(new ProgressWidget().size(20).leftRel(0.5f).topRelAnchor(0.25f, 0.5f).texture(GuiTextures.PROGRESS_ARROW, 20).value(new DoubleSyncValue(() -> this.progressLeft / 100.0, val -> this.progressLeft = (int) (val * 100))));
+        panel.child(new ProgressWidget().size(20).leftRel(0.5f).topRelAnchor(0.5f, 0.5f).texture(GuiTextures.PROGRESS_ARROW, 20).value(new DoubleSyncValue(() -> this.progressRight / 100.0, val -> this.progressRight = (int) (val * 100))));
+        panel.child(new ItemSlot().slot(leftItemHandler, 0));
+        panel.child(new ItemSlot().slot(rightItemHandler, 0));
         panel.bindPlayerInventory();
         return panel;
-    }
-
-    public ItemStackHandler getMainItemHandler() {
-        return mainItemHandler;
-    }
-
-    public ItemStackHandler getSideItemHandler() {
-        return sideItemHandler;
     }
 
     @Override
@@ -116,73 +105,133 @@ public class TileSplitter extends TileEntity implements ITickable, IGuiHolder {
         return true;
     }
 
-
     @Override
     public void update() {
-        if (progress == 0 && insertedTick == world.getWorldTime()) {
-            progress = 0;
-            previousProgress = -1;
-            insertedTick = -1;
+        // Reset progress if necessary
+        resetProgressIfNeeded();
+
+        // Handle item transfers for both sides (left and right)
+        handleItemTransfers(leftItemHandler);
+        handleItemTransfers(rightItemHandler);
+
+        // If block is powered, skip further updates
+        if (this.world.isBlockPowered(this.getPos())) {
+            updatePreviousProgress();
             return;
         }
 
+        // If no items in either handler, reset progress
+        if (leftItemHandler.getStackInSlot(0).isEmpty() && rightItemHandler.getStackInSlot(0).isEmpty()) {
+            resetProgress();
+            return;
+        }
+
+        // Handle item progress updates and item transfer logic for both sides
+        if (!this.world.isRemote) {
+            updateProgressForHandler(leftItemHandler, true);
+            updateProgressForHandler(rightItemHandler, false);
+
+            if (progressLeft == 19 || progressRight == 19) {
+                transferItemsToFront();
+                updatePreviousProgress();
+            }
+        } else {
+            updateProgressForHandler(leftItemHandler, true);
+            updateProgressForHandler(rightItemHandler, false);
+        }
+    }
+
+    private void resetProgressIfNeeded() {
+        if (progressLeft == 0 && insertedTick == world.getWorldTime()) {
+            progressLeft = 0;
+            previousProgressLeft = -1;
+            insertedTick = -1;
+        }
+
+        if (progressRight == 0 && insertedTick == world.getWorldTime()) {
+            progressRight = 0;
+            previousProgressRight = -1;
+            insertedTick = -1;
+        }
+    }
+
+    private void handleItemTransfers(ItemStackHandler handler) {
         for (EntityItem e : this.getWorld().getEntitiesWithinAABB(EntityItem.class, pickerBB)) {
-            if (mainItemHandler.insertItem(0, e.getItem(), true) != e.getItem()) {
+            if (handler.insertItem(0, e.getItem(), true) != e.getItem()) {
                 ItemStack insert = e.getItem().copy();
                 insert.setCount(1);
-                mainItemHandler.insertItem(0, insert, false);
+                handler.insertItem(0, insert, false);
                 e.getItem().shrink(1);
             }
         }
-        if (this.world.isBlockPowered(this.getPos())) {
-            this.previousProgress = progress;
-            return;
-        }
-        if (mainItemHandler.getStackInSlot(0).isEmpty()) {
-            previousProgress = 0;
-            progress = 0;
-            return;
-        }
-        if (!this.world.isRemote) {
-            if (progress < 19) {
-                previousProgress++;
-                progress++;
-            }
-            if (progress == 19) {
-                EnumFacing facing = front;
-                TileEntity frontTe;
-                if (slope == Slope.HORIZONTAL) {
-                    frontTe = world.getTileEntity(pos.offset(facing));
-                    if (frontTe == null) {
-                        frontTe = world.getTileEntity(pos.offset(facing).down());
-                    }
-                } else {
-                    if (slope == Slope.UP) {
-                        frontTe = world.getTileEntity(pos.offset(facing).up());
-                    } else {
-                        frontTe = world.getTileEntity(pos.offset(facing).down());
-                        if (frontTe == null) {
-                            frontTe = world.getTileEntity(pos.offset(facing));
-                        }
-                    }
-                }
-                if (frontTe != null) {
-                    IItemHandler cap = frontTe.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, facing.getOpposite());
-                    if (cap != null) {
-                        if (cap.insertItem(0, mainItemHandler.extractItem(0, 1, true), true) != mainItemHandler.getStackInSlot(0)) {
-                            cap.insertItem(0, mainItemHandler.extractItem(0, 1, false), false);
-                            progress = 0;
-                        }
-                    }
-                }
-                previousProgress = progress;
+    }
+
+    private void resetProgress() {
+        progressLeft = 0;
+        progressRight = 0;
+        previousProgressLeft = 0;
+        previousProgressRight = 0;
+    }
+
+    private void updatePreviousProgress() {
+        previousProgressLeft = progressLeft;
+        previousProgressRight = progressRight;
+    }
+
+    private void updateProgressForHandler(ItemStackHandler handler, boolean isLeftHandler) {
+        if (isLeftHandler) {
+            if (progressLeft < 19) {
+                previousProgressLeft++;
+                progressLeft++;
             }
         } else {
-            if (progress < 19) {
-                previousProgress = progress;
-                progress++;
+            if (progressRight < 19) {
+                previousProgressRight++;
+                progressRight++;
+            }
+        }
+    }
+
+    private void transferItemsToFront() {
+        EnumFacing facing = front;
+        TileEntity frontTe = getFrontTileEntity(facing);
+
+        if (frontTe != null) {
+            IItemHandler cap = frontTe.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, facing.getOpposite());
+            if (cap != null) {
+                transferItemToFrontHandler(leftItemHandler, cap);
+                transferItemToFrontHandler(rightItemHandler, cap);
+            }
+        }
+    }
+
+    private TileEntity getFrontTileEntity(EnumFacing facing) {
+        TileEntity frontTe = null;
+        if (slope == Slope.HORIZONTAL) {
+            frontTe = world.getTileEntity(pos.offset(facing));
+            if (frontTe == null) {
+                frontTe = world.getTileEntity(pos.offset(facing).down());
+            }
+        } else {
+            if (slope == Slope.UP) {
+                frontTe = world.getTileEntity(pos.offset(facing).up());
             } else {
-                previousProgress = progress;
+                frontTe = world.getTileEntity(pos.offset(facing).down());
+                if (frontTe == null) {
+                    frontTe = world.getTileEntity(pos.offset(facing));
+                }
+            }
+        }
+        return frontTe;
+    }
+
+    private void transferItemToFrontHandler(ItemStackHandler handler, IItemHandler cap) {
+        if (cap.insertItem(0, handler.extractItem(0, 1, true), true) != handler.getStackInSlot(0)) {
+            cap.insertItem(0, handler.extractItem(0, 1, false), false);
+            if (handler == leftItemHandler) {
+                progressLeft = 0;
+            } else {
+                progressRight = 0;
             }
         }
     }
@@ -191,18 +240,6 @@ public class TileSplitter extends TileEntity implements ITickable, IGuiHolder {
     public void onLoad() {
         super.onLoad();
         pickerBB = new AxisAlignedBB(this.pos);
-    }
-
-    public int getProgress() {
-        return progress;
-    }
-
-    public int getPreviousProgress() {
-        return previousProgress;
-    }
-
-    public boolean isSlope() {
-        return slope != Slope.HORIZONTAL;
     }
 
     public EnumFacing getFront() {
@@ -217,10 +254,7 @@ public class TileSplitter extends TileEntity implements ITickable, IGuiHolder {
     @Override
     public <T> T getCapability(Capability<T> capability, @Nullable EnumFacing facing) {
         if (capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
-            if (this.front.rotateYCCW() == facing || this.front.rotateY() == facing) {
-                return (T) sideItemHandler;
-            }
-            return (T) mainItemHandler;
+            return (T) leftItemHandler; // For now, returning left item handler, modify as needed
         }
         return super.getCapability(capability, facing);
     }
@@ -230,32 +264,12 @@ public class TileSplitter extends TileEntity implements ITickable, IGuiHolder {
         return capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY;
     }
 
-    public Slope getSlope() {
-        return slope;
-    }
-
-    public void setSlope(EnumFacing enumFacing) {
-        if (enumFacing == EnumFacing.UP) {
-            this.slope = Slope.UP;
-        } else if (enumFacing == EnumFacing.DOWN) {
-            this.slope = Slope.DOWN;
-        } else {
-            this.slope = Slope.HORIZONTAL;
-        }
-
-    }
-
-    public class BeltItemHandler extends ItemStackHandler {
+    public class SplitterItemHandler extends ItemStackHandler {
 
         ItemStackHandler main;
 
-        public BeltItemHandler(int i) {
+        public SplitterItemHandler(int i) {
             super(i);
-        }
-
-        public BeltItemHandler(int i, ItemStackHandler mainHandler) {
-            super(i);
-            main = mainHandler;
         }
 
         @Override
@@ -293,37 +307,12 @@ public class TileSplitter extends TileEntity implements ITickable, IGuiHolder {
             if (main != null) {
                 ItemStack returnStack = main.insertItem(0, stack, simulate);
                 if (!simulate && returnStack.isEmpty()) {
-                    progress = 10;
-                    previousProgress = 10;
+                    setStackInSlot(slot, ItemStack.EMPTY);
                 }
                 return returnStack;
             }
-
-            ItemStack returnStack = super.insertItem(slot, stack, simulate);
-            if (returnStack.isEmpty()) {
-                previousProgress = -1;
-                progress = 0;
-                insertedTick = world.getWorldTime();
-            }
-            return returnStack;
-        }
-
-        @NotNull
-        @Override
-        public ItemStack extractItem(int slot, int amount, boolean simulate) {
-            return super.extractItem(slot, amount, simulate);
-        }
-
-        @Override
-        protected void onContentsChanged(int slot) {
-            markDirty();
-            world.notifyBlockUpdate(pos, world.getBlockState(pos), world.getBlockState(pos), 3);
-        }
-
-        enum SIDE {
-            L,
-            R
+            return super.insertItem(slot, stack, simulate);
         }
     }
-
 }
+

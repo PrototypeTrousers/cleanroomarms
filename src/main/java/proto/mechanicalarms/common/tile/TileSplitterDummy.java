@@ -26,7 +26,6 @@ public class TileSplitterDummy extends TileEntity {
         front = EnumFacing.byIndex(compound.getInteger("front"));
     }
 
-
     public EnumFacing getFront() {
         return front;
     }
@@ -68,6 +67,14 @@ public class TileSplitterDummy extends TileEntity {
     @Nullable
     @Override
     public <T> T getCapability(Capability<T> capability, @Nullable EnumFacing facing) {
+        if (controller == null) {
+            TileEntity te = world.getTileEntity(pos.offset(front.rotateYCCW()));
+            if (te instanceof TileSplitter ts) {
+                if (ts.getFront() == this.front) {
+                    controller = ts;
+                }
+            }
+        }
         if (capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
             if (facing == front.getOpposite()) {
                 return controller.getCapability(capability, facing);
