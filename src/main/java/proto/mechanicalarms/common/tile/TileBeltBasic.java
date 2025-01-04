@@ -129,13 +129,12 @@ public class TileBeltBasic extends TileEntity implements ITickable, IGuiHolder {
 
     @Override
     public void update() {
-        if (progress == 0 && insertedTick == world.getWorldTime()) {
+        if (progress == 0 && insertedTick == world.getTotalWorldTime()) {
             progress = 0;
             previousProgress = -1;
             insertedTick = -1;
             return;
         }
-
         for (EntityItem e : this.getWorld().getEntitiesWithinAABB(EntityItem.class, pickerBB)) {
             if (mainItemHandler.insertItem(0, e.getItem(), true) != e.getItem()) {
                 ItemStack insert = e.getItem().copy();
@@ -154,11 +153,12 @@ public class TileBeltBasic extends TileEntity implements ITickable, IGuiHolder {
             return;
         }
         if (!this.world.isRemote) {
-            if (progress < 5) {
+
+            if (progress < 6) {
                 previousProgress++;
-                progress ++;
+                progress++;
             }
-            if (progress >= 5) {
+            if (progress == 6) {
                 EnumFacing facing = front;
                 TileEntity frontTe;
                 if (slope == Slope.HORIZONTAL) {
@@ -188,7 +188,7 @@ public class TileBeltBasic extends TileEntity implements ITickable, IGuiHolder {
                 previousProgress = progress;
             }
         } else {
-            if (progress < 5) {
+            if (progress < 6) {
                 previousProgress = progress;
                 progress++;
             } else {
@@ -313,7 +313,7 @@ public class TileBeltBasic extends TileEntity implements ITickable, IGuiHolder {
             if (returnStack.isEmpty()) {
                 previousProgress = -1;
                 progress = 0;
-                insertedTick = world.getWorldTime();
+                insertedTick = world.getTotalWorldTime();
             }
             return returnStack;
         }
