@@ -11,7 +11,7 @@ import org.jetbrains.annotations.Nullable;
 
 public class TileSplitterDummy extends TileEntity {
     EnumFacing front;
-    TileEntity controller;
+    TileSplitter controller;
 
     @Override
     public NBTTagCompound writeToNBT(NBTTagCompound compound) {
@@ -32,6 +32,7 @@ public class TileSplitterDummy extends TileEntity {
 
     public void setFront(EnumFacing facing) {
         this.front = facing;
+        markDirty();
     }
 
     @Override
@@ -60,7 +61,7 @@ public class TileSplitterDummy extends TileEntity {
         this.readFromNBT(packet.getNbtCompound());
     }
 
-    public void setController(TileEntity controller) {
+    public void setController(TileSplitter controller) {
         this.controller = controller;
     }
 
@@ -77,7 +78,7 @@ public class TileSplitterDummy extends TileEntity {
         }
         if (capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
             if (facing == front.getOpposite()) {
-                return controller.getCapability(capability, facing);
+                return (T) controller.rightItemHandler; // For now, returning left item handler, modify as needed
             }
         }
         return super.getCapability(capability, facing);

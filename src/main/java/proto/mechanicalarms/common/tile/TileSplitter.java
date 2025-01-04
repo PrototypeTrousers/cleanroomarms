@@ -8,7 +8,6 @@ import com.cleanroommc.modularui.value.sync.DoubleSyncValue;
 import com.cleanroommc.modularui.value.sync.GuiSyncManager;
 import com.cleanroommc.modularui.widgets.ItemSlot;
 import com.cleanroommc.modularui.widgets.ProgressWidget;
-import net.minecraft.entity.item.EntityItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.NetworkManager;
@@ -85,7 +84,6 @@ public class TileSplitter extends TileEntity implements ITickable, IGuiHolder {
     public ModularPanel buildUI(GuiData guiData, GuiSyncManager guiSyncManager) {
         ModularPanel panel = ModularPanel.defaultPanel("tutorial_gui");
         panel.child(new ProgressWidget().size(20).leftRel(0.5f).topRelAnchor(0.25f, 0.5f).texture(GuiTextures.PROGRESS_ARROW, 20).value(new DoubleSyncValue(() -> this.progressLeft / 100.0, val -> this.progressLeft = (int) (val * 100))));
-        panel.child(new ProgressWidget().size(20).leftRel(0.5f).topRelAnchor(0.5f, 0.5f).texture(GuiTextures.PROGRESS_ARROW, 20).value(new DoubleSyncValue(() -> this.progressRight / 100.0, val -> this.progressRight = (int) (val * 100))));
         panel.child(new ItemSlot().slot(leftItemHandler, 0));
         panel.child(new ItemSlot().slot(rightItemHandler, 0));
         panel.bindPlayerInventory();
@@ -110,10 +108,6 @@ public class TileSplitter extends TileEntity implements ITickable, IGuiHolder {
         // Reset progress if necessary
         resetProgressIfNeeded();
 
-        // Handle item transfers for both sides (left and right)
-        handleItemTransfers(leftItemHandler);
-        handleItemTransfers(rightItemHandler);
-
         // If block is powered, skip further updates
         if (this.world.isBlockPowered(this.getPos())) {
             updatePreviousProgress();
@@ -128,16 +122,20 @@ public class TileSplitter extends TileEntity implements ITickable, IGuiHolder {
 
         // Handle item progress updates and item transfer logic for both sides
         if (!this.world.isRemote) {
-            updateProgressForHandler(leftItemHandler, true);
-            updateProgressForHandler(rightItemHandler, false);
+            updateProgressForHandler(leftItemHandler);
+            updateProgressForHandler(rightItemHandler);
 
-            if (progressLeft == 19 || progressRight == 19) {
-                transferItemsToFront();
+            if (progressLeft == 19) {
+                transferItemsToFront(leftItemHandler);
+                updatePreviousProgress();
+            }
+            if (progressRight == 19) {
+                transferItemsToFront(rightItemHandler);
                 updatePreviousProgress();
             }
         } else {
-            updateProgressForHandler(leftItemHandler, true);
-            updateProgressForHandler(rightItemHandler, false);
+            updateProgressForHandler(leftItemHandler);
+            updateProgressForHandler(rightItemHandler);
         }
     }
 
@@ -155,17 +153,6 @@ public class TileSplitter extends TileEntity implements ITickable, IGuiHolder {
         }
     }
 
-    private void handleItemTransfers(ItemStackHandler handler) {
-        for (EntityItem e : this.getWorld().getEntitiesWithinAABB(EntityItem.class, pickerBB)) {
-            if (handler.insertItem(0, e.getItem(), true) != e.getItem()) {
-                ItemStack insert = e.getItem().copy();
-                insert.setCount(1);
-                handler.insertItem(0, insert, false);
-                e.getItem().shrink(1);
-            }
-        }
-    }
-
     private void resetProgress() {
         progressLeft = 0;
         progressRight = 0;
@@ -178,8 +165,8 @@ public class TileSplitter extends TileEntity implements ITickable, IGuiHolder {
         previousProgressRight = progressRight;
     }
 
-    private void updateProgressForHandler(ItemStackHandler handler, boolean isLeftHandler) {
-        if (isLeftHandler) {
+    private void updateProgressForHandler(ItemStackHandler handler) {
+        if (handler == leftItemHandler) {
             if (progressLeft < 19) {
                 previousProgressLeft++;
                 progressLeft++;
@@ -192,37 +179,20 @@ public class TileSplitter extends TileEntity implements ITickable, IGuiHolder {
         }
     }
 
-    private void transferItemsToFront() {
-        EnumFacing facing = front;
-        TileEntity frontTe = getFrontTileEntity(facing);
+    private void transferItemsToFront(ItemStackHandler handler) {
+        TileEntity frontTe;
+        if (handler == leftItemHandler) {
+            frontTe = world.getTileEntity(pos.offset(front.rotateY()).offset(front));
+        } else {
+            frontTe = world.getTileEntity(pos.offset(front));
+        }
 
         if (frontTe != null) {
-            IItemHandler cap = frontTe.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, facing.getOpposite());
+            IItemHandler cap = frontTe.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, front.getOpposite());
             if (cap != null) {
-                transferItemToFrontHandler(leftItemHandler, cap);
-                transferItemToFrontHandler(rightItemHandler, cap);
+                transferItemToFrontHandler(handler, cap);
             }
         }
-    }
-
-    private TileEntity getFrontTileEntity(EnumFacing facing) {
-        TileEntity frontTe = null;
-        if (slope == Slope.HORIZONTAL) {
-            frontTe = world.getTileEntity(pos.offset(facing));
-            if (frontTe == null) {
-                frontTe = world.getTileEntity(pos.offset(facing).down());
-            }
-        } else {
-            if (slope == Slope.UP) {
-                frontTe = world.getTileEntity(pos.offset(facing).up());
-            } else {
-                frontTe = world.getTileEntity(pos.offset(facing).down());
-                if (frontTe == null) {
-                    frontTe = world.getTileEntity(pos.offset(facing));
-                }
-            }
-        }
-        return frontTe;
     }
 
     private void transferItemToFrontHandler(ItemStackHandler handler, IItemHandler cap) {

@@ -64,13 +64,14 @@ public class ItemSplitter extends ItemBlock {
 
                     if (tileentity1 instanceof TileSplitter tileSplitter) {
                         tileSplitter.setFront(playerFacing);
-                    }
 
-                    TileEntity tileentity = worldIn.getTileEntity(dummyPos);
 
-                    if (tileentity instanceof TileSplitterDummy splitterDummy) {
-                        splitterDummy.setFront(playerFacing);
-                        splitterDummy.setController(tileentity1);
+                        TileEntity tileentity = worldIn.getTileEntity(dummyPos);
+
+                        if (tileentity instanceof TileSplitterDummy splitterDummy) {
+                            splitterDummy.setFront(playerFacing);
+                            splitterDummy.setController(tileSplitter);
+                        }
                     }
 
                     worldIn.notifyNeighborsRespectDebug(pos, block, false);
