@@ -113,7 +113,12 @@ public class BlockSplitter extends Block implements ITileEntityProvider {
     @Override
     public boolean onBlockActivated(World worldIn, @NotNull BlockPos pos, @NotNull IBlockState state, @NotNull EntityPlayer playerIn, @NotNull EnumHand hand, @NotNull EnumFacing facing, float hitX, float hitY, float hitZ) {
         if (!worldIn.isRemote) {
-            TileEntityGuiFactory.open(playerIn, pos);
+            TileEntity te = worldIn.getTileEntity(pos);
+            if (te instanceof TileSplitter) {
+                TileEntityGuiFactory.open(playerIn, pos);
+            } else if (te instanceof TileSplitterDummy tsd) {
+                TileEntityGuiFactory.open(playerIn, pos.offset(tsd.getFront().rotateYCCW()));
+            }
         }
         return true;
     }

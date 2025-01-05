@@ -1,13 +1,11 @@
 package proto.mechanicalarms.common.tile;
 
 import com.cleanroommc.modularui.api.IGuiHolder;
-import com.cleanroommc.modularui.drawable.GuiTextures;
 import com.cleanroommc.modularui.factory.GuiData;
 import com.cleanroommc.modularui.screen.ModularPanel;
-import com.cleanroommc.modularui.value.sync.DoubleSyncValue;
+import com.cleanroommc.modularui.utils.Alignment;
 import com.cleanroommc.modularui.value.sync.GuiSyncManager;
 import com.cleanroommc.modularui.widgets.ItemSlot;
-import com.cleanroommc.modularui.widgets.ProgressWidget;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.NetworkManager;
@@ -83,10 +81,11 @@ public class TileSplitter extends TileEntity implements ITickable, IGuiHolder {
 
     @Override
     public ModularPanel buildUI(GuiData guiData, GuiSyncManager guiSyncManager) {
-        ModularPanel panel = ModularPanel.defaultPanel("tutorial_gui");
-        panel.child(new ProgressWidget().size(20).leftRel(0.5f).topRelAnchor(0.25f, 0.5f).texture(GuiTextures.PROGRESS_ARROW, 20).value(new DoubleSyncValue(() -> this.progressLeft / 100.0, val -> this.progressLeft = (int) (val * 100))));
+        ModularPanel panel = new ModularPanel("Splitter");
+        panel.align(Alignment.Center);
         panel.child(new ItemSlot().slot(leftItemHandler, 0));
-        panel.child(new ItemSlot().slot(rightItemHandler, 0));
+        panel.child(new ItemSlot().slot(rightItemHandler, 0).left(18));
+
         panel.bindPlayerInventory();
         return panel;
     }
@@ -173,7 +172,7 @@ public class TileSplitter extends TileEntity implements ITickable, IGuiHolder {
     private void updateProgressForHandler(ItemStackHandler handler) {
         if (handler == leftItemHandler) {
             if (progressLeft < 3) {
-                previousProgressLeft ++;
+                previousProgressLeft++;
                 progressLeft++;
             }
         } else {
@@ -243,6 +242,10 @@ public class TileSplitter extends TileEntity implements ITickable, IGuiHolder {
         return capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY;
     }
 
+    enum Side {
+        L, R
+    }
+
     public class SplitterItemHandler extends ItemStackHandler {
 
         ItemStackHandler main;
@@ -292,10 +295,6 @@ public class TileSplitter extends TileEntity implements ITickable, IGuiHolder {
             }
             return super.insertItem(slot, stack, simulate);
         }
-    }
-
-    enum Side {
-        L, R;
     }
 }
 
