@@ -77,6 +77,10 @@ public class ModelInstancer {
                 if (f != null) {
                     mi.setRotationFunction(f);
                 }
+                Runnable g = modelInstance.attachedmap.get(nm.getName());
+                if (g != null) {
+                    mi.setAttachedMesh(g);
+                }
                 currentNode.addMesh(mi);
             }
         }

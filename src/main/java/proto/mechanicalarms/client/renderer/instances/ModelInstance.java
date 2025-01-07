@@ -13,6 +13,7 @@ public class ModelInstance {
     NodeInstance root;
     ResourceLocation resourceLocation;
     Object2ObjectArrayMap<String, UnaryOperator<Quaternion>> rmap = new Object2ObjectArrayMap<>();
+    Object2ObjectArrayMap<String, Runnable> attachedmap = new Object2ObjectArrayMap<>();
 
     public ModelInstance(ResourceLocation resourceLocation) {
         this.resourceLocation = resourceLocation;
@@ -33,5 +34,9 @@ public class ModelInstance {
 
     public NodeInstance getRoot() {
         return root;
+    }
+
+    public void attachModel(String secondArm, Runnable o) {
+        attachedmap.put(secondArm, o);
     }
 }

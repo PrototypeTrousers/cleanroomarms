@@ -82,9 +82,10 @@ public class TileSplitter extends TileEntity implements ITickable, IGuiHolder {
     @Override
     public ModularPanel buildUI(GuiData guiData, GuiSyncManager guiSyncManager) {
         ModularPanel panel = new ModularPanel("Splitter");
+        panel.padding(2);
         panel.align(Alignment.Center);
         panel.child(new ItemSlot().slot(leftItemHandler, 0));
-        panel.child(new ItemSlot().slot(rightItemHandler, 0).left(18));
+        panel.child(new ItemSlot().slot(rightItemHandler, 0).left(20));
 
         panel.bindPlayerInventory();
         return panel;

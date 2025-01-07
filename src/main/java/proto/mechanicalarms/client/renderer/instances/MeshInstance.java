@@ -6,12 +6,10 @@ import de.javagl.jgltf.model.MeshPrimitiveModel;
 import de.javagl.jgltf.model.NodeModel;
 import de.javagl.jgltf.model.v2.MaterialModelV2;
 import net.minecraft.client.Minecraft;
-import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import org.lwjgl3.opengl.*;
 import proto.mechanicalarms.MechanicalArms;
 import proto.mechanicalarms.client.jgltf.EmbeddedTexture;
-import proto.mechanicalarms.client.renderer.util.ItemStackRenderToVAO;
 import proto.mechanicalarms.client.renderer.util.Quaternion;
 
 import java.nio.ByteBuffer;
@@ -40,6 +38,7 @@ public class MeshInstance implements InstanceableModel {
     private int colorBuffer;
     private Quaternion rotation;
     private UnaryOperator<Quaternion> rotationFunction;
+    private Runnable runnable;
 
     MeshInstance(NodeModel nm, MeshModel meshModel, MeshPrimitiveModel meshPrimitiveModel) {
         meshOrigin = nm.getTranslation();
@@ -189,5 +188,17 @@ public class MeshInstance implements InstanceableModel {
     @Override
     public int hashCode() {
         return Objects.hashCode(vertexArrayBuffer);
+    }
+
+    public void setAttachedMesh(Runnable g) {
+        this.runnable = g;
+    }
+
+    public boolean hasAttachedMesh() {
+        return this.runnable != null;
+    }
+
+    public Runnable getAttachedMesh() {
+        return this.runnable;
     }
 }

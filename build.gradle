@@ -136,7 +136,7 @@ dependencies {
     annotationProcessor 'com.google.guava:guava:33.0.0-jre'
     annotationProcessor 'com.google.code.gson:gson:2.10.1'
 
-    annotationProcessor ('com.cleanroommc:sponge-mixin:0.20.7+mixin.0.8.7')
+    annotationProcessor('com.cleanroommc:sponge-mixin:0.20.7+mixin.0.8.7')
 
     //also add the mod jar to the run mod folder...
     compileOnly('curse.maven:modularui-624243:5153414-sources-5153415')
@@ -146,6 +146,8 @@ dependencies {
 //    implementation fg.deobf("curse.maven:avaritia-261348:3143349")
     implementation fg.deobf("curse.maven:CodeChicken-242818:2779848")
     implementation "curse.maven:Fugue-1005815:5977040"
+    implementation "curse.maven:littletiles-257818:5180387"
+    implementation "curse.maven:creativecore-257814:4722163"
 //    implementation "curse.maven:AR-236542:4671856"
 //    implementation "curse.maven:libVulpes-236541:3801015"
 //    implementation "curse.maven:Galacticraft-564236:4671122"
