@@ -35,14 +35,18 @@ public class TileBeltBasic extends TileEntity implements ITickable, IGuiHolder {
     EnumFacing front;
     Slope slope;
 
-    protected ItemStackHandler mainItemHandler = new BeltItemHandler(1);
-    protected ItemStackHandler sideItemHandler = new BeltItemHandler(1, mainItemHandler);
+    protected ItemStackHandler leftItemHandler = new BeltItemHandler(1);
+    protected ItemStackHandler leftSideItemHandler = new BeltItemHandler(1, leftItemHandler);
+
+    protected ItemStackHandler rightItemHandler = new BeltItemHandler(1);
+    protected ItemStackHandler rightSideItemHandler = new BeltItemHandler(1, rightItemHandler);
     protected long insertedTick;
 
     @Override
     public NBTTagCompound writeToNBT(NBTTagCompound compound) {
         super.writeToNBT(compound);
-        compound.setTag("mainInventory", mainItemHandler.serializeNBT());
+        compound.setTag("leftInventory", leftItemHandler.serializeNBT());
+        compound.setTag("rightInventory", rightItemHandler.serializeNBT());
         if (front == null) {
             front = EnumFacing.NORTH;
         }
@@ -59,7 +63,8 @@ public class TileBeltBasic extends TileEntity implements ITickable, IGuiHolder {
     @Override
     public void readFromNBT(NBTTagCompound compound) {
         super.readFromNBT(compound);
-        mainItemHandler.deserializeNBT(compound.getCompoundTag("mainInventory"));
+        leftItemHandler.deserializeNBT(compound.getCompoundTag("leftInventory"));
+        rightItemHandler.deserializeNBT(compound.getCompoundTag("rightInventory"));
         front = EnumFacing.byIndex(compound.getInteger("front"));
         slope = Slope.values()[compound.getInteger("slope")];
         progress = compound.getInteger("progress");
@@ -100,17 +105,18 @@ public class TileBeltBasic extends TileEntity implements ITickable, IGuiHolder {
                 .leftRel(0.5f).topRelAnchor(0.25f, 0.5f)
                 .texture(GuiTextures.PROGRESS_ARROW, 20)
                 .value(new DoubleSyncValue(() -> this.progress / 100.0, val -> this.progress = (int) (val * 100))));
-        panel.child(new ItemSlot().slot(mainItemHandler, 0));
+        panel.child(new ItemSlot().slot(leftItemHandler, 0));
+        panel.child(new ItemSlot().slot(rightItemHandler, 0).left(18));
         panel.bindPlayerInventory();
         return panel;
     }
 
-    public ItemStackHandler getMainItemHandler() {
-        return mainItemHandler;
+    public ItemStackHandler getLeftItemHandler() {
+        return leftItemHandler;
     }
 
-    public ItemStackHandler getSideItemHandler() {
-        return sideItemHandler;
+    public ItemStackHandler getRightItemHandler() {
+        return rightItemHandler;
     }
 
     @Override
@@ -135,19 +141,19 @@ public class TileBeltBasic extends TileEntity implements ITickable, IGuiHolder {
             insertedTick = -1;
             return;
         }
-        for (EntityItem e : this.getWorld().getEntitiesWithinAABB(EntityItem.class, pickerBB)) {
-            if (mainItemHandler.insertItem(0, e.getItem(), true) != e.getItem()) {
-                ItemStack insert = e.getItem().copy();
-                insert.setCount(1);
-                mainItemHandler.insertItem(0, insert, false);
-                e.getItem().shrink(1);
-            }
-        }
+//        for (EntityItem e : this.getWorld().getEntitiesWithinAABB(EntityItem.class, pickerBB)) {
+//            if (mainItemHandler.insertItem(0, e.getItem(), true) != e.getItem()) {
+//                ItemStack insert = e.getItem().copy();
+//                insert.setCount(1);
+//                mainItemHandler.insertItem(0, insert, false);
+//                e.getItem().shrink(1);
+//            }
+//        }
         if (this.world.isBlockPowered(this.getPos())) {
             this.previousProgress = progress;
             return;
         }
-        if (mainItemHandler.getStackInSlot(0).isEmpty()) {
+        if (leftItemHandler.getStackInSlot(0).isEmpty() && rightItemHandler.getStackInSlot(0).isEmpty()) {
             previousProgress = 0;
             progress = 0;
             return;
@@ -177,13 +183,13 @@ public class TileBeltBasic extends TileEntity implements ITickable, IGuiHolder {
                     }
                 }
                 if (frontTe != null) {
-                    IItemHandler cap = frontTe.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, facing.getOpposite());
-                    if (cap != null) {
-                        if (cap.insertItem(0, mainItemHandler.extractItem(0, 1, true), true) != mainItemHandler.getStackInSlot(0)) {
-                            cap.insertItem(0, mainItemHandler.extractItem(0, 1, false), false);
-                            progress = 0;
-                        }
-                    }
+//                    IItemHandler cap = frontTe.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, facing.getOpposite());
+//                    if (cap != null) {
+//                        if (cap.insertItem(0, mainItemHandler.extractItem(0, 1, true), true) != mainItemHandler.getStackInSlot(0)) {
+//                            cap.insertItem(0, mainItemHandler.extractItem(0, 1, false), false);
+//                            progress = 0;
+//                        }
+//                    }
                 }
                 previousProgress = progress;
             }
@@ -238,10 +244,12 @@ public class TileBeltBasic extends TileEntity implements ITickable, IGuiHolder {
     @Override
     public <T> T getCapability(Capability<T> capability, @Nullable EnumFacing facing) {
         if (capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
-            if (this.front.rotateYCCW() == facing || this.front.rotateY() == facing) {
-                return (T) sideItemHandler;
+            if (this.front.rotateYCCW() == facing ) {
+               return (T) leftSideItemHandler;
+            } else if (this.front.rotateY() == facing) {
+                return (T) rightSideItemHandler;
             }
-            return (T) mainItemHandler;
+            return (T) leftItemHandler;
         }
         return super.getCapability(capability, facing);
     }

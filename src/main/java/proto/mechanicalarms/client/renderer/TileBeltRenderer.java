@@ -110,9 +110,7 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
         setRenderingTE(null);
     }
 
-    void renderHoldingItem(TileBeltBasic tileBeltBasic, double x, double y, double z) {
-        ItemStack curStack = tileBeltBasic.getMainItemHandler().getStackInSlot(0);
-
+    void renderHoldingItem(TileBeltBasic tileBeltBasic, ItemStack curStack, double x, double y, double z) {
         if (curStack.isEmpty()) {
             return;
         }
@@ -240,9 +238,8 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
 
         EnumFacing facing = tileBeltBasic.getFront();
         float xOff = 0;
-        float zOff = 0;
         float yOff = 0;
-
+        float zOff = 0;
 
         //model origin
         Vector3f p = new Vector3f(0, 0.6f, 0f);
@@ -272,8 +269,34 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
 
         renderBase(tileBeltBasic);
 
+        //"left"
+        if (facing == EnumFacing.NORTH) {
+            xOff = -0.25f;
+        } else if (facing == EnumFacing.SOUTH) {
+            xOff = 0.25f;
+        } else if (facing == EnumFacing.EAST) {
+            zOff = -0.25f;
+        } else {
+            zOff = 0.25f;
+        }
+        ItemStack curStack = tileBeltBasic.getLeftItemHandler().getStackInSlot(0);
 
-        renderHoldingItem(tileBeltBasic, x + xOff, y + yOff, z + zOff);
+        renderHoldingItem(tileBeltBasic, curStack, x + xOff, y, z + zOff);
+
+        //"right"
+        if (facing == EnumFacing.NORTH) {
+            xOff = 0.25f;
+        } else if (facing == EnumFacing.SOUTH) {
+            xOff = -0.25f;
+        } else if (facing == EnumFacing.EAST) {
+            zOff = 0.25f;
+        } else {
+            zOff = -0.25f;
+        }
+        curStack = tileBeltBasic.getRightItemHandler().getStackInSlot(0);
+
+        renderHoldingItem(tileBeltBasic, curStack, x + xOff, y, z + zOff);
+
     }
 
     Matrix4f fbToM4f(FloatBuffer fb, Matrix4f mat) {

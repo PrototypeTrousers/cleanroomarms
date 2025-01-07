@@ -71,20 +71,20 @@ public class BlockBelt extends Block implements ITileEntityProvider {
     public void getDrops(NonNullList<ItemStack> drops, IBlockAccess world, BlockPos pos, IBlockState state, int fortune) {
         TileEntity te = world.getTileEntity(pos);
         if (te instanceof TileBeltBasic tileBeltBasic) {
-            IItemHandler side = tileBeltBasic.getMainItemHandler();
-            for (int s = 0; s < side.getSlots(); s++) {
-                if (side.getStackInSlot(s).isEmpty()) {
-                    continue;
-                }
-                drops.add(side.getStackInSlot(s).copy());
-            }
-            side = tileBeltBasic.getSideItemHandler();
-            for (int s = 0; s < side.getSlots(); s++) {
-                if (side.getStackInSlot(s).isEmpty()) {
-                    continue;
-                }
-                drops.add(side.getStackInSlot(s).copy());
-            }
+//            IItemHandler side = tileBeltBasic.getMainItemHandler();
+//            for (int s = 0; s < side.getSlots(); s++) {
+//                if (side.getStackInSlot(s).isEmpty()) {
+//                    continue;
+//                }
+//                drops.add(side.getStackInSlot(s).copy());
+//            }
+//            side = tileBeltBasic.getSideItemHandler();
+//            for (int s = 0; s < side.getSlots(); s++) {
+//                if (side.getStackInSlot(s).isEmpty()) {
+//                    continue;
+//                }
+//                drops.add(side.getStackInSlot(s).copy());
+//            }
         }
         super.getDrops(drops, world, pos, state, fortune);
     }
@@ -94,7 +94,7 @@ public class BlockBelt extends Block implements ITileEntityProvider {
         if (!playerIn.getHeldItem(hand).isEmpty()) {
             TileEntity te = worldIn.getTileEntity(pos);
             if (te instanceof TileBeltBasic tbb) {
-                tbb.getMainItemHandler().setStackInSlot(0, playerIn.getHeldItem(hand).copy());
+                tbb.getLeftItemHandler().setStackInSlot(0, playerIn.getHeldItem(hand).copy());
             }
         } else {
             if (!worldIn.isRemote) {
