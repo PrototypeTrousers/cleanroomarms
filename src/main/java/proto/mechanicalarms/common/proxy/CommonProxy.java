@@ -1,7 +1,9 @@
 package proto.mechanicalarms.common.proxy;
 
+import net.minecraftforge.common.capabilities.CapabilityManager;
 import proto.mechanicalarms.MechanicalArms;
 import proto.mechanicalarms.common.block.Blocks;
+import proto.mechanicalarms.common.cap.CapabilityDualSidedHandler;
 import proto.mechanicalarms.common.item.Items;
 import proto.mechanicalarms.common.tile.*;
 import net.minecraft.block.Block;
@@ -46,6 +48,7 @@ public class CommonProxy
 		Blocks.init();
 		Items.init();
 		Tiles.init();
+		CapabilityDualSidedHandler.register();
 	}
 
 	public void init()

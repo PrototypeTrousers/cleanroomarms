@@ -23,6 +23,8 @@ import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import proto.mechanicalarms.api.capability.IDualSidedHandler;
+import proto.mechanicalarms.common.cap.CapabilityDualSidedHandler;
 
 
 public class TileBeltBasic extends TileEntity implements ITickable, IGuiHolder {
@@ -40,6 +42,8 @@ public class TileBeltBasic extends TileEntity implements ITickable, IGuiHolder {
 
     protected ItemStackHandler rightItemHandler = new BeltItemHandler(1);
     protected ItemStackHandler rightSideItemHandler = new BeltItemHandler(1, rightItemHandler);
+
+    protected IDualSidedHandler dual = new b();
     protected long insertedTick;
 
     @Override
@@ -183,13 +187,32 @@ public class TileBeltBasic extends TileEntity implements ITickable, IGuiHolder {
                     }
                 }
                 if (frontTe != null) {
-//                    IItemHandler cap = frontTe.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, facing.getOpposite());
-//                    if (cap != null) {
-//                        if (cap.insertItem(0, mainItemHandler.extractItem(0, 1, true), true) != mainItemHandler.getStackInSlot(0)) {
-//                            cap.insertItem(0, mainItemHandler.extractItem(0, 1, false), false);
-//                            progress = 0;
-//                        }
-//                    }
+                    if (frontTe.hasCapability(CapabilityDualSidedHandler.DUAL_SIDED_CAPABILITY, facing.getOpposite())) {
+                        IDualSidedHandler cap = frontTe.getCapability(CapabilityDualSidedHandler.DUAL_SIDED_CAPABILITY, facing.getOpposite());
+                        if (cap != null) {
+                            if (cap.insertLeft(leftItemHandler.extractItem(0, 1, true), true) != leftItemHandler.getStackInSlot(0)) {
+                                cap.insertLeft(leftItemHandler.extractItem(0, 1, false), false);
+                                progress = 0;
+                            }
+                            if (cap.insertRight(rightItemHandler.extractItem(0, 1, true), true) != rightItemHandler.getStackInSlot(0)) {
+                                cap.insertRight(rightItemHandler.extractItem(0, 1, false), false);
+                                progress = 0;
+                            }
+                        } else {
+                            IItemHandler icap = frontTe.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, facing.getOpposite());
+                            if (icap != null) {
+                                if (icap.insertItem(0, leftItemHandler.extractItem(0, 1, true), true) != leftItemHandler.getStackInSlot(0)) {
+                                    icap.insertItem(0, leftItemHandler.extractItem(0, 1, false), false);
+                                    progress = 0;
+                                }
+
+                                if (icap.insertItem(0, rightItemHandler.extractItem(0, 1, true), true) != rightItemHandler.getStackInSlot(0)) {
+                                    icap.insertItem(0, rightItemHandler.extractItem(0, 1, false), false);
+                                    progress = 0;
+                                }
+                            }
+                        }
+                    }
                 }
                 previousProgress = progress;
             }
@@ -250,13 +273,18 @@ public class TileBeltBasic extends TileEntity implements ITickable, IGuiHolder {
                 return (T) rightSideItemHandler;
             }
             return (T) leftItemHandler;
+        } else if (capability == CapabilityDualSidedHandler.DUAL_SIDED_CAPABILITY) {
+            if (facing.getOpposite() == front) {
+                return (T) dual;
+            }
         }
         return super.getCapability(capability, facing);
     }
 
     @Override
     public boolean hasCapability(Capability<?> capability, @Nullable EnumFacing facing) {
-        return capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY;
+        return capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY ||
+                capability == CapabilityDualSidedHandler.DUAL_SIDED_CAPABILITY;
     }
 
     public Slope getSlope() {
@@ -352,6 +380,19 @@ public class TileBeltBasic extends TileEntity implements ITickable, IGuiHolder {
         enum SIDE {
             L,
             R;
+        }
+    }
+
+    public class b implements IDualSidedHandler {
+
+        @Override
+        public ItemStack insertLeft(ItemStack insert, boolean simulate) {
+            return leftItemHandler.insertItem(0, insert, simulate);
+        }
+
+        @Override
+        public ItemStack insertRight(ItemStack insert, boolean simulate) {
+            return rightItemHandler.insertItem(0, insert, simulate);
         }
     }
 
