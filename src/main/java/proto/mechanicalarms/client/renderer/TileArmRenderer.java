@@ -17,8 +17,6 @@ import proto.mechanicalarms.common.proxy.ClientProxy;
 import proto.mechanicalarms.common.tile.TileArmBasic;
 
 import javax.vecmath.Matrix4f;
-import javax.vecmath.Vector3f;
-import java.nio.FloatBuffer;
 import java.util.function.Supplier;
 
 
@@ -28,9 +26,6 @@ public class TileArmRenderer extends FastTESR<TileArmBasic> {
 
     float[] mtx = new float[16];
 
-    Matrix4f itemArmMatrix = new Matrix4f();
-
-    private final Matrix4f tempModelMatrix = new Matrix4f();
     Matrix4f translationMatrix = new Matrix4f();
     byte s;
     byte b;
@@ -47,19 +42,19 @@ public class TileArmRenderer extends FastTESR<TileArmBasic> {
         super();
     }
 
-    void traverseHierarchy(NodeInstance node, TileArmBasic tileArmBasic) {
+    void traverseHierarchy(NodeInstance node) {
         // Process the current node (for example, print its information)
-        processNode(node, tileArmBasic);
+        processNode(node);
 
         // Recursively traverse each child node
         for (NodeInstance child : node.getChildren()) {
             matrix4fStack.pushMatrix();
-            traverseHierarchy(child, tileArmBasic);
+            traverseHierarchy(child);
             matrix4fStack.popMatrix();
         }
     }
 
-    void processNode(NodeInstance node, TileArmBasic tileArmBasic) {
+    void processNode(NodeInstance node) {
         for (MeshInstance m : node.getMeshes()) {
             ir.schedule(m); // Schedule the mesh for rendering
 
@@ -93,8 +88,7 @@ public class TileArmRenderer extends FastTESR<TileArmBasic> {
         return () -> renderingTE;
     }
 
-    void renderBase(TileArmBasic tileArmBasic) {
-        setRenderingTE(tileArmBasic);
+    void renderBase() {
         if (modelInstance.getRoot() == null) {
             modelInstance.setMeshRotationFunction(
                     "BaseMotor", (quaternion) -> quaternion.rotateY(lerp(getRenderingTE().get().getAnimationRotation(0)[1],
@@ -112,9 +106,8 @@ public class TileArmRenderer extends FastTESR<TileArmBasic> {
         NodeInstance ni = modelInstance.getRoot();
         matrix4fStack.pushMatrix();
         matrix4fStack.mul(translationMatrix);
-        traverseHierarchy(ni, tileArmBasic);
+        traverseHierarchy(ni);
         matrix4fStack.popMatrix();
-        setRenderingTE(null);
     }
 
     void renderHoldingItem(TileArmBasic tileArmBasic) {
@@ -131,18 +124,18 @@ public class TileArmRenderer extends FastTESR<TileArmBasic> {
             modelCache.put(curStack, itemvao);
         }
         ir.schedule(itemvao);
-        itemArmMatrix.setIdentity();
+        matrix4fStack.pushMatrix();
 
         rot.setIndentity();
 
-        itemArmMatrix.mul(matrix4fStack);
 
-        itemArmMatrix.setScale(0.375f);
-        translate(itemArmMatrix, 0f, 1f, -0.5f);
+        matrix4fStack.setScale(0.375f);
+        translate(matrix4fStack, 0f, 1f, -0.5f);
 
-        Quaternion.rotateMatrix(itemArmMatrix, rot);
+        Quaternion.rotateMatrix(matrix4fStack, rot);
 
-        matrix4ftofloatarray(itemArmMatrix, mtx);
+        matrix4ftofloatarray(matrix4fStack, mtx);
+        matrix4fStack.popMatrix();
         ir.bufferModelMatrixData(mtx);
         ir.bufferLight(s, b);
     }
@@ -176,8 +169,8 @@ public class TileArmRenderer extends FastTESR<TileArmBasic> {
 
         translationMatrix.setIdentity();
         translate(translationMatrix, (float) x + 0.5F, (float) y, (float) z + 0.5F);
-
-        renderBase(tileArmBasic);
+        setRenderingTE(tileArmBasic);
+        renderBase();
     }
 
     public void translate(Matrix4f mat, float x, float y, float z) {
@@ -185,12 +178,6 @@ public class TileArmRenderer extends FastTESR<TileArmBasic> {
         mat.m13 += mat.m10 * x + mat.m11 * y + mat.m12 * z;
         mat.m23 += mat.m20 * x + mat.m21 * y + mat.m22 * z;
         mat.m33 += mat.m30 * x + mat.m31 * y + mat.m32 * z;
-    }
-
-    void translate(Matrix4f matrix, Vector3f translation) {
-        this.tempModelMatrix.setIdentity();
-        this.tempModelMatrix.setTranslation(translation);
-        matrix.mul(this.tempModelMatrix);
     }
 
     private float lerp(float previous, float current, float partialTick) {
