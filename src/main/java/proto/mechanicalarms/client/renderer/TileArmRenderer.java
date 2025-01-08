@@ -130,7 +130,8 @@ public class TileArmRenderer extends FastTESR<TileArmBasic> {
 
 
         matrix4fStack.setScale(0.375f);
-        translate(matrix4fStack, 0f, 1f, -0.5f);
+        rot.rotateX((float) (Math.PI));
+        translate(matrix4fStack, 0f, 2f, 0.5f);
 
         Quaternion.rotateMatrix(matrix4fStack, rot);
 
