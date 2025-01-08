@@ -110,7 +110,7 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
         setRenderingTE(null);
     }
 
-    void renderHoldingItem(TileBeltBasic tileBeltBasic, ItemStack curStack, double x, double y, double z) {
+    void renderHoldingItem(TileBeltBasic tileBeltBasic, ItemStack curStack, int progress, int previousProgress, double x, double y, double z) {
         if (curStack.isEmpty()) {
             return;
         }
@@ -155,7 +155,7 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
             }
         }
 
-        float itemProgress = -0.5F + (lerp(tileBeltBasic.getPreviousProgress(), tileBeltBasic.getProgress(), partialTicks) / 3F);
+        float itemProgress = -0.5F + (lerp(previousProgress, progress, partialTicks) / 3F);
         Vector3f vecProgress = new Vector3f();
 
         if (facing == EnumFacing.NORTH) {
@@ -175,12 +175,12 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
 
         float yProgress = 0;
         if (tileBeltBasic.getSlope() == Slope.DOWN) {
-            yProgress = 1.0625F - (float) (lerp(tileBeltBasic.getPreviousProgress(), tileBeltBasic.getProgress(), partialTicks) * 0.05);
+            yProgress = 1.0625F - (float) (lerp(previousProgress, progress, partialTicks) * 0.05);
             rot.rotateX((float) (-Math.PI / 4));
 
 
         } else if (tileBeltBasic.getSlope() == Slope.UP) {
-            yProgress = (float) (0.0625F + lerp(tileBeltBasic.getPreviousProgress(), tileBeltBasic.getProgress(), partialTicks) * 0.05);
+            yProgress = (float) (0.0625F + lerp(previousProgress, progress, partialTicks) * 0.05);
             rot.rotateX((float) (Math.PI / 4));
         }
 
@@ -279,9 +279,10 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
         } else {
             zOff = 0.25f;
         }
+
         ItemStack curStack = tileBeltBasic.getLeftItemHandler().getStackInSlot(0);
 
-        renderHoldingItem(tileBeltBasic, curStack, x + xOff, y, z + zOff);
+        renderHoldingItem(tileBeltBasic, curStack, tileBeltBasic.getProgressLeft(), tileBeltBasic.getPreviousProgressLeft(), x + xOff, y, z + zOff);
 
         //"right"
         if (facing == EnumFacing.NORTH) {
@@ -295,7 +296,7 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
         }
         curStack = tileBeltBasic.getRightItemHandler().getStackInSlot(0);
 
-        renderHoldingItem(tileBeltBasic, curStack, x + xOff, y, z + zOff);
+        renderHoldingItem(tileBeltBasic, curStack, tileBeltBasic.getProgressRight(), tileBeltBasic.getPreviousProgressRight(), x + xOff, y, z + zOff);
 
     }
 
