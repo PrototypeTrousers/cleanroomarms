@@ -106,6 +106,14 @@ public class BlockBelt extends Block implements ITileEntityProvider {
     }
 
     @Override
+    public void onNeighborChange(IBlockAccess world, BlockPos pos, BlockPos neighbor) {
+        TileEntity te = world.getTileEntity(pos);
+        if (te instanceof TileBeltBasic tbb) {
+            tbb.updateConnected();
+        }
+    }
+
+    @Override
     public AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess source, BlockPos pos) {
         return boundBox;
     }

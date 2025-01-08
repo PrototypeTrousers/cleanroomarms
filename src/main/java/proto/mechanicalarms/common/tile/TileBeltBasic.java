@@ -44,6 +44,7 @@ public class TileBeltBasic extends TileEntity implements ITickable, IGuiHolder {
     protected ItemStackHandler rightSideItemHandler = new BeltItemHandler(1, rightItemHandler);
 
     protected IDualSidedHandler dual = new b();
+    protected int connected = -1;
     protected long insertedTick;
 
     @Override
@@ -139,6 +140,9 @@ public class TileBeltBasic extends TileEntity implements ITickable, IGuiHolder {
 
     @Override
     public void update() {
+        if (connected == -1) {
+            updateConnected();
+        }
         if (progress == 0 && insertedTick == world.getTotalWorldTime()) {
             progress = 0;
             previousProgress = -1;
@@ -266,6 +270,9 @@ public class TileBeltBasic extends TileEntity implements ITickable, IGuiHolder {
     @Nullable
     @Override
     public <T> T getCapability(Capability<T> capability, @Nullable EnumFacing facing) {
+        if (connected == -1) {
+            return null;
+        }
         if (capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
             if (this.front.rotateYCCW() == facing ) {
                return (T) leftSideItemHandler;
@@ -275,6 +282,15 @@ public class TileBeltBasic extends TileEntity implements ITickable, IGuiHolder {
             return (T) leftItemHandler;
         } else if (capability == CapabilityDualSidedHandler.DUAL_SIDED_CAPABILITY) {
             if (facing.getOpposite() == front) {
+                return (T) dual;
+            }
+
+            //left is 0
+            if ((connected & (1 << 0)) != 0 && (connected & ~(1 << 0)) == 0) {
+                return (T) dual;
+            }
+            //right is 1
+            if ((connected & (1 << 1)) != 0 && (connected & ~(1 << 1)) == 0) {
                 return (T) dual;
             }
         }
@@ -289,6 +305,28 @@ public class TileBeltBasic extends TileEntity implements ITickable, IGuiHolder {
 
     public Slope getSlope() {
         return slope;
+    }
+
+    public void updateConnected() {
+        int mask = 0; // Initialize the bitmask as an integer
+
+        // Check the left connection and set bit 0 if true
+        if (world.getTileEntity(this.pos.offset(front.rotateYCCW())) instanceof TileBeltBasic backBelt) {
+            mask |= (1 << 0); // Set bit 0
+        }
+
+        // Check the right connection and set bit 1 if true
+        if (world.getTileEntity(this.pos.offset(front.rotateY())) instanceof TileBeltBasic backBelt) {
+            mask |= (1 << 1); // Set bit 1
+        }
+
+        // Check the opposite direction and set bit 3 if true
+        if (world.getTileEntity(this.pos.offset(front.getOpposite())) instanceof TileBeltBasic backBelt) {
+            mask |= (1 << 3); // Set bit 3
+        }
+
+        // Use the mask for further operations as needed, for example:
+        connected = mask; // Store the bitmask in 'connected' (now an integer)
     }
 
     public class BeltItemHandler extends ItemStackHandler {
