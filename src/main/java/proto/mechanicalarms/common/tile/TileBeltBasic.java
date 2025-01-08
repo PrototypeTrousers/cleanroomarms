@@ -141,7 +141,7 @@ public class TileBeltBasic extends TileEntity implements ITickable, IGuiHolder {
         }
 
         boolean tickLeft = true;
-        if (progressLeft == 0 && insertedTickRight == world.getTotalWorldTime()) {
+        if (progressLeft == 0 && insertedTickLeft == world.getTotalWorldTime()) {
             progressLeft = 0;
             previousProgressLeft = -1;
             insertedTickLeft = -1;
