@@ -8,7 +8,6 @@ import com.cleanroommc.modularui.value.sync.DoubleSyncValue;
 import com.cleanroommc.modularui.value.sync.GuiSyncManager;
 import com.cleanroommc.modularui.widgets.ItemSlot;
 import com.cleanroommc.modularui.widgets.ProgressWidget;
-import net.minecraft.entity.item.EntityItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.NetworkManager;
@@ -29,23 +28,21 @@ import proto.mechanicalarms.common.cap.CapabilityDualSidedHandler;
 
 public class TileBeltBasic extends TileEntity implements ITickable, IGuiHolder {
 
+    protected ItemStackHandler leftItemHandler = new BeltItemHandler(1);
+    protected ItemStackHandler leftSideItemHandler = new BeltItemHandler(1, leftItemHandler);
+    protected ItemStackHandler rightItemHandler = new BeltItemHandler(1);
+    protected ItemStackHandler rightSideItemHandler = new BeltItemHandler(1, rightItemHandler);
+    protected IDualSidedHandler dualBack = new b();
+    protected IDualSidedHandler dualLeft = new b(b.SIDE.L);
+    protected IDualSidedHandler dualRight = new b(b.SIDE.R);
+    protected int connected = -1;
+    protected long insertedTick;
     AxisAlignedBB renderBB;
     AxisAlignedBB pickerBB;
     int progress = 0;
     int previousProgress = 0;
-
     EnumFacing front;
     Slope slope;
-
-    protected ItemStackHandler leftItemHandler = new BeltItemHandler(1);
-    protected ItemStackHandler leftSideItemHandler = new BeltItemHandler(1, leftItemHandler);
-
-    protected ItemStackHandler rightItemHandler = new BeltItemHandler(1);
-    protected ItemStackHandler rightSideItemHandler = new BeltItemHandler(1, rightItemHandler);
-
-    protected IDualSidedHandler dual = new b();
-    protected int connected = -1;
-    protected long insertedTick;
 
     @Override
     public NBTTagCompound writeToNBT(NBTTagCompound compound) {
@@ -239,23 +236,13 @@ public class TileBeltBasic extends TileEntity implements ITickable, IGuiHolder {
     public int getProgress() {
         return progress;
     }
+
     public int getPreviousProgress() {
         return previousProgress;
     }
 
-    public boolean isSlope(){
+    public boolean isSlope() {
         return slope != Slope.HORIZONTAL;
-    }
-
-    public void setSlope(EnumFacing enumFacing) {
-        if (enumFacing == EnumFacing.UP) {
-            this.slope = Slope.UP;
-        } else if (enumFacing == EnumFacing.DOWN ) {
-            this.slope = Slope.DOWN;
-        } else {
-            this.slope = Slope.HORIZONTAL;
-        }
-
     }
 
     public EnumFacing getFront() {
@@ -274,24 +261,28 @@ public class TileBeltBasic extends TileEntity implements ITickable, IGuiHolder {
             return null;
         }
         if (capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
-            if (this.front.rotateYCCW() == facing ) {
-               return (T) leftSideItemHandler;
+            if (this.front.rotateYCCW() == facing) {
+                return (T) leftSideItemHandler;
             } else if (this.front.rotateY() == facing) {
                 return (T) rightSideItemHandler;
             }
             return (T) leftItemHandler;
         } else if (capability == CapabilityDualSidedHandler.DUAL_SIDED_CAPABILITY) {
             if (facing.getOpposite() == front) {
-                return (T) dual;
+                return (T) dualBack;
             }
 
             //left is 0
-            if ((connected & (1 << 0)) != 0 && (connected & ~(1 << 0)) == 0) {
-                return (T) dual;
+            if (this.front.rotateYCCW() == facing) {
+                if ((connected & (1 << 0)) != 0 && (connected & ~(1 << 0)) == 0) {
+                    return (T) dualLeft;
+                }
             }
             //right is 1
-            if ((connected & (1 << 1)) != 0 && (connected & ~(1 << 1)) == 0) {
-                return (T) dual;
+            if (this.front.rotateY() == facing) {
+                if ((connected & (1 << 1)) != 0 && (connected & ~(1 << 1)) == 0) {
+                    return (T) dualRight;
+                }
             }
         }
         return super.getCapability(capability, facing);
@@ -299,12 +290,22 @@ public class TileBeltBasic extends TileEntity implements ITickable, IGuiHolder {
 
     @Override
     public boolean hasCapability(Capability<?> capability, @Nullable EnumFacing facing) {
-        return capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY ||
-                capability == CapabilityDualSidedHandler.DUAL_SIDED_CAPABILITY;
+        return capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY || capability == CapabilityDualSidedHandler.DUAL_SIDED_CAPABILITY;
     }
 
     public Slope getSlope() {
         return slope;
+    }
+
+    public void setSlope(EnumFacing enumFacing) {
+        if (enumFacing == EnumFacing.UP) {
+            this.slope = Slope.UP;
+        } else if (enumFacing == EnumFacing.DOWN) {
+            this.slope = Slope.DOWN;
+        } else {
+            this.slope = Slope.HORIZONTAL;
+        }
+
     }
 
     public void updateConnected() {
@@ -381,7 +382,7 @@ public class TileBeltBasic extends TileEntity implements ITickable, IGuiHolder {
         @NotNull
         @Override
         public ItemStack insertItem(int slot, @NotNull ItemStack stack, boolean simulate) {
-            if(stack.isEmpty()) {
+            if (stack.isEmpty()) {
                 return ItemStack.EMPTY;
             }
             if (main != null) {
@@ -414,23 +415,37 @@ public class TileBeltBasic extends TileEntity implements ITickable, IGuiHolder {
             markDirty();
             world.notifyBlockUpdate(pos, world.getBlockState(pos), world.getBlockState(pos), 3);
         }
-
-        enum SIDE {
-            L,
-            R;
-        }
     }
 
     public class b implements IDualSidedHandler {
+        SIDE side;
+
+        public b(SIDE side) {
+            this.side = side;
+        }
+
+        public b() {
+
+        }
 
         @Override
         public ItemStack insertLeft(ItemStack insert, boolean simulate) {
+            if (side == SIDE.L) {
+                return leftSideItemHandler.insertItem(0, insert, simulate);
+            }
             return leftItemHandler.insertItem(0, insert, simulate);
         }
 
         @Override
         public ItemStack insertRight(ItemStack insert, boolean simulate) {
+            if (side == SIDE.R) {
+                return rightSideItemHandler.insertItem(0, insert, simulate);
+            }
             return rightItemHandler.insertItem(0, insert, simulate);
+        }
+
+        enum SIDE {
+            L, R
         }
     }
 
