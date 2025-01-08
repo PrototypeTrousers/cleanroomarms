@@ -33,7 +33,8 @@ public class TileBeltBasic extends TileEntity implements ITickable, IGuiHolder {
     protected IDualSidedHandler dualLeft = new b(Side.L);
     protected IDualSidedHandler dualRight = new b(Side.R);
     protected int connected = -1;
-    protected long insertedTick;
+    protected long insertedTickLeft;
+    protected long insertedTickRight;
     AxisAlignedBB renderBB;
     AxisAlignedBB pickerBB;
     int progressLeft = 0;
@@ -138,11 +139,21 @@ public class TileBeltBasic extends TileEntity implements ITickable, IGuiHolder {
         if (connected == -1) {
             updateConnected();
         }
-        if (progressLeft == 0 && progressRight == 0 && insertedTick == world.getTotalWorldTime()) {
-            progressLeft = progressRight = 0;
-            previousProgressLeft = previousProgressRight = -1;
-            insertedTick = -1;
-            return;
+
+        boolean tickLeft = true;
+        if (progressLeft == 0 && insertedTickRight == world.getTotalWorldTime()) {
+            progressLeft = 0;
+            previousProgressLeft = -1;
+            insertedTickLeft = -1;
+            tickLeft = false;
+        }
+
+        boolean tickRight = true;
+        if (progressRight == 0 && insertedTickRight == world.getTotalWorldTime()) {
+            progressRight = 0;
+            previousProgressRight = -1;
+            insertedTickRight = -1;
+            tickRight = false;
         }
 
         if (this.world.isBlockPowered(this.getPos())) {
@@ -156,28 +167,29 @@ public class TileBeltBasic extends TileEntity implements ITickable, IGuiHolder {
             return;
         }
         if (!this.world.isRemote) {
-
-            if (progressLeft < 3 && !leftItemHandler.getStackInSlot(0).isEmpty()) {
-                previousProgressLeft++;
-                progressLeft++;
-            }
-            if (progressRight < 3 && !rightItemHandler.getStackInSlot(0).isEmpty()) {
-                previousProgressRight++;
-                progressRight++;
-            }
-
-            if (progressLeft >= 3) {
-                handleItemTransfer(true);
-            }
-            if (progressRight >= 3) {
-                handleItemTransfer(false);
+            if (tickLeft) {
+                if (progressLeft < 3 && !leftItemHandler.getStackInSlot(0).isEmpty()) {
+                    previousProgressLeft++;
+                    progressLeft++;
+                }
+                if (progressLeft >= 3) {
+                    handleItemTransfer(true);
+                }
+            } if (tickRight) {
+                if (progressRight < 3 && !rightItemHandler.getStackInSlot(0).isEmpty()) {
+                    previousProgressRight++;
+                    progressRight++;
+                }
+                if (progressRight >= 3) {
+                    handleItemTransfer(false);
+                }
             }
         } else {
-            if (progressLeft < 3) {
+            if (tickLeft && progressLeft < 3) {
                 previousProgressLeft = progressLeft;
                 progressLeft++;
             }
-            if (progressRight < 3) {
+            if (tickLeft && progressRight < 3) {
                 previousProgressRight = progressRight;
                 progressRight++;
             }
@@ -414,11 +426,12 @@ public class TileBeltBasic extends TileEntity implements ITickable, IGuiHolder {
                     if (side == Side.L) {
                         progressLeft = 1;
                         previousProgressLeft = 1;
+                        insertedTickLeft = world.getTotalWorldTime();
                     } else {
                         progressRight = 1;
                         previousProgressRight = 1;
+                        insertedTickRight = world.getTotalWorldTime();
                     }
-                    insertedTick = world.getTotalWorldTime();
                 }
                 return returnStack;
             }
@@ -428,11 +441,12 @@ public class TileBeltBasic extends TileEntity implements ITickable, IGuiHolder {
                 if (side == Side.L) {
                     previousProgressLeft = -1;
                     progressLeft = 0;
+                    insertedTickLeft = world.getTotalWorldTime();
                 } else {
                     previousProgressRight = -1;
                     progressRight = 0;
+                    insertedTickRight = world.getTotalWorldTime();
                 }
-                insertedTick = world.getTotalWorldTime();
             }
             return returnStack;
         }
