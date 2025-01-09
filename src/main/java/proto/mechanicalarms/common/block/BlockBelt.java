@@ -36,7 +36,6 @@ public class BlockBelt extends Block implements ITileEntityProvider {
         super(Material.IRON);
         setRegistryName(MechanicalArms.MODID, "belt_basic");
         setDefaultState(this.blockState.getBaseState().withProperty(FACING, Directions.NORTH));
-
     }
 
     @Override
