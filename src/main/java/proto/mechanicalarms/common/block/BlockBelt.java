@@ -98,22 +98,25 @@ public class BlockBelt extends Block implements ITileEntityProvider {
 
         boolean connectedToBelt = false;
         Directions placementDirection = null;
-        TileEntity forwardAbove = world.getTileEntity(pos.offset(facing).up());
+        TileEntity forwardAbove = world.getTileEntity(pos.offset(playerFacing).up());
         if (forwardAbove instanceof TileBeltBasic fb) {
-            if (fb.getFront() == facing) {
+            if (fb.getFront() == playerFacing) {
                 placementDirection = (Directions.getFromFacingAndLevel(playerFacing, Directions.RelativeHeight.ABOVE));
+            connectedToBelt = true;
             }
         }
-        TileEntity oppositeAbove = world.getTileEntity(pos.offset(facing.getOpposite()).up());
+        TileEntity oppositeAbove = world.getTileEntity(pos.offset(playerFacing.getOpposite()).up());
         if (oppositeAbove instanceof TileBeltBasic ob) {
-            if (ob.getFront() == facing) {
+            if (ob.getFront() == playerFacing) {
                 placementDirection = (Directions.getFromFacingAndLevel(playerFacing, Directions.RelativeHeight.ABOVE));
+                connectedToBelt = true;
             }
         }
-        TileEntity backwardsAbove = world.getTileEntity(pos.offset(facing.getOpposite()).up());
+        TileEntity backwardsAbove = world.getTileEntity(pos.offset(playerFacing.getOpposite()).up());
         if (backwardsAbove instanceof TileBeltBasic ba) {
-            if (ba.getFront() == facing) {
-                placementDirection = (Directions.getFromFacingAndLevel(playerFacing, Directions.RelativeHeight.ABOVE));
+            if (ba.getFront() == playerFacing) {
+                placementDirection = (Directions.getFromFacingAndLevel(playerFacing, Directions.RelativeHeight.BELOW));
+                connectedToBelt = true;
             }
         }
 

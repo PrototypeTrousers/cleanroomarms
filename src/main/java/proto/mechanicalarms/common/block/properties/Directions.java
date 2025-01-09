@@ -76,7 +76,7 @@ public enum Directions implements IStringSerializable {
         return this.toString().toLowerCase();
     }
 
-    public static enum RelativeHeight {
+    public enum RelativeHeight {
         ABOVE,
         LEVEL,
         BELOW;
