@@ -20,6 +20,7 @@ import net.minecraftforge.items.ItemStackHandler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import proto.mechanicalarms.api.capability.IDualSidedHandler;
+import proto.mechanicalarms.common.block.properties.Directions;
 import proto.mechanicalarms.common.cap.CapabilityDualSidedHandler;
 
 
@@ -41,22 +42,14 @@ public class TileBeltBasic extends TileEntity implements ITickable, IGuiHolder {
     int progressRight = 0;
     int previousProgressLeft = 0;
     int previousProgressRight = 0;
-    EnumFacing front;
-    Slope slope;
+    Directions direction;
 
     @Override
     public NBTTagCompound writeToNBT(NBTTagCompound compound) {
         super.writeToNBT(compound);
         compound.setTag("leftInventory", leftItemHandler.serializeNBT());
         compound.setTag("rightInventory", rightItemHandler.serializeNBT());
-        if (front == null) {
-            front = EnumFacing.NORTH;
-        }
-        compound.setInteger("front", front.ordinal());
-        if (slope == null) {
-            slope = Slope.HORIZONTAL;
-        }
-        compound.setInteger("slope", slope.ordinal());
+        compound.setInteger("directions", direction.ordinal());
         compound.setInteger("progressLeft", progressLeft);
         compound.setInteger("progressRight", progressRight);
         compound.setInteger("previousProgressLeft", previousProgressLeft);
@@ -69,8 +62,7 @@ public class TileBeltBasic extends TileEntity implements ITickable, IGuiHolder {
         super.readFromNBT(compound);
         leftItemHandler.deserializeNBT(compound.getCompoundTag("leftInventory"));
         rightItemHandler.deserializeNBT(compound.getCompoundTag("rightInventory"));
-        front = EnumFacing.byIndex(compound.getInteger("front"));
-        slope = Slope.values()[compound.getInteger("slope")];
+        direction = Directions.values()[compound.getInteger("directions")];
         progressLeft = compound.getInteger("progressLeft");
         progressRight = compound.getInteger("progressRight");
         previousProgressLeft = compound.getInteger("previousProgressLeft");
@@ -136,10 +128,6 @@ public class TileBeltBasic extends TileEntity implements ITickable, IGuiHolder {
 
     @Override
     public void update() {
-        if (connected == -1) {
-            updateConnected();
-        }
-
         boolean tickLeft = true;
         if (progressLeft == 0 && insertedTickLeft == world.getTotalWorldTime()) {
             progressLeft = 0;
@@ -198,14 +186,14 @@ public class TileBeltBasic extends TileEntity implements ITickable, IGuiHolder {
 
     private void handleItemTransfer(boolean left) {
         TileEntity frontTe;
-        EnumFacing facing = this.front;
-        if (slope == Slope.HORIZONTAL) {
+        EnumFacing facing = this.direction.getHorizontalFacing();
+        if (direction.getRelativeHeight() == Directions.RelativeHeight.LEVEL) {
             frontTe = world.getTileEntity(pos.offset(facing));
             if (frontTe == null) {
                 frontTe = world.getTileEntity(pos.offset(facing).down());
             }
         } else {
-            if (slope == Slope.UP) {
+            if (direction.getRelativeHeight() == Directions.RelativeHeight.ABOVE) {
                 frontTe = world.getTileEntity(pos.offset(facing).up());
             } else {
                 frontTe = world.getTileEntity(pos.offset(facing).down());
@@ -254,6 +242,9 @@ public class TileBeltBasic extends TileEntity implements ITickable, IGuiHolder {
     @Override
     public void onLoad() {
         super.onLoad();
+        if (connected == -1) {
+            updateConnected();
+        }
         pickerBB = new AxisAlignedBB(this.pos);
     }
 
@@ -274,44 +265,41 @@ public class TileBeltBasic extends TileEntity implements ITickable, IGuiHolder {
     }
 
     public boolean isSlope() {
-        return slope != Slope.HORIZONTAL;
+        return direction.getRelativeHeight() != Directions.RelativeHeight.LEVEL;
     }
 
     public EnumFacing getFront() {
-        return front;
+        return direction.getHorizontalFacing();
     }
 
-    public void setFront(EnumFacing facing) {
-        this.front = facing;
+    public void setDirection(Directions direction) {
+        this.direction = direction;
         markDirty();
     }
 
     @Nullable
     @Override
     public <T> T getCapability(Capability<T> capability, @Nullable EnumFacing facing) {
-        if (connected == -1) {
-            return null;
-        }
         if (capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
-            if (this.front.rotateYCCW() == facing) {
+            if (this.direction.getHorizontalFacing().rotateYCCW() == facing) {
                 return (T) leftSideItemHandler;
-            } else if (this.front.rotateY() == facing) {
+            } else if (this.direction.getHorizontalFacing().rotateY() == facing) {
                 return (T) rightSideItemHandler;
             }
             return (T) leftItemHandler;
         } else if (capability == CapabilityDualSidedHandler.DUAL_SIDED_CAPABILITY) {
-            if (facing.getOpposite() == front) {
+            if (facing.getOpposite() == direction.getHorizontalFacing()) {
                 return (T) dualBack;
             }
 
             //left is 0
-            if (this.front.rotateYCCW() == facing) {
+            if (this.direction.getHorizontalFacing().rotateYCCW() == facing) {
                 if ((connected & (1 << 0)) != 0 && (connected & ~(1 << 0)) == 0) {
                     return (T) dualLeft;
                 }
             }
             //right is 1
-            if (this.front.rotateY() == facing) {
+            if (this.direction.getHorizontalFacing().rotateY() == facing) {
                 if ((connected & (1 << 1)) != 0 && (connected & ~(1 << 1)) == 0) {
                     return (T) dualRight;
                 }
@@ -325,36 +313,25 @@ public class TileBeltBasic extends TileEntity implements ITickable, IGuiHolder {
         return capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY || capability == CapabilityDualSidedHandler.DUAL_SIDED_CAPABILITY;
     }
 
-    public Slope getSlope() {
-        return slope;
-    }
-
-    public void setSlope(EnumFacing enumFacing) {
-        if (enumFacing == EnumFacing.UP) {
-            this.slope = Slope.UP;
-        } else if (enumFacing == EnumFacing.DOWN) {
-            this.slope = Slope.DOWN;
-        } else {
-            this.slope = Slope.HORIZONTAL;
-        }
-
+    public Directions getDirection() {
+        return direction;
     }
 
     public void updateConnected() {
         int mask = 0; // Initialize the bitmask as an integer
 
         // Check the left connection and set bit 0 if true
-        if (world.getTileEntity(this.pos.offset(front.rotateYCCW())) instanceof TileBeltBasic backBelt) {
+        if (world.getTileEntity(this.pos.offset(direction.getHorizontalFacing().rotateYCCW())) instanceof TileBeltBasic backBelt) {
             mask |= (1 << 0); // Set bit 0
         }
 
         // Check the right connection and set bit 1 if true
-        if (world.getTileEntity(this.pos.offset(front.rotateY())) instanceof TileBeltBasic backBelt) {
+        if (world.getTileEntity(this.pos.offset(direction.getHorizontalFacing().rotateY())) instanceof TileBeltBasic backBelt) {
             mask |= (1 << 1); // Set bit 1
         }
 
         // Check the opposite direction and set bit 3 if true
-        if (world.getTileEntity(this.pos.offset(front.getOpposite())) instanceof TileBeltBasic backBelt) {
+        if (world.getTileEntity(this.pos.offset(direction.getHorizontalFacing().getOpposite())) instanceof TileBeltBasic backBelt) {
             mask |= (1 << 3); // Set bit 3
         }
 

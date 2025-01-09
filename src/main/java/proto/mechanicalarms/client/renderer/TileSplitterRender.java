@@ -15,7 +15,6 @@ import proto.mechanicalarms.client.renderer.util.ItemStackRenderToVAO;
 import proto.mechanicalarms.client.renderer.util.Matrix4fStack;
 import proto.mechanicalarms.client.renderer.util.Quaternion;
 import proto.mechanicalarms.common.proxy.ClientProxy;
-import proto.mechanicalarms.common.tile.Slope;
 import proto.mechanicalarms.common.tile.TileSplitter;
 
 import javax.vecmath.Matrix4f;

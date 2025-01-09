@@ -4,6 +4,7 @@ import com.cleanroommc.modularui.factory.TileEntityGuiFactory;
 import net.minecraft.block.Block;
 import net.minecraft.block.ITileEntityProvider;
 import net.minecraft.block.material.Material;
+import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
@@ -17,8 +18,10 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
-import net.minecraftforge.items.IItemHandler;
+import org.jetbrains.annotations.NotNull;
 import proto.mechanicalarms.MechanicalArms;
+import proto.mechanicalarms.common.block.properties.Directions;
+import proto.mechanicalarms.common.block.properties.PropertyBeltDirection;
 import proto.mechanicalarms.common.tile.TileBeltBasic;
 
 import javax.annotation.Nullable;
@@ -26,11 +29,14 @@ import javax.annotation.Nullable;
 public class BlockBelt extends Block implements ITileEntityProvider {
 
     AxisAlignedBB boundBox = new AxisAlignedBB(0, 0, 0, 1, 0.2F, 1);
+    public static final PropertyBeltDirection FACING = PropertyBeltDirection.create("facing");
+
 
     public BlockBelt() {
         super(Material.IRON);
         setRegistryName(MechanicalArms.MODID, "belt_basic");
-        this.setDefaultState(this.blockState.getBaseState());
+        setDefaultState(this.blockState.getBaseState().withProperty(FACING, Directions.NORTH));
+
     }
 
     @Override
@@ -64,7 +70,69 @@ public class BlockBelt extends Block implements ITileEntityProvider {
     @Nullable
     @Override
     public TileEntity createNewTileEntity(World worldIn, int meta) {
-        return new TileBeltBasic();
+        TileBeltBasic tbb = new TileBeltBasic();
+        tbb.setDirection(Directions.VALUES[meta]);
+        return tbb;
+    }
+
+    @Override
+    public int getMetaFromState(IBlockState blockState) {
+        return blockState.getValue(FACING).ordinal();
+    }
+
+    @NotNull
+    @Override
+    public IBlockState getStateFromMeta(int meta) {
+        return this.getDefaultState().withProperty(FACING, Directions.VALUES[meta]);
+    }
+
+    @Override
+    protected BlockStateContainer createBlockState() {
+        return new BlockStateContainer(this, FACING);
+    }
+
+    @NotNull
+    @Override
+    public IBlockState getStateForPlacement(World world, BlockPos pos, EnumFacing facing, float hitX, float hitY, float hitZ, int meta, EntityLivingBase placer) {
+        EnumFacing playerFacing = placer.getHorizontalFacing();
+
+        boolean connectedToBelt = false;
+        Directions placementDirection = null;
+        TileEntity forwardAbove = world.getTileEntity(pos.offset(facing).up());
+        if (forwardAbove instanceof TileBeltBasic fb) {
+            if (fb.getFront() == facing) {
+                placementDirection = (Directions.getFromFacingAndLevel(playerFacing, Directions.RelativeHeight.ABOVE));
+            }
+        }
+        TileEntity oppositeAbove = world.getTileEntity(pos.offset(facing.getOpposite()).up());
+        if (oppositeAbove instanceof TileBeltBasic ob) {
+            if (ob.getFront() == facing) {
+                placementDirection = (Directions.getFromFacingAndLevel(playerFacing, Directions.RelativeHeight.ABOVE));
+            }
+        }
+        TileEntity backwardsAbove = world.getTileEntity(pos.offset(facing.getOpposite()).up());
+        if (backwardsAbove instanceof TileBeltBasic ba) {
+            if (ba.getFront() == facing) {
+                placementDirection = (Directions.getFromFacingAndLevel(playerFacing, Directions.RelativeHeight.ABOVE));
+            }
+        }
+
+
+        if (!connectedToBelt) {
+
+            if (facing.getHorizontalIndex() != -1) {
+                if (hitY >= 0.5f) {
+                    placementDirection = (Directions.getFromFacingAndLevel(playerFacing, Directions.RelativeHeight.ABOVE));
+                } else {
+                    placementDirection = (Directions.getFromFacingAndLevel(playerFacing, Directions.RelativeHeight.BELOW));
+                }
+            } else {
+                placementDirection = (Directions.getFromFacingAndLevel(playerFacing, Directions.RelativeHeight.LEVEL));
+            }
+        }
+
+        return super.getStateForPlacement(world, pos, facing, hitX, hitY, hitZ, meta, placer).withProperty(FACING, placementDirection);
+
     }
 
     @Override

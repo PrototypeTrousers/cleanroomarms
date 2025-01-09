@@ -12,8 +12,8 @@ import proto.mechanicalarms.client.renderer.instances.MeshInstance;
 import proto.mechanicalarms.client.renderer.instances.ModelInstance;
 import proto.mechanicalarms.client.renderer.instances.NodeInstance;
 import proto.mechanicalarms.client.renderer.util.*;
+import proto.mechanicalarms.common.block.properties.Directions;
 import proto.mechanicalarms.common.proxy.ClientProxy;
-import proto.mechanicalarms.common.tile.Slope;
 import proto.mechanicalarms.common.tile.TileBeltBasic;
 
 import javax.vecmath.Matrix4f;
@@ -174,12 +174,12 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
         }
 
         float yProgress = 0;
-        if (tileBeltBasic.getSlope() == Slope.DOWN) {
+        if (tileBeltBasic.getDirection().getRelativeHeight() == Directions.RelativeHeight.BELOW) {
             yProgress = 1.0625F - (float) (lerp(previousProgress, progress, partialTicks) * 0.05);
             rot.rotateX((float) (-Math.PI / 4));
 
 
-        } else if (tileBeltBasic.getSlope() == Slope.UP) {
+        } else if (tileBeltBasic.getDirection().getRelativeHeight() == Directions.RelativeHeight.ABOVE) {
             yProgress = (float) (0.0625F + lerp(previousProgress, progress, partialTicks) * 0.05);
             rot.rotateX((float) (Math.PI / 4));
         }
@@ -257,7 +257,7 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
 
 
         if (tileBeltBasic.isSlope()) {
-            if (tileBeltBasic.getSlope() == Slope.DOWN) {
+            if (tileBeltBasic.getDirection().getRelativeHeight() == Directions.RelativeHeight.BELOW) {
                 rot.rotateX((float) (-Math.PI / 2));
             }
         }

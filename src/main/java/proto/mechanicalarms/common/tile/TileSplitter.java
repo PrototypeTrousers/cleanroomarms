@@ -20,6 +20,7 @@ import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import proto.mechanicalarms.common.block.properties.Directions;
 
 
 public class TileSplitter extends TileEntity implements ITickable, IGuiHolder {
@@ -35,7 +36,7 @@ public class TileSplitter extends TileEntity implements ITickable, IGuiHolder {
     int previousProgressLeft = 0;
     int previousProgressRight = 0;
     EnumFacing front;
-    Slope slope;
+    Directions directions;
 
     @Override
     public NBTTagCompound writeToNBT(NBTTagCompound compound) {
