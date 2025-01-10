@@ -34,6 +34,7 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
     Matrix4f translationMatrix = new Matrix4f();
     byte s;
     byte b;
+    byte alpha;
     Quaternion rot = Quaternion.createIdentity();
     Matrix4fStack matrix4fStack = new Matrix4fStack(10);
     ModelInstance baseBeltModel = new ModelInstance(ClientProxy.belt);
@@ -75,7 +76,7 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
 
             // Buffer matrix and lighting data
             ir.bufferModelMatrixData(mtx);
-            ir.bufferLight(s, b);
+            ir.bufferLight(s, b, alpha);
         }
     }
 
@@ -200,7 +201,7 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
         matrix4ftofloatarray(matrix4fStack, mtx);
         matrix4fStack.popMatrix();
         ir.bufferModelMatrixData(mtx);
-        ir.bufferLight(s, b);
+        ir.bufferLight(s, b, alpha);
     }
 
     void matrix4ftofloatarray(Matrix4f matrix4f, float[] floats) {
@@ -223,14 +224,16 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
     }
 
     @Override
-    public void renderTileEntityFast(TileBeltBasic tileBeltBasic, double x, double y, double z, float partialTicks, int destroyStage, float partial, BufferBuilder buffer) {
+    public void renderTileEntityFast(TileBeltBasic tileBeltBasic, double x, double y, double z, float partialTicks, int destroyStage, float alpha, BufferBuilder buffer) {
         if (tileBeltBasic.hasWorld()) {
             Chunk c = tileBeltBasic.getWorld().getChunk(tileBeltBasic.getPos());
             s = (byte) c.getLightFor(EnumSkyBlock.SKY, tileBeltBasic.getPos());
             b = (byte) c.getLightFor(EnumSkyBlock.BLOCK, tileBeltBasic.getPos());
         } else {
-            s = b= (byte) 15;
+            s = b = (byte) 15;
         }
+
+        this.alpha = (byte) Math.clamp(alpha * 10, 0, 10);
 
         this.partialTicks = partialTicks;
 

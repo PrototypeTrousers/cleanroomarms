@@ -44,6 +44,7 @@ public class TileSplitterRender extends FastTESR<TileSplitter> {
     float partialTicks;
 
     private static Object2ObjectOpenCustomHashMap<ItemStack, ItemStackRenderToVAO> modelCache = new Object2ObjectOpenCustomHashMap<>(new ItemStackHasher());
+    private byte alpha;
 
     public TileSplitterRender() {
         super();
@@ -79,7 +80,7 @@ public class TileSplitterRender extends FastTESR<TileSplitter> {
 
             // Buffer matrix and lighting data
             ir.bufferModelMatrixData(mtx);
-            ir.bufferLight(s, b);
+            ir.bufferLight(s, b, alpha);
         }
     }
 
@@ -127,12 +128,13 @@ public class TileSplitterRender extends FastTESR<TileSplitter> {
     }
 
     @Override
-    public void renderTileEntityFast(TileSplitter tileSplitter, double x, double y, double z, float partialTicks, int destroyStage, float partial, BufferBuilder buffer) {
+    public void renderTileEntityFast(TileSplitter tileSplitter, double x, double y, double z, float partialTicks, int destroyStage, float alpha, BufferBuilder buffer) {
 
         Chunk c = tileSplitter.getWorld().getChunk(tileSplitter.getPos());
         s = (byte) c.getLightFor(EnumSkyBlock.SKY, tileSplitter.getPos());
         b = (byte) c.getLightFor(EnumSkyBlock.BLOCK, tileSplitter.getPos());
         this.partialTicks = partialTicks;
+        this.alpha = (byte) alpha;
 
         translationMatrix.setIdentity();
         rot.setIndentity();

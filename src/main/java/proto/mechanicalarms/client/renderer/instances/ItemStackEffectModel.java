@@ -60,7 +60,7 @@ public class ItemStackEffectModel implements InstanceableModel {
 
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, lightBuffer);
         //Light
-        GL20.glVertexAttribPointer(3, 2, GL11.GL_UNSIGNED_BYTE, false, 2, 0);
+        GL20.glVertexAttribPointer(3, 3, GL11.GL_UNSIGNED_BYTE, false, 3, 0);
         GL20.glEnableVertexAttribArray(3);
         GL33.glVertexAttribDivisor(3, 1);
 

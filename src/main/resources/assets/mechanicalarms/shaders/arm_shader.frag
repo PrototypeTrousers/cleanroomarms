@@ -16,7 +16,7 @@ uniform mat4 sunRotation;
 
 void main(){
 
-    vec4 color = vec4(col.rgb, 1) * texture2D(texture, texCoord) * texture2D(lightmap, lightCoord);
+    vec4 color = col * texture2D(texture, texCoord) * texture2D(lightmap, lightCoord);
     // ambient
     vec3 ambient = vec3(0.4);
     // diffuse

@@ -196,16 +196,16 @@ public class InstanceRender {
         current.modelMatrixBuffer.put(dataToBuffer, 0, 16);
     }
 
-    public void bufferLight(byte s, byte b) {
+    public void bufferLight(byte s, byte b, byte alpha) {
         current.resizeLightBuffer();
-        current.blockLightBuffer.put(new byte[]{s, b}, 0,  2);
+        current.blockLightBuffer.put(new byte[]{s, b, alpha}, 0,  3);
     }
 
 
     public class InstanceData {
 
         FloatBuffer modelMatrixBuffer = GLAllocation.createDirectFloatBuffer(16);
-        ByteBuffer blockLightBuffer = GLAllocation.createDirectByteBuffer(2);
+        ByteBuffer blockLightBuffer = GLAllocation.createDirectByteBuffer(3);
 
         private int instanceCount;
 
@@ -222,7 +222,7 @@ public class InstanceRender {
         }
 
         public void resizeLightBuffer() {
-            if (blockLightBuffer.remaining() < 2) {
+            if (blockLightBuffer.remaining() < 3) {
                 ByteBuffer newBuffer = GLAllocation.createDirectByteBuffer(blockLightBuffer.capacity() * 2);
                 int currentPos = blockLightBuffer.position();
                 blockLightBuffer.rewind();

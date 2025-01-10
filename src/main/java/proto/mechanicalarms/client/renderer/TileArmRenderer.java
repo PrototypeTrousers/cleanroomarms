@@ -37,6 +37,7 @@ public class TileArmRenderer extends FastTESR<TileArmBasic> {
     float partialTicks;
 
     private static Object2ObjectOpenCustomHashMap<ItemStack, ItemStackRenderToVAO> modelCache = new Object2ObjectOpenCustomHashMap<>(new ItemStackHasher());
+    private byte alpha;
 
     public TileArmRenderer() {
         super();
@@ -72,7 +73,7 @@ public class TileArmRenderer extends FastTESR<TileArmBasic> {
 
             // Buffer matrix and lighting data
             ir.bufferModelMatrixData(mtx);
-            ir.bufferLight(s, b);
+            ir.bufferLight(s, b, alpha);
 
             if (m.hasAttachedMesh()) {
                 m.getAttachedMesh().run();
@@ -138,7 +139,7 @@ public class TileArmRenderer extends FastTESR<TileArmBasic> {
         matrix4ftofloatarray(matrix4fStack, mtx);
         matrix4fStack.popMatrix();
         ir.bufferModelMatrixData(mtx);
-        ir.bufferLight(s, b);
+        ir.bufferLight(s, b, alpha);
     }
 
     void matrix4ftofloatarray(Matrix4f matrix4f, float[] floats) {
@@ -161,12 +162,13 @@ public class TileArmRenderer extends FastTESR<TileArmBasic> {
     }
 
     @Override
-    public void renderTileEntityFast(TileArmBasic tileArmBasic, double x, double y, double z, float partialTicks, int destroyStage, float partial, BufferBuilder buffer) {
+    public void renderTileEntityFast(TileArmBasic tileArmBasic, double x, double y, double z, float partialTicks, int destroyStage, float alpha, BufferBuilder buffer) {
 
         Chunk c = tileArmBasic.getWorld().getChunk(tileArmBasic.getPos());
         s = (byte) c.getLightFor(EnumSkyBlock.SKY, tileArmBasic.getPos());
         b = (byte) c.getLightFor(EnumSkyBlock.BLOCK, tileArmBasic.getPos());
         this.partialTicks = partialTicks;
+        this.alpha = (byte) Math.clamp(alpha * 10, 0, 10);
 
         translationMatrix.setIdentity();
         translate(translationMatrix, (float) x + 0.5F, (float) y, (float) z + 0.5F);

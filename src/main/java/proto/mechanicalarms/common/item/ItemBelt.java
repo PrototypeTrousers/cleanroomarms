@@ -3,7 +3,6 @@ package proto.mechanicalarms.common.item;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.RenderItem;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.tileentity.TileEntityItemStackRenderer;
 import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
@@ -81,10 +80,10 @@ public class ItemBelt extends ItemBlock {
             double y = entity.lastTickPosY + (entity.posY - entity.lastTickPosY) * (double)event.getPartialTicks();
             double z = entity.lastTickPosZ + (entity.posZ - entity.lastTickPosZ) * (double)event.getPartialTicks();
 
-//            terd.renderTileEntityFast(tileEntity, (double) ghostPos.getX() - x,
-//                    (double) ghostPos.getY() - y,
-//                    (double) ghostPos.getZ() - z, 1, -1, 0, Tessellator.getInstance().getBuffer());
-//            //InstanceRender.draw();
+            terd.renderTileEntityFast(tileEntity, (double) ghostPos.getX() - x,
+                    (double) ghostPos.getY() - y,
+                    (double) ghostPos.getZ() - z, 1, -1, 0.3F, Tessellator.getInstance().getBuffer());
+            //InstanceRender.draw();
         }
     }
 
@@ -93,10 +92,9 @@ public class ItemBelt extends ItemBlock {
 
         @Override
         public void renderByItem(ItemStack p_192838_1_, float p_192838_2_) {
-
             beltBasic.setDirection(Directions.getFromHorizontalFacing(Minecraft.getMinecraft().player.getHorizontalFacing()));
             TileEntitySpecialRenderer<TileEntity> terd = TileEntityRendererDispatcher.instance.getRenderer(beltBasic);
-            terd.renderTileEntityFast(beltBasic, 0,  0, 0, 1, -1, 0, Tessellator.getInstance().getBuffer());
+            terd.renderTileEntityFast(beltBasic, 0,  0, 0, 1, -1, 1, Tessellator.getInstance().getBuffer());
             InstanceRender.draw();
         }
     }

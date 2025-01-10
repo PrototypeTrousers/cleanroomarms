@@ -43,8 +43,11 @@ public class ClientProxy extends CommonProxy {
     @SubscribeEvent
     public static void registerModels(ModelRegistryEvent event) {
         ModelLoader.setCustomModelResourceLocation(Items.ARM_BASE, 0, new ModelResourceLocation(new ResourceLocation(MechanicalArms.MODID, "models/block/completearm.obj"), "inventory"));
-        ModelLoader.setCustomMeshDefinition(Items.BELT_BASE, stack -> new ModelResourceLocation(new ResourceLocation(MechanicalArms.MODID, "belt"), null));
+        ModelLoader.setCustomModelResourceLocation(Items.BELT_BASE, 0, new ModelResourceLocation(new ResourceLocation(MechanicalArms.MODID, "belt"), "inventory"));
+
+        //ModelLoader.setCustomMeshDefinition(Items.BELT_BASE, stack -> new ModelResourceLocation(new ResourceLocation(MechanicalArms.MODID, "belt"), null));
         ModelBakery.registerItemVariants(Items.BELT_BASE, new ModelResourceLocation(new ResourceLocation(MechanicalArms.MODID, "belt"), null));
+
         ModelLoader.setCustomStateMapper(Blocks.BELT_BASE,new StateMap.Builder().ignore(BlockBelt.FACING).build() );
     }
 

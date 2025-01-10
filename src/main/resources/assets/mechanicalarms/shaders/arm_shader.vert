@@ -3,7 +3,7 @@
 layout (location = 0) in vec3 in_pos;
 layout (location = 1) in vec2 in_texcoord;
 layout (location = 2) in vec3 in_normal;
-layout (location = 3) in vec2 in_light;
+layout (location = 3) in vec3 in_light;
 layout (location = 4) in mat4 in_transform;
 layout (location = 8) in vec4 in_color;
 
@@ -34,5 +34,5 @@ void main() {
 
     lightCoord = vec2(blockLightCoord, skyLightCoord);
 
-    col = in_color;
+    col = vec4(in_color.rgb, in_light.z * 0.1);
 }

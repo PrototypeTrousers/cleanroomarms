@@ -160,10 +160,10 @@ public class ItemStackRenderToVAO implements InstanceableModel {
 
         lightBuffer = GL15.glGenBuffers();
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, lightBuffer);
-        GL15.glBufferData(GL15.GL_ARRAY_BUFFER, 2, GL15.GL_STATIC_DRAW);
+        GL15.glBufferData(GL15.GL_ARRAY_BUFFER, 3, GL15.GL_STATIC_DRAW);
 
         //Light
-        GL20.glVertexAttribPointer(3, 2, GL11.GL_UNSIGNED_BYTE, false, 2, 0);
+        GL20.glVertexAttribPointer(3, 3, GL11.GL_UNSIGNED_BYTE, false, 3, 0);
         GL20.glEnableVertexAttribArray(3);
         GL33.glVertexAttribDivisor(3, 1);
 
