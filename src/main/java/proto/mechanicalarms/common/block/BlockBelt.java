@@ -123,7 +123,7 @@ public class BlockBelt extends Block implements ITileEntityProvider {
         if (!connectedToBelt) {
 
             if (facing.getHorizontalIndex() != -1) {
-                if (hitY >= 0.5f) {
+                if (hitY - (int) hitY >= 0.5f) {
                     placementDirection = (Directions.getFromFacingAndLevel(playerFacing, Directions.RelativeHeight.ABOVE));
                 } else {
                     placementDirection = (Directions.getFromFacingAndLevel(playerFacing, Directions.RelativeHeight.BELOW));
@@ -133,8 +133,7 @@ public class BlockBelt extends Block implements ITileEntityProvider {
             }
         }
 
-        return super.getStateForPlacement(world, pos, facing, hitX, hitY, hitZ, meta, placer).withProperty(FACING, placementDirection);
-
+        return getDefaultState().withProperty(FACING, placementDirection);
     }
 
     @Override

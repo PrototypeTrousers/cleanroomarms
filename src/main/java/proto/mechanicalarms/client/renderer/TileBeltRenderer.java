@@ -224,9 +224,14 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
 
     @Override
     public void renderTileEntityFast(TileBeltBasic tileBeltBasic, double x, double y, double z, float partialTicks, int destroyStage, float partial, BufferBuilder buffer) {
-        Chunk c = tileBeltBasic.getWorld().getChunk(tileBeltBasic.getPos());
-        s = (byte) c.getLightFor(EnumSkyBlock.SKY, tileBeltBasic.getPos());
-        b = (byte) c.getLightFor(EnumSkyBlock.BLOCK, tileBeltBasic.getPos());
+        if (tileBeltBasic.hasWorld()) {
+            Chunk c = tileBeltBasic.getWorld().getChunk(tileBeltBasic.getPos());
+            s = (byte) c.getLightFor(EnumSkyBlock.SKY, tileBeltBasic.getPos());
+            b = (byte) c.getLightFor(EnumSkyBlock.BLOCK, tileBeltBasic.getPos());
+        } else {
+            s = b= (byte) 15;
+        }
+
         this.partialTicks = partialTicks;
 
         translationMatrix.setIdentity();

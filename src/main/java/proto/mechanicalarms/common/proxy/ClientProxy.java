@@ -8,6 +8,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
+import net.minecraftforge.client.ForgeHooksClient;
 import net.minecraftforge.client.event.ModelRegistryEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.client.model.ModelLoader;
@@ -71,12 +72,12 @@ public class ClientProxy extends CommonProxy {
 
     @Override
     public void preInit() {
+        super.preInit();
         OBJLoader.INSTANCE.addDomain(MechanicalArms.MODID);
         ClientRegistry.bindTileEntitySpecialRenderer(TileArmBasic.class, new TileArmRenderer());
         ClientRegistry.bindTileEntitySpecialRenderer(TileBeltBasic.class, new TileBeltRenderer());
         ClientRegistry.bindTileEntitySpecialRenderer(TileSplitter.class, new TileSplitterRender());
         MinecraftForge.EVENT_BUS.register(Tick.INSTANCE);
-        super.preInit();
     }
 
 }
