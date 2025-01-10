@@ -1,6 +1,7 @@
 package proto.mechanicalarms.common.proxy;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.block.model.ModelBakery;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.renderer.block.statemap.StateMap;
 import net.minecraft.tileentity.TileEntity;
@@ -8,7 +9,6 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
-import net.minecraftforge.client.ForgeHooksClient;
 import net.minecraftforge.client.event.ModelRegistryEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.client.model.ModelLoader;
@@ -25,7 +25,6 @@ import proto.mechanicalarms.client.renderer.TileBeltRenderer;
 import proto.mechanicalarms.client.renderer.TileSplitterRender;
 import proto.mechanicalarms.common.block.BlockBelt;
 import proto.mechanicalarms.common.block.Blocks;
-import proto.mechanicalarms.common.block.properties.Directions;
 import proto.mechanicalarms.common.item.Items;
 import proto.mechanicalarms.common.tile.TileArmBasic;
 import proto.mechanicalarms.common.tile.TileBeltBasic;
@@ -44,7 +43,8 @@ public class ClientProxy extends CommonProxy {
     @SubscribeEvent
     public static void registerModels(ModelRegistryEvent event) {
         ModelLoader.setCustomModelResourceLocation(Items.ARM_BASE, 0, new ModelResourceLocation(new ResourceLocation(MechanicalArms.MODID, "models/block/completearm.obj"), "inventory"));
-        ModelLoader.setCustomModelResourceLocation(Items.BELT_BASE, 0, new ModelResourceLocation(new ResourceLocation(MechanicalArms.MODID, "models/block/belt.obj"), "inventory"));
+        ModelLoader.setCustomMeshDefinition(Items.BELT_BASE, stack -> new ModelResourceLocation(new ResourceLocation(MechanicalArms.MODID, "belt"), null));
+        ModelBakery.registerItemVariants(Items.BELT_BASE, new ModelResourceLocation(new ResourceLocation(MechanicalArms.MODID, "belt"), null));
         ModelLoader.setCustomStateMapper(Blocks.BELT_BASE,new StateMap.Builder().ignore(BlockBelt.FACING).build() );
     }
 
