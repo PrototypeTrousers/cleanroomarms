@@ -3,13 +3,12 @@ package proto.mechanicalarms.common.item;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.RenderGlobal;
+import net.minecraft.client.renderer.RenderItem;
 import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.tileentity.TileEntityItemStackRenderer;
 import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
@@ -22,14 +21,13 @@ import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.DrawBlockHighlightEvent;
-import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import proto.mechanicalarms.MechanicalArms;
 import proto.mechanicalarms.client.renderer.InstanceRender;
-import proto.mechanicalarms.client.renderer.TileBeltRenderer;
 import proto.mechanicalarms.common.block.Blocks;
+import proto.mechanicalarms.common.block.properties.Directions;
 import proto.mechanicalarms.common.tile.TileBeltBasic;
 
 @Mod.EventBusSubscriber(Side.CLIENT)
@@ -43,6 +41,7 @@ public class ItemBelt extends ItemBlock {
     public ItemBelt(Block block) {
         super(block);
         setRegistryName(MechanicalArms.MODID, "belt_basic");
+        setTileEntityItemStackRenderer(new BeltItemRender());
     }
 
     @Override
@@ -82,10 +81,23 @@ public class ItemBelt extends ItemBlock {
             double y = entity.lastTickPosY + (entity.posY - entity.lastTickPosY) * (double)event.getPartialTicks();
             double z = entity.lastTickPosZ + (entity.posZ - entity.lastTickPosZ) * (double)event.getPartialTicks();
 
-            terd.renderTileEntityFast(tileEntity, (double) ghostPos.getX() - x,
-                    (double) ghostPos.getY() - y,
-                    (double) ghostPos.getZ() - z, 1, -1, 0, Tessellator.getInstance().getBuffer());
-            //InstanceRender.draw();
+//            terd.renderTileEntityFast(tileEntity, (double) ghostPos.getX() - x,
+//                    (double) ghostPos.getY() - y,
+//                    (double) ghostPos.getZ() - z, 1, -1, 0, Tessellator.getInstance().getBuffer());
+//            //InstanceRender.draw();
+        }
+    }
+
+    static class BeltItemRender extends TileEntityItemStackRenderer {
+        TileBeltBasic beltBasic = new TileBeltBasic();
+
+        @Override
+        public void renderByItem(ItemStack p_192838_1_, float p_192838_2_) {
+
+            beltBasic.setDirection(Directions.getFromHorizontalFacing(Minecraft.getMinecraft().player.getHorizontalFacing()));
+            TileEntitySpecialRenderer<TileEntity> terd = TileEntityRendererDispatcher.instance.getRenderer(beltBasic);
+            terd.renderTileEntityFast(beltBasic, 0,  0, 0, 1, -1, 0, Tessellator.getInstance().getBuffer());
+            InstanceRender.draw();
         }
     }
 }
