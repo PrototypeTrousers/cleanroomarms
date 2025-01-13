@@ -91,7 +91,7 @@ public class BlockSplitter extends Block implements ITileEntityProvider {
 
     @Override
     public IBlockState getStateForPlacement(World world, BlockPos pos, EnumFacing facing, float hitX, float hitY, float hitZ, int meta, EntityLivingBase placer) {
-        return getDefaultState().withProperty(BlockSplitter.facing, facing).withProperty(controller, (meta >> 2) == 1);
+        return getDefaultState().withProperty(BlockSplitter.facing, placer.getHorizontalFacing()).withProperty(controller, (meta >> 2) == 1);
     }
 
     @Override
