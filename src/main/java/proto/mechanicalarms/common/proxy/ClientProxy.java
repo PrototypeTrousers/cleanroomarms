@@ -78,8 +78,8 @@ public class ClientProxy extends CommonProxy {
         super.preInit();
         OBJLoader.INSTANCE.addDomain(MechanicalArms.MODID);
         ClientRegistry.bindTileEntitySpecialRenderer(TileArmBasic.class, new TileArmRenderer());
-        ClientRegistry.bindTileEntitySpecialRenderer(TileBeltBasic.class, new TileBeltRenderer());
         ClientRegistry.bindTileEntitySpecialRenderer(TileSplitter.class, new TileSplitterRender());
+        ClientRegistry.bindTileEntitySpecialRenderer(TileBeltBasic.class, new TileBeltRenderer());
         MinecraftForge.EVENT_BUS.register(Tick.INSTANCE);
     }
 

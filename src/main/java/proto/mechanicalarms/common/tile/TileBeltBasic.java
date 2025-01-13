@@ -5,7 +5,6 @@ import com.cleanroommc.modularui.factory.GuiData;
 import com.cleanroommc.modularui.screen.ModularPanel;
 import com.cleanroommc.modularui.value.sync.GuiSyncManager;
 import com.cleanroommc.modularui.widgets.ItemSlot;
-import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SPacketUpdateTileEntity;
@@ -13,26 +12,30 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import proto.mechanicalarms.api.IDualInventory;
 import proto.mechanicalarms.api.capability.IDualSidedHandler;
 import proto.mechanicalarms.common.block.properties.Directions;
+import proto.mechanicalarms.common.cap.BeltItemHandler;
 import proto.mechanicalarms.common.cap.CapabilityDualSidedHandler;
+import proto.mechanicalarms.common.cap.DualSidedHandler;
 
 
-public class TileBeltBasic extends TileEntity implements ITickable, IGuiHolder {
+public class TileBeltBasic extends TileEntity implements ITickable, IGuiHolder, IDualInventory {
 
-    protected BeltItemHandler leftItemHandler = new BeltItemHandler(1, Side.L);
-    protected BeltItemHandler leftSideItemHandler = new BeltItemHandler(1, leftItemHandler, Side.L);
-    protected BeltItemHandler rightItemHandler = new BeltItemHandler(1, Side.R);
-    protected BeltItemHandler rightSideItemHandler = new BeltItemHandler(1, rightItemHandler, Side.R);
-    protected IDualSidedHandler dualBack = new b();
-    protected IDualSidedHandler dualLeft = new b(Side.L);
-    protected IDualSidedHandler dualRight = new b(Side.R);
+    protected BeltItemHandler leftItemHandler = new BeltItemHandler(this, 1, Side.L);
+    protected BeltItemHandler leftSideItemHandler = new BeltItemHandler(this, 1, leftItemHandler, Side.L);
+    protected BeltItemHandler rightItemHandler = new BeltItemHandler(this, 1, Side.R);
+    protected BeltItemHandler rightSideItemHandler = new BeltItemHandler(this, 1, rightItemHandler, Side.R);
+    protected IDualSidedHandler dualBack = new DualSidedHandler(this);
+    protected IDualSidedHandler dualLeft = new DualSidedHandler(this, Side.L);
+    protected IDualSidedHandler dualRight = new DualSidedHandler(this, Side.R);
     protected int connected = -1;
     protected long insertedTickLeft;
     protected long insertedTickRight;
@@ -67,6 +70,16 @@ public class TileBeltBasic extends TileEntity implements ITickable, IGuiHolder {
         progressRight = compound.getInteger("progressRight");
         previousProgressLeft = compound.getInteger("previousProgressLeft");
         previousProgressRight = compound.getInteger("previousProgressRight");
+    }
+
+    @Override
+    public BlockPos getPosition() {
+        return super.getPos();
+    }
+
+    @Override
+    public World getTileWorld() {
+        return super.getWorld();
     }
 
     @Override
@@ -110,6 +123,41 @@ public class TileBeltBasic extends TileEntity implements ITickable, IGuiHolder {
 
     public ItemStackHandler getRightItemHandler() {
         return rightItemHandler;
+    }
+
+    @Override
+    public void setProgressLeft(int progressLeft) {
+        this.progressLeft = progressLeft;
+    }
+
+    @Override
+    public void setPreviousProgressLeft(int previousProgressLeft) {
+        this.previousProgressLeft = previousProgressLeft;
+    }
+
+    @Override
+    public void setProgressRight(int progressRight) {
+        this.progressRight = progressRight;
+    }
+
+    @Override
+    public void setPreviousProgressRight(int previousProgressRight) {
+        this.previousProgressRight = previousProgressRight;
+    }
+
+    @Override
+    public void updateLastTickLeft() {
+        insertedTickLeft = world.getTotalWorldTime();
+    }
+
+    @Override
+    public void updateLastTickRight() {
+        insertedTickRight = world.getTotalWorldTime();
+    }
+
+    @Override
+    public void markTileDirty() {
+        this.markDirty();
     }
 
     @Override
@@ -322,150 +370,25 @@ public class TileBeltBasic extends TileEntity implements ITickable, IGuiHolder {
 
         // Check the left connection and set bit 0 if true
         if (world.getTileEntity(this.pos.offset(direction.getHorizontalFacing().rotateYCCW())) instanceof TileBeltBasic backBelt) {
-            mask |= (1 << 0); // Set bit 0
+            if (backBelt.getFront() == this.getFront().rotateY()) {
+                mask |= (1 << 0); // Set bit 0
+            }
         }
-
         // Check the right connection and set bit 1 if true
         if (world.getTileEntity(this.pos.offset(direction.getHorizontalFacing().rotateY())) instanceof TileBeltBasic backBelt) {
-            mask |= (1 << 1); // Set bit 1
+            if (backBelt.getFront() == this.getFront().rotateYCCW()) {
+                mask |= (1 << 1); // Set bit 1
+            }
         }
-
         // Check the opposite direction and set bit 3 if true
         if (world.getTileEntity(this.pos.offset(direction.getHorizontalFacing().getOpposite())) instanceof TileBeltBasic backBelt) {
-            mask |= (1 << 3); // Set bit 3
+            if (backBelt.getFront() == this.getFront()) {
+                mask |= (1 << 3); // Set bit 3
+            }
         }
 
         // Use the mask for further operations as needed, for example:
         connected = mask; // Store the bitmask in 'connected' (now an integer)
-    }
-
-    public class BeltItemHandler extends ItemStackHandler {
-
-        BeltItemHandler main;
-        Side side;
-
-        public BeltItemHandler(int i, Side side) {
-            super(i);
-            this.side = side;
-        }
-
-        public BeltItemHandler(int i, BeltItemHandler mainHandler, Side side) {
-            super(i);
-            this.main = mainHandler;
-            this.side = side;
-        }
-
-        @Override
-        public int getSlotLimit(int slot) {
-            return 1;
-        }
-
-        @Override
-        protected int getStackLimit(int slot, @NotNull ItemStack stack) {
-            return 1;
-        }
-
-        @Override
-        public void setStackInSlot(int slot, @NotNull ItemStack stack) {
-            if (main != null) {
-                main.setStackInSlot(0, stack);
-                return;
-            }
-            super.setStackInSlot(slot, stack);
-        }
-
-        @NotNull
-        @Override
-        public ItemStack getStackInSlot(int slot) {
-            if (main != null) {
-                return main.getStackInSlot(0);
-            }
-            return super.getStackInSlot(slot);
-        }
-
-        @Override
-        public int getSlots() {
-            if (main != null) {
-                return 1;
-            }
-            return super.getSlots();
-        }
-
-        @NotNull
-        @Override
-        public ItemStack insertItem(int slot, @NotNull ItemStack stack, boolean simulate) {
-            if (stack.isEmpty()) {
-                return ItemStack.EMPTY;
-            }
-            if (main != null) {
-                ItemStack returnStack = main.insertItem(0, stack, simulate);
-                if (!simulate && returnStack.isEmpty()) {
-                    if (side == Side.L) {
-                        progressLeft = 1;
-                        previousProgressLeft = 1;
-                        insertedTickLeft = world.getTotalWorldTime();
-                    } else {
-                        progressRight = 1;
-                        previousProgressRight = 1;
-                        insertedTickRight = world.getTotalWorldTime();
-                    }
-                }
-                return returnStack;
-            }
-
-            ItemStack returnStack = super.insertItem(slot, stack, simulate);
-            if (!simulate && returnStack.isEmpty()) {
-                if (side == Side.L) {
-                    previousProgressLeft = -1;
-                    progressLeft = 0;
-                    insertedTickLeft = world.getTotalWorldTime();
-                } else {
-                    previousProgressRight = -1;
-                    progressRight = 0;
-                    insertedTickRight = world.getTotalWorldTime();
-                }
-            }
-            return returnStack;
-        }
-
-        @NotNull
-        @Override
-        public ItemStack extractItem(int slot, int amount, boolean simulate) {
-            return super.extractItem(slot, amount, simulate);
-        }
-
-        @Override
-        protected void onContentsChanged(int slot) {
-            markDirty();
-            world.notifyBlockUpdate(pos, world.getBlockState(pos), world.getBlockState(pos), 3);
-        }
-    }
-
-    public class b implements IDualSidedHandler {
-        Side side;
-
-        public b(Side side) {
-            this.side = side;
-        }
-
-        public b() {
-        }
-
-        @Override
-        public ItemStack insertLeft(ItemStack insert, boolean simulate) {
-            if (side == Side.L) {
-                return leftSideItemHandler.insertItem(0, insert, simulate);
-            }
-            return leftItemHandler.insertItem(0, insert, simulate);
-        }
-
-        @Override
-        public ItemStack insertRight(ItemStack insert, boolean simulate) {
-            if (side == Side.R) {
-                return rightSideItemHandler.insertItem(0, insert, simulate);
-            }
-            return rightItemHandler.insertItem(0, insert, simulate);
-        }
     }
 
 }

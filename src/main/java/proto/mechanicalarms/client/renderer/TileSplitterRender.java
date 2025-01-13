@@ -134,7 +134,7 @@ public class TileSplitterRender extends FastTESR<TileSplitter> {
         s = (byte) c.getLightFor(EnumSkyBlock.SKY, tileSplitter.getPos());
         b = (byte) c.getLightFor(EnumSkyBlock.BLOCK, tileSplitter.getPos());
         this.partialTicks = partialTicks;
-        this.alpha = (byte) alpha;
+        this.alpha = (byte) (alpha * 10);
 
         translationMatrix.setIdentity();
         rot.setIndentity();
