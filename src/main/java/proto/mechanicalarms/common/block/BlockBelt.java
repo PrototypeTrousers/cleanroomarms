@@ -46,6 +46,13 @@ public class BlockBelt extends Block implements ITileEntityProvider {
     @Override
     public void onBlockPlacedBy(World worldIn, BlockPos pos, IBlockState state, EntityLivingBase placer, ItemStack stack) {
         super.onBlockPlacedBy(worldIn, pos, state, placer, stack);
+        if (state.getValue(FACING).getRelativeHeight() == Directions.RelativeHeight.ABOVE) {
+            EnumFacing facing = state.getValue(FACING).getHorizontalFacing();
+            TileEntity te = worldIn.getTileEntity(pos.offset(facing).up());
+            if (te instanceof TileBeltBasic tbb) {
+                tbb.updateConnected();
+            }
+        }
     }
 
     @Override
@@ -175,8 +182,8 @@ public class BlockBelt extends Block implements ITileEntityProvider {
     }
 
     @Override
-    public void onNeighborChange(IBlockAccess world, BlockPos pos, BlockPos neighbor) {
-        TileEntity te = world.getTileEntity(pos);
+    public void neighborChanged(IBlockState state, World worldIn, BlockPos pos, Block blockIn, BlockPos fromPos) {
+        TileEntity te = worldIn.getTileEntity(pos);
         if (te instanceof TileBeltBasic tbb) {
             tbb.updateConnected();
         }
@@ -185,5 +192,17 @@ public class BlockBelt extends Block implements ITileEntityProvider {
     @Override
     public AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess source, BlockPos pos) {
         return boundBox;
+    }
+
+    @Override
+    public void breakBlock(World worldIn, BlockPos pos, IBlockState state) {
+        super.breakBlock(worldIn, pos, state);
+        if (state.getValue(FACING).getRelativeHeight() == Directions.RelativeHeight.ABOVE) {
+            EnumFacing facing = state.getValue(FACING).getHorizontalFacing();
+            TileEntity te = worldIn.getTileEntity(pos.offset(facing).up());
+            if (te instanceof TileBeltBasic tbb) {
+                tbb.updateConnected();
+            }
+        }
     }
 }

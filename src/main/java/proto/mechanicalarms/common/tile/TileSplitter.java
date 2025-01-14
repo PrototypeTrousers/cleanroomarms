@@ -18,6 +18,7 @@ import proto.mechanicalarms.common.cap.CapabilityDualSidedHandler;
 
 public class TileSplitter extends BeltTileEntity {
     public Side lastOutputSide;
+    private TileSplitterDummy dummy;
 
     @Override
     public ModularPanel buildUI(GuiData guiData, GuiSyncManager guiSyncManager) {
@@ -39,19 +40,34 @@ public class TileSplitter extends BeltTileEntity {
         return renderBB;
     }
 
-    @Override
-    protected void handleItemTransfer(boolean left) {
+    protected boolean handleSpliterItemTransfer(boolean left) {
         TileEntity frontTe;
         EnumFacing facing = getFront();
 
-        if (lastOutputSide == Side.R) {
+        if (lastOutputSide == Side.L) {
             frontTe = world.getTileEntity(pos.offset(facing.rotateY()).offset(facing));
-            lastOutputSide = Side.L;
         } else {
             frontTe = world.getTileEntity(pos.offset(facing));
-            lastOutputSide = Side.R;
         }
 
+        boolean shouldSwitchSides = attemptTransfer(frontTe, facing, left);
+
+        if (!shouldSwitchSides) {
+            if (lastOutputSide == Side.R) {
+                frontTe = world.getTileEntity(pos.offset(facing.rotateY()).offset(facing));
+            } else {
+                frontTe = world.getTileEntity(pos.offset(facing));
+            }
+            attemptTransfer(frontTe, facing, left);
+        }
+
+        if (frontTe == null) {
+            return true;
+        }
+        return shouldSwitchSides;
+    }
+
+    boolean attemptTransfer(TileEntity frontTe, EnumFacing facing, boolean left) {
         if (frontTe != null) {
             if (frontTe.hasCapability(CapabilityDualSidedHandler.DUAL_SIDED_CAPABILITY, facing.getOpposite())) {
                 IDualSidedHandler cap = frontTe.getCapability(CapabilityDualSidedHandler.DUAL_SIDED_CAPABILITY, facing.getOpposite());
@@ -60,11 +76,13 @@ public class TileSplitter extends BeltTileEntity {
                         if (cap.insertLeft(leftItemHandler.extractItem(0, 1, true), true) != leftItemHandler.getStackInSlot(0)) {
                             cap.insertLeft(leftItemHandler.extractItem(0, 1, false), false);
                             progressLeft = 0;
+                            return true;
                         }
                     } else {
                         if (cap.insertRight(rightItemHandler.extractItem(0, 1, true), true) != rightItemHandler.getStackInSlot(0)) {
                             cap.insertRight(rightItemHandler.extractItem(0, 1, false), false);
                             progressRight = 0;
+                            return true;
                         }
                     }
                 } else {
@@ -74,14 +92,92 @@ public class TileSplitter extends BeltTileEntity {
                             if (icap.insertItem(0, leftItemHandler.extractItem(0, 1, true), true) != leftItemHandler.getStackInSlot(0)) {
                                 icap.insertItem(0, leftItemHandler.extractItem(0, 1, false), false);
                                 progressLeft = 0;
+                                return true;
                             }
                         } else {
                             if (icap.insertItem(0, rightItemHandler.extractItem(0, 1, true), true) != rightItemHandler.getStackInSlot(0)) {
                                 icap.insertItem(0, rightItemHandler.extractItem(0, 1, false), false);
                                 progressRight = 0;
+                                return true;
                             }
                         }
                     }
+                }
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public void update() {
+        boolean tickLeft = true;
+        if (progressLeft == 0 && insertedTickLeft == world.getTotalWorldTime()) {
+            progressLeft = 0;
+            previousProgressLeft = -1;
+            insertedTickLeft = -1;
+            tickLeft = false;
+        }
+
+        boolean tickRight = true;
+        if (progressRight == 0 && insertedTickRight == world.getTotalWorldTime()) {
+            progressRight = 0;
+            previousProgressRight = -1;
+            insertedTickRight = -1;
+            tickRight = false;
+        }
+
+        if (this.world.isBlockPowered(this.getPos())) {
+            this.previousProgressLeft = progressLeft;
+            this.previousProgressRight = progressRight;
+            return;
+        }
+        if (leftItemHandler.getStackInSlot(0).isEmpty() && rightItemHandler.getStackInSlot(0).isEmpty()) {
+            previousProgressLeft = previousProgressRight = 0;
+            progressLeft = progressRight = 0;
+            return;
+        }
+        if (!this.world.isRemote) {
+            boolean transfered = false;
+            if (tickLeft) {
+                if (progressLeft < 3 && !leftItemHandler.getStackInSlot(0).isEmpty()) {
+                    previousProgressLeft++;
+                    progressLeft++;
+                }
+                if (progressLeft >= 3) {
+                    transfered = handleSpliterItemTransfer(true);
+                }
+            }
+            if (tickRight) {
+                if (progressRight < 3 && !rightItemHandler.getStackInSlot(0).isEmpty()) {
+                    previousProgressRight++;
+                    progressRight++;
+                }
+                if (progressRight >= 3) {
+                    transfered = handleSpliterItemTransfer(false);
+                }
+            }
+            if (transfered) {
+                if (lastOutputSide == Side.L) {
+                    lastOutputSide = Side.R;
+                } else {
+                    lastOutputSide = Side.L;
+                }
+            }
+        } else {
+            if (tickLeft) {
+                if (progressLeft < 3) {
+                    previousProgressLeft = progressLeft;
+                    progressLeft++;
+                } else {
+                    previousProgressLeft = progressLeft;
+                }
+            }
+            if (tickRight) {
+                if (progressRight < 3) {
+                    previousProgressRight = progressRight;
+                    progressRight++;
+                } else {
+                    previousProgressRight = progressRight;
                 }
             }
         }
@@ -90,12 +186,20 @@ public class TileSplitter extends BeltTileEntity {
 
     @Override
     public void onLoad() {
+        if (dummy == null) {
+            TileEntity te = world.getTileEntity(pos.offset(getFront().rotateY()));
+            if (te instanceof TileSplitterDummy ts) {
+                if (ts.getFront() == this.getFront()) {
+                    dummy = ts;
+                }
+            }
+        }
     }
 
     @Nullable
     @Override
     public <T> T getCapability(Capability<T> capability, @Nullable EnumFacing facing) {
-        if (capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
+        if (capability == CapabilityDualSidedHandler.DUAL_SIDED_CAPABILITY) {
             return (T) dualBack;
         }
         return super.getCapability(capability, facing);

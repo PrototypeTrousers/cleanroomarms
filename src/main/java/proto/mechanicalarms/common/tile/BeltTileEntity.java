@@ -208,13 +208,21 @@ public abstract class BeltTileEntity extends TileEntity implements ITickable, IG
                 }
             }
         } else {
-            if (tickLeft && progressLeft < 3) {
-                previousProgressLeft = progressLeft;
-                progressLeft++;
+            if (tickLeft) {
+                if (progressLeft < 3) {
+                    previousProgressLeft = progressLeft;
+                    progressLeft++;
+                }else {
+                    previousProgressLeft = progressLeft;
+                }
             }
-            if (tickLeft && progressRight < 3) {
-                previousProgressRight = progressRight;
-                progressRight++;
+            if (tickRight) {
+                if(progressRight < 3) {
+                    previousProgressRight = progressRight;
+                    progressRight++;
+                } else {
+                    previousProgressRight = progressRight;
+                }
             }
         }
     }
@@ -357,18 +365,24 @@ public abstract class BeltTileEntity extends TileEntity implements ITickable, IG
 
         // Check the left connection and set bit 0 if true
         if (world.getTileEntity(this.pos.offset(direction.getHorizontalFacing().rotateYCCW())) instanceof TileBeltBasic backBelt) {
-            if (backBelt.getFront() == this.getFront().rotateYCCW()) {
+            if (backBelt.getFront() == this.getFront().rotateY()) {
                 mask |= (1 << 0); // Set bit 0
             }
         }
         // Check the right connection and set bit 1 if true
         if (world.getTileEntity(this.pos.offset(direction.getHorizontalFacing().rotateY())) instanceof TileBeltBasic backBelt) {
-            if (backBelt.getFront() == this.getFront().rotateY()) {
+            if (backBelt.getFront() == this.getFront().rotateYCCW()) {
                 mask |= (1 << 1); // Set bit 1
             }
         }
         // Check the opposite direction and set bit 3 if true
         if (world.getTileEntity(this.pos.offset(direction.getHorizontalFacing().getOpposite())) instanceof TileBeltBasic backBelt) {
+            if (backBelt.getFront() == this.getFront()) {
+                mask |= (1 << 3); // Set bit 3
+            }
+        }
+        // Check the opposite below direction and set bit 3 if true
+        if (world.getTileEntity(this.pos.offset(direction.getHorizontalFacing().getOpposite()).down()) instanceof TileBeltBasic backBelt) {
             if (backBelt.getFront() == this.getFront()) {
                 mask |= (1 << 3); // Set bit 3
             }
