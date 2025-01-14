@@ -107,6 +107,6 @@ public class BeltItemHandler extends ItemStackHandler {
     @Override
     protected void onContentsChanged(int slot) {
         dualInventory.markTileDirty();
-        dualInventory.getTileWorld().notifyBlockUpdate(dualInventory.getPosition(), dualInventory.getTileWorld().getBlockState(dualInventory.getPosition()), dualInventory.getTileWorld().getBlockState(dualInventory.getPosition()), 3);
+        dualInventory.getTileWorld().notifyBlockUpdate(dualInventory.getPosition(), dualInventory.getTileWorld().getBlockState(dualInventory.getPosition()), dualInventory.getTileWorld().getBlockState(dualInventory.getPosition()), 2);
     }
 }

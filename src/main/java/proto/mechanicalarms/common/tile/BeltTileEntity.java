@@ -91,15 +91,23 @@ public abstract class BeltTileEntity extends TileEntity implements ITickable, IG
         // and that's all we have we just write our entire NBT here. If you have a complex
         // tile entity that doesn't need to have all information on the client you can write
         // a more optimal NBT here.
-        NBTTagCompound nbtTag = new NBTTagCompound();
-        this.writeToNBT(nbtTag);
-        return new SPacketUpdateTileEntity(getPos(), 1, nbtTag);
+        NBTTagCompound compound = new NBTTagCompound();
+        compound.setTag("leftInventory", leftItemHandler.serializeNBT());
+        compound.setTag("rightInventory", rightItemHandler.serializeNBT());
+        compound.setInteger("directions", direction.ordinal());
+        compound.setInteger("progressLeft", progressLeft);
+        compound.setInteger("progressRight", progressRight);
+        return new SPacketUpdateTileEntity(getPos(), 1, compound);
     }
 
     @Override
     public void onDataPacket(NetworkManager net, SPacketUpdateTileEntity packet) {
         // Here we get the packet from the server and read it into our client side tile entity
-        this.readFromNBT(packet.getNbtCompound());
+        NBTTagCompound compound = packet.getNbtCompound();
+        leftItemHandler.deserializeNBT(compound.getCompoundTag("leftInventory"));
+        rightItemHandler.deserializeNBT(compound.getCompoundTag("rightInventory"));
+        progressLeft = compound.getInteger("progressLeft");
+        progressRight = compound.getInteger("progressRight");
     }
 
     public ItemStackHandler getLeftItemHandler() {
@@ -142,7 +150,10 @@ public abstract class BeltTileEntity extends TileEntity implements ITickable, IG
 
     @Override
     public void markTileDirty() {
-        this.markDirty();
+        if (this.world != null)
+        {
+            this.world.markChunkDirty(this.pos, this);
+        }
     }
 
     @Override
@@ -298,7 +309,7 @@ public abstract class BeltTileEntity extends TileEntity implements ITickable, IG
 
     public void setDirection(Directions direction) {
         this.direction = direction;
-        markDirty();
+        markTileDirty();
     }
 
     @Nullable
