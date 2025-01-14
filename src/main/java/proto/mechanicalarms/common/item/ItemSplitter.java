@@ -57,8 +57,8 @@ public class ItemSplitter extends ItemBlock {
 
                 if (flag2 && flag3 && worldIn.getBlockState(pos.down()).isTopSolid() && worldIn.getBlockState(dummyPos.down()).isTopSolid()) {
                     IBlockState iblockstate2 = Blocks.SPLITTER.getDefaultState();
-                    worldIn.setBlockState(dummyPos, iblockstate2.withProperty(BlockSplitter.controller, false).withProperty(BlockSplitter.facing,playerFacing), 10);
                     worldIn.setBlockState(pos, iblockstate2.withProperty(BlockSplitter.controller, true).withProperty(BlockSplitter.facing, playerFacing), 10);
+                    worldIn.setBlockState(dummyPos, iblockstate2.withProperty(BlockSplitter.controller, false).withProperty(BlockSplitter.facing,playerFacing), 10);
                     SoundType soundtype = iblockstate2.getBlock().getSoundType(iblockstate2, worldIn, pos, player);
                     worldIn.playSound(null, pos, soundtype.getPlaceSound(), SoundCategory.BLOCKS, (soundtype.getVolume() + 1.0F) / 2.0F, soundtype.getPitch() * 0.8F);
 

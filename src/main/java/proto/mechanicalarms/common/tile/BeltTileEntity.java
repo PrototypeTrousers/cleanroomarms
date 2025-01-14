@@ -357,13 +357,13 @@ public abstract class BeltTileEntity extends TileEntity implements ITickable, IG
 
         // Check the left connection and set bit 0 if true
         if (world.getTileEntity(this.pos.offset(direction.getHorizontalFacing().rotateYCCW())) instanceof TileBeltBasic backBelt) {
-            if (backBelt.getFront() == this.getFront().rotateY()) {
+            if (backBelt.getFront() == this.getFront().rotateYCCW()) {
                 mask |= (1 << 0); // Set bit 0
             }
         }
         // Check the right connection and set bit 1 if true
         if (world.getTileEntity(this.pos.offset(direction.getHorizontalFacing().rotateY())) instanceof TileBeltBasic backBelt) {
-            if (backBelt.getFront() == this.getFront().rotateYCCW()) {
+            if (backBelt.getFront() == this.getFront().rotateY()) {
                 mask |= (1 << 1); // Set bit 1
             }
         }
