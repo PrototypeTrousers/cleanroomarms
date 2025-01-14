@@ -19,6 +19,7 @@ import proto.mechanicalarms.common.cap.CapabilityDualSidedHandler;
 public class TileSplitter extends BeltTileEntity {
     public Side lastOutputSide;
     private TileSplitterDummy dummy;
+    public boolean transferred;
 
     @Override
     public ModularPanel buildUI(GuiData guiData, GuiSyncManager guiSyncManager) {
@@ -40,7 +41,8 @@ public class TileSplitter extends BeltTileEntity {
         return renderBB;
     }
 
-    protected boolean handleSpliterItemTransfer(boolean left) {
+    @Override
+    protected void handleItemTransfer(boolean left) {
         TileEntity frontTe;
         EnumFacing facing = getFront();
 
@@ -60,11 +62,6 @@ public class TileSplitter extends BeltTileEntity {
             }
             attemptTransfer(frontTe, facing, left);
         }
-
-        if (frontTe == null) {
-            return true;
-        }
-        return shouldSwitchSides;
     }
 
     boolean attemptTransfer(TileEntity frontTe, EnumFacing facing, boolean left) {
@@ -110,76 +107,10 @@ public class TileSplitter extends BeltTileEntity {
 
     @Override
     public void update() {
-        boolean tickLeft = true;
-        if (progressLeft == 0 && insertedTickLeft == world.getTotalWorldTime()) {
-            progressLeft = 0;
-            previousProgressLeft = -1;
-            insertedTickLeft = -1;
-            tickLeft = false;
-        }
-
-        boolean tickRight = true;
-        if (progressRight == 0 && insertedTickRight == world.getTotalWorldTime()) {
-            progressRight = 0;
-            previousProgressRight = -1;
-            insertedTickRight = -1;
-            tickRight = false;
-        }
-
-        if (this.world.isBlockPowered(this.getPos())) {
-            this.previousProgressLeft = progressLeft;
-            this.previousProgressRight = progressRight;
-            return;
-        }
-        if (leftItemHandler.getStackInSlot(0).isEmpty() && rightItemHandler.getStackInSlot(0).isEmpty()) {
-            previousProgressLeft = previousProgressRight = 0;
-            progressLeft = progressRight = 0;
-            return;
-        }
-        if (!this.world.isRemote) {
-            boolean transfered = false;
-            if (tickLeft) {
-                if (progressLeft < 3 && !leftItemHandler.getStackInSlot(0).isEmpty()) {
-                    previousProgressLeft++;
-                    progressLeft++;
-                }
-                if (progressLeft >= 3) {
-                    transfered = handleSpliterItemTransfer(true);
-                }
-            }
-            if (tickRight) {
-                if (progressRight < 3 && !rightItemHandler.getStackInSlot(0).isEmpty()) {
-                    previousProgressRight++;
-                    progressRight++;
-                }
-                if (progressRight >= 3) {
-                    transfered = handleSpliterItemTransfer(false);
-                }
-            }
-            if (transfered) {
-                if (lastOutputSide == Side.L) {
-                    lastOutputSide = Side.R;
-                } else {
-                    lastOutputSide = Side.L;
-                }
-            }
-        } else {
-            if (tickLeft) {
-                if (progressLeft < 3) {
-                    previousProgressLeft = progressLeft;
-                    progressLeft++;
-                } else {
-                    previousProgressLeft = progressLeft;
-                }
-            }
-            if (tickRight) {
-                if (progressRight < 3) {
-                    previousProgressRight = progressRight;
-                    progressRight++;
-                } else {
-                    previousProgressRight = progressRight;
-                }
-            }
+        super.update();
+        if (transferred) {
+            lastOutputSide = lastOutputSide.opposite();
+            transferred = false;
         }
     }
 
