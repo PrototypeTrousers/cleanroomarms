@@ -12,7 +12,7 @@ import org.jetbrains.annotations.Nullable;
 import proto.mechanicalarms.api.capability.IDualSidedHandler;
 import proto.mechanicalarms.common.cap.CapabilityDualSidedHandler;
 
-public class TileSplitterDummy extends BeltTileEntity {
+public class TileSplitterDummy extends BeltHoldingEntity {
     TileSplitter controller;
     private boolean worked;
 

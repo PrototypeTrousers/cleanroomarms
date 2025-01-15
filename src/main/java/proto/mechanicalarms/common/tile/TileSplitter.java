@@ -16,7 +16,7 @@ import proto.mechanicalarms.api.capability.IDualSidedHandler;
 import proto.mechanicalarms.common.cap.CapabilityDualSidedHandler;
 
 
-public class TileSplitter extends BeltTileEntity {
+public class TileSplitter extends TileBeltBasic {
     public Side lastOutputSide = Side.L;
     private TileSplitterDummy dummy;
     private boolean worked;

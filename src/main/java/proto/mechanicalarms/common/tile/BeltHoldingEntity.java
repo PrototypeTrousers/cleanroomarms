@@ -22,7 +22,7 @@ import proto.mechanicalarms.common.cap.BeltItemHandler;
 import proto.mechanicalarms.common.cap.CapabilityDualSidedHandler;
 import proto.mechanicalarms.common.cap.DualSidedHandler;
 
-public abstract class BeltTileEntity extends TileEntity implements ITickable, IGuiHolder, IDualInventory {
+public abstract class BeltHoldingEntity extends TileEntity implements IGuiHolder, IDualInventory {
     protected BeltItemHandler leftItemHandler = new BeltItemHandler(this, 1, Side.L);
     protected BeltItemHandler leftSideItemHandler = new BeltItemHandler(this, 1, leftItemHandler, Side.L);
     protected BeltItemHandler rightItemHandler = new BeltItemHandler(this, 1, Side.R);
@@ -31,14 +31,8 @@ public abstract class BeltTileEntity extends TileEntity implements ITickable, IG
     protected IDualSidedHandler dualLeft = new DualSidedHandler(this, Side.L);
     protected IDualSidedHandler dualRight = new DualSidedHandler(this, Side.R);
     protected int connected = -1;
-    protected long insertedTickLeft;
-    protected long insertedTickRight;
     AxisAlignedBB renderBB;
     AxisAlignedBB pickerBB;
-    int progressLeft = 0;
-    int progressRight = 0;
-    int previousProgressLeft = 0;
-    int previousProgressRight = 0;
     Directions direction;
 
     @Override
@@ -167,72 +161,6 @@ public abstract class BeltTileEntity extends TileEntity implements ITickable, IG
     @Override
     public boolean hasFastRenderer() {
         return true;
-    }
-
-    @Override
-    public void update() {
-        boolean tickLeft = true;
-        if (progressLeft == 0 && insertedTickLeft == world.getTotalWorldTime()) {
-            progressLeft = 0;
-            previousProgressLeft = -1;
-            insertedTickLeft = -1;
-            tickLeft = false;
-        }
-
-        boolean tickRight = true;
-        if (progressRight == 0 && insertedTickRight == world.getTotalWorldTime()) {
-            progressRight = 0;
-            previousProgressRight = -1;
-            insertedTickRight = -1;
-            tickRight = false;
-        }
-
-        if (this.world.isBlockPowered(this.getPos())) {
-            this.previousProgressLeft = progressLeft;
-            this.previousProgressRight = progressRight;
-            return;
-        }
-        if (leftItemHandler.getStackInSlot(0).isEmpty() && rightItemHandler.getStackInSlot(0).isEmpty()) {
-            previousProgressLeft = previousProgressRight = 0;
-            progressLeft = progressRight = 0;
-            return;
-        }
-        if (!this.world.isRemote) {
-            if (tickLeft) {
-                if (progressLeft < 3 && !leftItemHandler.getStackInSlot(0).isEmpty()) {
-                    previousProgressLeft++;
-                    progressLeft++;
-                }
-                if (progressLeft >= 3) {
-                    handleItemTransfer(true);
-                }
-            } if (tickRight) {
-                if (progressRight < 3 && !rightItemHandler.getStackInSlot(0).isEmpty()) {
-                    previousProgressRight++;
-                    progressRight++;
-                }
-                if (progressRight >= 3) {
-                    handleItemTransfer(false);
-                }
-            }
-        } else {
-            if (tickLeft) {
-                if (progressLeft < 3) {
-                    previousProgressLeft = progressLeft;
-                    progressLeft++;
-                }else {
-                    previousProgressLeft = progressLeft;
-                }
-            }
-            if (tickRight) {
-                if(progressRight < 3) {
-                    previousProgressRight = progressRight;
-                    progressRight++;
-                } else {
-                    previousProgressRight = progressRight;
-                }
-            }
-        }
     }
 
     protected void handleItemTransfer(boolean left) {
@@ -398,5 +326,80 @@ public abstract class BeltTileEntity extends TileEntity implements ITickable, IG
 
         // Use the mask for further operations as needed, for example:
         connected = mask; // Store the bitmask in 'connected' (now an integer)
+    }
+
+    class BeltUpdatingLogic {
+
+        protected long insertedTickLeft;
+        protected long insertedTickRight;
+        int progressLeft = 0;
+        int progressRight = 0;
+        int previousProgressLeft = 0;
+        int previousProgressRight = 0;
+
+        public void update() {
+            boolean tickLeft = true;
+            if (progressLeft == 0 && insertedTickLeft == world.getTotalWorldTime()) {
+                progressLeft = 0;
+                previousProgressLeft = -1;
+                insertedTickLeft = -1;
+                tickLeft = false;
+            }
+
+            boolean tickRight = true;
+            if (progressRight == 0 && insertedTickRight == world.getTotalWorldTime()) {
+                progressRight = 0;
+                previousProgressRight = -1;
+                insertedTickRight = -1;
+                tickRight = false;
+            }
+
+            if (this.world.isBlockPowered(this.getPos())) {
+                this.previousProgressLeft = progressLeft;
+                this.previousProgressRight = progressRight;
+                return;
+            }
+            if (leftItemHandler.getStackInSlot(0).isEmpty() && rightItemHandler.getStackInSlot(0).isEmpty()) {
+                previousProgressLeft = previousProgressRight = 0;
+                progressLeft = progressRight = 0;
+                return;
+            }
+            if (!this.world.isRemote) {
+                if (tickLeft) {
+                    if (progressLeft < 3 && !leftItemHandler.getStackInSlot(0).isEmpty()) {
+                        previousProgressLeft++;
+                        progressLeft++;
+                    }
+                    if (progressLeft >= 3) {
+                        handleItemTransfer(true);
+                    }
+                } if (tickRight) {
+                    if (progressRight < 3 && !rightItemHandler.getStackInSlot(0).isEmpty()) {
+                        previousProgressRight++;
+                        progressRight++;
+                    }
+                    if (progressRight >= 3) {
+                        handleItemTransfer(false);
+                    }
+                }
+            } else {
+                if (tickLeft) {
+                    if (progressLeft < 3) {
+                        previousProgressLeft = progressLeft;
+                        progressLeft++;
+                    }else {
+                        previousProgressLeft = progressLeft;
+                    }
+                }
+                if (tickRight) {
+                    if(progressRight < 3) {
+                        previousProgressRight = progressRight;
+                        progressRight++;
+                    } else {
+                        previousProgressRight = progressRight;
+                    }
+                }
+            }
+        }
     }
 }
