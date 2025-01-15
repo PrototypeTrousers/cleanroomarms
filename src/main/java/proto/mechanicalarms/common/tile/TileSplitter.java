@@ -9,10 +9,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.items.CapabilityItemHandler;
-import net.minecraftforge.items.IItemHandler;
 import org.jetbrains.annotations.Nullable;
-import proto.mechanicalarms.api.capability.IDualSidedHandler;
 import proto.mechanicalarms.common.cap.CapabilityDualSidedHandler;
 
 
@@ -20,6 +17,7 @@ public class TileSplitter extends TileBeltBasic {
     public Side lastOutputSide = Side.L;
     private TileSplitterDummy dummy;
     private boolean worked;
+    private BeltHoldingEntity lastUpdated;
 
     @Override
     public ModularPanel buildUI(GuiData guiData, GuiSyncManager guiSyncManager) {
@@ -64,53 +62,30 @@ public class TileSplitter extends TileBeltBasic {
         worked = true;
     }
 
-    boolean attemptTransfer(TileEntity frontTe, EnumFacing facing, boolean left) {
-        if (frontTe != null) {
-            if (frontTe.hasCapability(CapabilityDualSidedHandler.DUAL_SIDED_CAPABILITY, facing.getOpposite())) {
-                IDualSidedHandler cap = frontTe.getCapability(CapabilityDualSidedHandler.DUAL_SIDED_CAPABILITY, facing.getOpposite());
-                if (cap != null) {
-                    if (left) {
-                        if (cap.insertLeft(leftItemHandler.extractItem(0, 1, true), true) != leftItemHandler.getStackInSlot(0)) {
-                            cap.insertLeft(leftItemHandler.extractItem(0, 1, false), false);
-                            progressLeft = 0;
-                            return true;
-                        }
-                    } else {
-                        if (cap.insertRight(rightItemHandler.extractItem(0, 1, true), true) != rightItemHandler.getStackInSlot(0)) {
-                            cap.insertRight(rightItemHandler.extractItem(0, 1, false), false);
-                            progressRight = 0;
-                            return true;
-                        }
-                    }
-                } else {
-                    IItemHandler icap = frontTe.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, facing.getOpposite());
-                    if (icap != null) {
-                        if (left) {
-                            if (icap.insertItem(0, leftItemHandler.extractItem(0, 1, true), true) != leftItemHandler.getStackInSlot(0)) {
-                                icap.insertItem(0, leftItemHandler.extractItem(0, 1, false), false);
-                                progressLeft = 0;
-                                return true;
-                            }
-                        } else {
-                            if (icap.insertItem(0, rightItemHandler.extractItem(0, 1, true), true) != rightItemHandler.getStackInSlot(0)) {
-                                icap.insertItem(0, rightItemHandler.extractItem(0, 1, false), false);
-                                progressRight = 0;
-                                return true;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return false;
-    }
-
     @Override
     public void update() {
-        super.update();
-        if (worked) {
-            lastOutputSide = lastOutputSide.opposite();
-            worked = false;
+        if (lastUpdated == this) {
+            dummy.logic.update();
+            if (worked) {
+                lastOutputSide = lastOutputSide.opposite();
+                worked = false;
+            }
+            this.logic.update();
+            if (worked) {
+                lastOutputSide = lastOutputSide.opposite();
+                worked = false;
+            }
+        } else {
+            this.logic.update();
+            if (worked) {
+                lastOutputSide = lastOutputSide.opposite();
+                worked = false;
+            }
+            dummy.logic.update();
+            if (worked) {
+                lastOutputSide = lastOutputSide.opposite();
+                worked = false;
+            }
         }
     }
 
@@ -124,6 +99,8 @@ public class TileSplitter extends TileBeltBasic {
                     dummy = ts;
                 }
             }
+        } if (lastUpdated ==null) {
+            lastUpdated = this;
         }
     }
 

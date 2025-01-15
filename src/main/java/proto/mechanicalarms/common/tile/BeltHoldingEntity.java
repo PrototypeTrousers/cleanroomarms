@@ -6,30 +6,25 @@ import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.util.ITickable;
 import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.items.CapabilityItemHandler;
-import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.items.ItemStackHandler;
 import org.jetbrains.annotations.Nullable;
-import proto.mechanicalarms.api.IDualInventory;
 import proto.mechanicalarms.api.capability.IDualSidedHandler;
 import proto.mechanicalarms.common.block.properties.Directions;
 import proto.mechanicalarms.common.cap.BeltItemHandler;
 import proto.mechanicalarms.common.cap.CapabilityDualSidedHandler;
 import proto.mechanicalarms.common.cap.DualSidedHandler;
 
-public abstract class BeltHoldingEntity extends TileEntity implements IGuiHolder, IDualInventory {
-    protected BeltItemHandler leftItemHandler = new BeltItemHandler(this, 1, Side.L);
-    protected BeltItemHandler leftSideItemHandler = new BeltItemHandler(this, 1, leftItemHandler, Side.L);
-    protected BeltItemHandler rightItemHandler = new BeltItemHandler(this, 1, Side.R);
-    protected BeltItemHandler rightSideItemHandler = new BeltItemHandler(this, 1, rightItemHandler, Side.R);
-    protected IDualSidedHandler dualBack = new DualSidedHandler(this);
-    protected IDualSidedHandler dualLeft = new DualSidedHandler(this, Side.L);
-    protected IDualSidedHandler dualRight = new DualSidedHandler(this, Side.R);
+public abstract class BeltHoldingEntity extends TileEntity implements IGuiHolder {
+    protected BeltUpdatingLogic logic = new BeltUpdatingLogic(this, this);
+    protected BeltItemHandler leftItemHandler = new BeltItemHandler(logic, 1, Side.L);
+    protected BeltItemHandler leftSideItemHandler = new BeltItemHandler(logic, 1, leftItemHandler, Side.L);
+    protected BeltItemHandler rightItemHandler = new BeltItemHandler(logic, 1, Side.R);
+    protected BeltItemHandler rightSideItemHandler = new BeltItemHandler(logic, 1, rightItemHandler, Side.R);
+    protected IDualSidedHandler dualBack = new DualSidedHandler(logic);
+    protected IDualSidedHandler dualLeft = new DualSidedHandler(logic, Side.L);
+    protected IDualSidedHandler dualRight = new DualSidedHandler(logic, Side.R);
     protected int connected = -1;
     AxisAlignedBB renderBB;
     AxisAlignedBB pickerBB;
@@ -41,10 +36,7 @@ public abstract class BeltHoldingEntity extends TileEntity implements IGuiHolder
         compound.setTag("leftInventory", leftItemHandler.serializeNBT());
         compound.setTag("rightInventory", rightItemHandler.serializeNBT());
         compound.setInteger("directions", direction.ordinal());
-        compound.setInteger("progressLeft", progressLeft);
-        compound.setInteger("progressRight", progressRight);
-        compound.setInteger("previousProgressLeft", previousProgressLeft);
-        compound.setInteger("previousProgressRight", previousProgressRight);
+        logic.writeToNBT(compound);
         return compound;
     }
 
@@ -54,20 +46,7 @@ public abstract class BeltHoldingEntity extends TileEntity implements IGuiHolder
         leftItemHandler.deserializeNBT(compound.getCompoundTag("leftInventory"));
         rightItemHandler.deserializeNBT(compound.getCompoundTag("rightInventory"));
         direction = Directions.values()[compound.getInteger("directions")];
-        progressLeft = compound.getInteger("progressLeft");
-        progressRight = compound.getInteger("progressRight");
-        previousProgressLeft = compound.getInteger("previousProgressLeft");
-        previousProgressRight = compound.getInteger("previousProgressRight");
-    }
-
-    @Override
-    public BlockPos getPosition() {
-        return super.getPos();
-    }
-
-    @Override
-    public World getTileWorld() {
-        return super.getWorld();
+        logic.readFromNBT(compound);
     }
 
     @Override
@@ -89,8 +68,7 @@ public abstract class BeltHoldingEntity extends TileEntity implements IGuiHolder
         compound.setTag("leftInventory", leftItemHandler.serializeNBT());
         compound.setTag("rightInventory", rightItemHandler.serializeNBT());
         compound.setInteger("directions", direction.ordinal());
-        compound.setInteger("progressLeft", progressLeft);
-        compound.setInteger("progressRight", progressRight);
+        logic.updatePacket(compound);
         return new SPacketUpdateTileEntity(getPos(), 1, compound);
     }
 
@@ -100,123 +78,13 @@ public abstract class BeltHoldingEntity extends TileEntity implements IGuiHolder
         NBTTagCompound compound = packet.getNbtCompound();
         leftItemHandler.deserializeNBT(compound.getCompoundTag("leftInventory"));
         rightItemHandler.deserializeNBT(compound.getCompoundTag("rightInventory"));
-        progressLeft = compound.getInteger("progressLeft");
-        progressRight = compound.getInteger("progressRight");
-    }
-
-    public ItemStackHandler getLeftItemHandler() {
-        return leftItemHandler;
-    }
-
-    public BeltItemHandler getLeftSideItemHandler() {
-        return leftSideItemHandler;
-    }
-
-    public ItemStackHandler getRightItemHandler() {
-        return rightItemHandler;
-    }
-
-    public BeltItemHandler getRightSideItemHandler() {
-        return rightSideItemHandler;
-    }
-
-    @Override
-    public void setProgressLeft(int progressLeft) {
-        this.progressLeft = progressLeft;
-    }
-
-    @Override
-    public void setPreviousProgressLeft(int previousProgressLeft) {
-        this.previousProgressLeft = previousProgressLeft;
-    }
-
-    @Override
-    public void setProgressRight(int progressRight) {
-        this.progressRight = progressRight;
-    }
-
-    @Override
-    public void setPreviousProgressRight(int previousProgressRight) {
-        this.previousProgressRight = previousProgressRight;
-    }
-
-    @Override
-    public void updateLastTickLeft() {
-        insertedTickLeft = world.getTotalWorldTime();
-    }
-
-    @Override
-    public void updateLastTickRight() {
-        insertedTickRight = world.getTotalWorldTime();
-    }
-
-    @Override
-    public void markTileDirty() {
-        if (this.world != null)
-        {
-            this.world.getChunk(this.pos).markDirty();
-        }
+        logic.onDataPacket(net, packet);
     }
 
     @Override
     public boolean hasFastRenderer() {
         return true;
     }
-
-    protected void handleItemTransfer(boolean left) {
-        TileEntity frontTe;
-        EnumFacing facing = this.direction.getHorizontalFacing();
-        if (direction.getRelativeHeight() == Directions.RelativeHeight.LEVEL) {
-            frontTe = world.getTileEntity(pos.offset(facing));
-            if (frontTe == null) {
-                frontTe = world.getTileEntity(pos.offset(facing).down());
-            }
-        } else {
-            if (direction.getRelativeHeight() == Directions.RelativeHeight.ABOVE) {
-                frontTe = world.getTileEntity(pos.offset(facing).up());
-            } else {
-                frontTe = world.getTileEntity(pos.offset(facing).down());
-                if (frontTe == null) {
-                    frontTe = world.getTileEntity(pos.offset(facing));
-                }
-            }
-        }
-
-        if (frontTe != null) {
-            if (frontTe.hasCapability(CapabilityDualSidedHandler.DUAL_SIDED_CAPABILITY, facing.getOpposite())) {
-                IDualSidedHandler cap = frontTe.getCapability(CapabilityDualSidedHandler.DUAL_SIDED_CAPABILITY, facing.getOpposite());
-                if (cap != null) {
-                    if (left) {
-                        if (cap.insertLeft(leftItemHandler.extractItem(0, 1, true), true) != leftItemHandler.getStackInSlot(0)) {
-                            cap.insertLeft(leftItemHandler.extractItem(0, 1, false), false);
-                            progressLeft = 0;
-                        }
-                    } else {
-                        if (cap.insertRight(rightItemHandler.extractItem(0, 1, true), true) != rightItemHandler.getStackInSlot(0)) {
-                            cap.insertRight(rightItemHandler.extractItem(0, 1, false), false);
-                            progressRight = 0;
-                        }
-                    }
-                } else {
-                    IItemHandler icap = frontTe.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, facing.getOpposite());
-                    if (icap != null) {
-                        if (left) {
-                            if (icap.insertItem(0, leftItemHandler.extractItem(0, 1, true), true) != leftItemHandler.getStackInSlot(0)) {
-                                icap.insertItem(0, leftItemHandler.extractItem(0, 1, false), false);
-                                progressLeft = 0;
-                            }
-                        } else {
-                            if (icap.insertItem(0, rightItemHandler.extractItem(0, 1, true), true) != rightItemHandler.getStackInSlot(0)) {
-                                icap.insertItem(0, rightItemHandler.extractItem(0, 1, false), false);
-                                progressRight = 0;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
 
     @Override
     public void onLoad() {
@@ -225,22 +93,6 @@ public abstract class BeltHoldingEntity extends TileEntity implements IGuiHolder
             updateConnected();
         }
         pickerBB = new AxisAlignedBB(this.pos);
-    }
-
-    public int getProgressLeft() {
-        return progressLeft;
-    }
-
-    public int getPreviousProgressLeft() {
-        return previousProgressLeft;
-    }
-
-    public int getProgressRight() {
-        return progressRight;
-    }
-
-    public int getPreviousProgressRight() {
-        return previousProgressRight;
     }
 
     public boolean isSlope() {
@@ -253,7 +105,7 @@ public abstract class BeltHoldingEntity extends TileEntity implements IGuiHolder
 
     public void setDirection(Directions direction) {
         this.direction = direction;
-        markTileDirty();
+        markDirty();
     }
 
     @Nullable
@@ -328,78 +180,4 @@ public abstract class BeltHoldingEntity extends TileEntity implements IGuiHolder
         connected = mask; // Store the bitmask in 'connected' (now an integer)
     }
 
-    class BeltUpdatingLogic {
-
-        protected long insertedTickLeft;
-        protected long insertedTickRight;
-        int progressLeft = 0;
-        int progressRight = 0;
-        int previousProgressLeft = 0;
-        int previousProgressRight = 0;
-
-        public void update() {
-            boolean tickLeft = true;
-            if (progressLeft == 0 && insertedTickLeft == world.getTotalWorldTime()) {
-                progressLeft = 0;
-                previousProgressLeft = -1;
-                insertedTickLeft = -1;
-                tickLeft = false;
-            }
-
-            boolean tickRight = true;
-            if (progressRight == 0 && insertedTickRight == world.getTotalWorldTime()) {
-                progressRight = 0;
-                previousProgressRight = -1;
-                insertedTickRight = -1;
-                tickRight = false;
-            }
-
-            if (this.world.isBlockPowered(this.getPos())) {
-                this.previousProgressLeft = progressLeft;
-                this.previousProgressRight = progressRight;
-                return;
-            }
-            if (leftItemHandler.getStackInSlot(0).isEmpty() && rightItemHandler.getStackInSlot(0).isEmpty()) {
-                previousProgressLeft = previousProgressRight = 0;
-                progressLeft = progressRight = 0;
-                return;
-            }
-            if (!this.world.isRemote) {
-                if (tickLeft) {
-                    if (progressLeft < 3 && !leftItemHandler.getStackInSlot(0).isEmpty()) {
-                        previousProgressLeft++;
-                        progressLeft++;
-                    }
-                    if (progressLeft >= 3) {
-                        handleItemTransfer(true);
-                    }
-                } if (tickRight) {
-                    if (progressRight < 3 && !rightItemHandler.getStackInSlot(0).isEmpty()) {
-                        previousProgressRight++;
-                        progressRight++;
-                    }
-                    if (progressRight >= 3) {
-                        handleItemTransfer(false);
-                    }
-                }
-            } else {
-                if (tickLeft) {
-                    if (progressLeft < 3) {
-                        previousProgressLeft = progressLeft;
-                        progressLeft++;
-                    }else {
-                        previousProgressLeft = progressLeft;
-                    }
-                }
-                if (tickRight) {
-                    if(progressRight < 3) {
-                        previousProgressRight = progressRight;
-                        progressRight++;
-                    } else {
-                        previousProgressRight = progressRight;
-                    }
-                }
-            }
-        }
-    }
 }

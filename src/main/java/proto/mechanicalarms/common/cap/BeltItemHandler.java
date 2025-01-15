@@ -5,22 +5,22 @@ import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.items.ItemStackHandler;
 import org.jetbrains.annotations.NotNull;
-import proto.mechanicalarms.api.IDualInventory;
+import proto.mechanicalarms.api.IBeltLogic;
 import proto.mechanicalarms.common.tile.Side;
 
 public class BeltItemHandler extends ItemStackHandler {
 
-    private final IDualInventory dualInventory;
+    private final IBeltLogic dualInventory;
     BeltItemHandler main;
     Side side;
 
-    public BeltItemHandler(IDualInventory dualInventory, int i, Side side) {
+    public BeltItemHandler(IBeltLogic dualInventory, int i, Side side) {
         super(i);
         this.dualInventory = dualInventory;
         this.side = side;
     }
 
-    public BeltItemHandler(IDualInventory dualInventory, int i, BeltItemHandler mainHandler, Side side) {
+    public BeltItemHandler(IBeltLogic dualInventory, int i, BeltItemHandler mainHandler, Side side) {
         super(i);
         this.dualInventory = dualInventory;
         this.main = mainHandler;
@@ -108,10 +108,10 @@ public class BeltItemHandler extends ItemStackHandler {
 
     @Override
     protected void onContentsChanged(int slot) {
-        World world = dualInventory.getTileWorld();
+        World world = dualInventory.getHolderWorld();
         if (!world.isRemote) {
             dualInventory.markTileDirty();
-            ((WorldServer) world).getPlayerChunkMap().markBlockForUpdate(dualInventory.getPosition());
+            ((WorldServer) world).getPlayerChunkMap().markBlockForUpdate(dualInventory.getHolderPosition());
         }
     }
 }

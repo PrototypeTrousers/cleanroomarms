@@ -5,7 +5,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.items.ItemStackHandler;
 import proto.mechanicalarms.common.cap.BeltItemHandler;
 
-public interface IDualInventory{
+public interface IBeltLogic {
 
     ItemStackHandler getLeftItemHandler();
 
@@ -29,7 +29,7 @@ public interface IDualInventory{
 
     void markTileDirty();
 
-    World getTileWorld();
+    World getHolderWorld();
 
-    BlockPos getPosition();
+    BlockPos getHolderPosition();
 }

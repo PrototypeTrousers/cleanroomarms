@@ -1,20 +1,20 @@
 package proto.mechanicalarms.common.cap;
 
 import net.minecraft.item.ItemStack;
-import proto.mechanicalarms.api.IDualInventory;
+import proto.mechanicalarms.api.IBeltLogic;
 import proto.mechanicalarms.api.capability.IDualSidedHandler;
 import proto.mechanicalarms.common.tile.Side;
 
 public class DualSidedHandler implements IDualSidedHandler {
-    private final IDualInventory dualInventory;
+    private final IBeltLogic dualInventory;
     Side side;
 
-    public DualSidedHandler(IDualInventory dualInventory, Side side) {
+    public DualSidedHandler(IBeltLogic dualInventory, Side side) {
         this.dualInventory = dualInventory;
         this.side = side;
     }
 
-    public DualSidedHandler(IDualInventory dualInventory) {
+    public DualSidedHandler(IBeltLogic dualInventory) {
         this.dualInventory = dualInventory;
     }
 
