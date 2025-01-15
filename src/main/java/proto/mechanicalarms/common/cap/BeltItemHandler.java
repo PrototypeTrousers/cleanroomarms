@@ -1,6 +1,8 @@
 package proto.mechanicalarms.common.cap;
 
 import net.minecraft.item.ItemStack;
+import net.minecraft.world.World;
+import net.minecraft.world.WorldServer;
 import net.minecraftforge.items.ItemStackHandler;
 import org.jetbrains.annotations.NotNull;
 import proto.mechanicalarms.api.IDualInventory;
@@ -106,7 +108,10 @@ public class BeltItemHandler extends ItemStackHandler {
 
     @Override
     protected void onContentsChanged(int slot) {
-        dualInventory.markTileDirty();
-        dualInventory.getTileWorld().notifyBlockUpdate(dualInventory.getPosition(), dualInventory.getTileWorld().getBlockState(dualInventory.getPosition()), dualInventory.getTileWorld().getBlockState(dualInventory.getPosition()), 2);
+        World world = dualInventory.getTileWorld();
+        if (!world.isRemote) {
+            dualInventory.markTileDirty();
+            ((WorldServer) world).getPlayerChunkMap().markBlockForUpdate(dualInventory.getPosition());
+        }
     }
 }

@@ -14,6 +14,7 @@ import proto.mechanicalarms.common.cap.CapabilityDualSidedHandler;
 
 public class TileSplitterDummy extends BeltTileEntity {
     TileSplitter controller;
+    private boolean worked;
 
     @Override
     protected void handleItemTransfer(boolean left) {
@@ -24,11 +25,9 @@ public class TileSplitterDummy extends BeltTileEntity {
             frontTe = world.getTileEntity(pos.offset(facing));
         } else {
             frontTe = world.getTileEntity(pos.offset(facing.rotateYCCW()).offset(facing));
-
         }
 
         boolean transferred = attemptTransfer(frontTe, facing, left);
-
         if (!transferred) {
             if (controller.lastOutputSide == Side.R) {
                 frontTe = world.getTileEntity(pos.offset(facing.rotateYCCW()).offset(facing));
@@ -37,14 +36,15 @@ public class TileSplitterDummy extends BeltTileEntity {
             }
             attemptTransfer(frontTe, facing, left);
         }
+        worked = true;
     }
 
     @Override
     public void update() {
         super.update();
-        if (controller.transferred) {
+        if (worked) {
             controller.lastOutputSide = controller.lastOutputSide.opposite();
-            controller.transferred = false;
+            worked = false;
         }
     }
 

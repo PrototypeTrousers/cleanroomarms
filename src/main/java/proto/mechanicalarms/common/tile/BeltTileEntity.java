@@ -114,8 +114,16 @@ public abstract class BeltTileEntity extends TileEntity implements ITickable, IG
         return leftItemHandler;
     }
 
+    public BeltItemHandler getLeftSideItemHandler() {
+        return leftSideItemHandler;
+    }
+
     public ItemStackHandler getRightItemHandler() {
         return rightItemHandler;
+    }
+
+    public BeltItemHandler getRightSideItemHandler() {
+        return rightSideItemHandler;
     }
 
     @Override
@@ -152,7 +160,7 @@ public abstract class BeltTileEntity extends TileEntity implements ITickable, IG
     public void markTileDirty() {
         if (this.world != null)
         {
-            this.world.markChunkDirty(this.pos, this);
+            this.world.getChunk(this.pos).markDirty();
         }
     }
 

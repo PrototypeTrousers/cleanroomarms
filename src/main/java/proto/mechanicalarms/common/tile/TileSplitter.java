@@ -17,9 +17,9 @@ import proto.mechanicalarms.common.cap.CapabilityDualSidedHandler;
 
 
 public class TileSplitter extends BeltTileEntity {
-    public Side lastOutputSide;
+    public Side lastOutputSide = Side.L;
     private TileSplitterDummy dummy;
-    public boolean transferred;
+    private boolean worked;
 
     @Override
     public ModularPanel buildUI(GuiData guiData, GuiSyncManager guiSyncManager) {
@@ -52,9 +52,8 @@ public class TileSplitter extends BeltTileEntity {
             frontTe = world.getTileEntity(pos.offset(facing));
         }
 
-        boolean shouldSwitchSides = attemptTransfer(frontTe, facing, left);
-
-        if (!shouldSwitchSides) {
+        boolean transferred = attemptTransfer(frontTe, facing, left);
+        if (!transferred) {
             if (lastOutputSide == Side.R) {
                 frontTe = world.getTileEntity(pos.offset(facing.rotateY()).offset(facing));
             } else {
@@ -62,6 +61,7 @@ public class TileSplitter extends BeltTileEntity {
             }
             attemptTransfer(frontTe, facing, left);
         }
+        worked = true;
     }
 
     boolean attemptTransfer(TileEntity frontTe, EnumFacing facing, boolean left) {
@@ -108,9 +108,9 @@ public class TileSplitter extends BeltTileEntity {
     @Override
     public void update() {
         super.update();
-        if (transferred) {
+        if (worked) {
             lastOutputSide = lastOutputSide.opposite();
-            transferred = false;
+            worked = false;
         }
     }
 
