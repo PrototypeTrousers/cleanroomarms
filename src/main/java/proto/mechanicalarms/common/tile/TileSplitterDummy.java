@@ -12,6 +12,10 @@ import proto.mechanicalarms.common.cap.CapabilityDualSidedHandler;
 public class TileSplitterDummy extends BeltHoldingEntity {
     TileSplitter controller;
 
+    public TileSplitterDummy() {
+        logic = new SplitterDummyUpdatingLogic(this, this);
+    }
+
     @Override
     public void onLoad() {
         if (controller == null) {
@@ -41,5 +45,35 @@ public class TileSplitterDummy extends BeltHoldingEntity {
     @Override
     public ModularPanel buildUI(GuiData data, GuiSyncManager syncManager) {
         return controller.buildUI(data, syncManager);
+    }
+
+    class SplitterDummyUpdatingLogic extends BeltUpdatingLogic {
+
+        SplitterDummyUpdatingLogic(BeltHoldingEntity beltHoldingEntity, BeltHoldingEntity holder) {
+            super(beltHoldingEntity, holder);
+        }
+
+        @Override
+        protected void handleItemTransfer(boolean left) {
+            TileEntity frontTe;
+            EnumFacing facing = getFront();
+
+            if (controller.lastOutputSide == Side.L) {
+                frontTe = world.getTileEntity(pos.offset(facing));
+            } else {
+                frontTe = world.getTileEntity(pos.offset(facing.rotateYCCW()).offset(facing));
+            }
+
+            boolean transferred = attemptTransfer(frontTe, facing, left);
+            if (!transferred) {
+                if (controller.lastOutputSide == Side.R) {
+                    frontTe = world.getTileEntity(pos.offset(facing.rotateYCCW()).offset(facing));
+                } else {
+                    frontTe = world.getTileEntity(pos.offset(facing));
+                }
+                attemptTransfer(frontTe, facing, left);
+            }
+            controller.worked = true;
+        }
     }
 }

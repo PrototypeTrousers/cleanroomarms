@@ -170,7 +170,7 @@ public class BlockBelt extends Block implements ITileEntityProvider {
         if (!playerIn.getHeldItem(hand).isEmpty()) {
             TileEntity te = worldIn.getTileEntity(pos);
             if (te instanceof TileBeltBasic tbb) {
-                tbb.getLeftItemHandler().setStackInSlot(0, playerIn.getHeldItem(hand).copy());
+                tbb.getLogic().getLeftItemHandler().setStackInSlot(0, playerIn.getHeldItem(hand).copy());
             }
         } else {
             if (!worldIn.isRemote) {

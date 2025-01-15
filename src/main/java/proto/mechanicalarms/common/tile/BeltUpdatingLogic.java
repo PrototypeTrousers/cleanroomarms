@@ -17,8 +17,8 @@ import proto.mechanicalarms.common.cap.BeltItemHandler;
 import proto.mechanicalarms.common.cap.CapabilityDualSidedHandler;
 
 public class BeltUpdatingLogic implements IBeltLogic {
-    private final BeltHoldingEntity beltHoldingEntity;
-    BeltHoldingEntity holder;
+    protected final BeltHoldingEntity beltHoldingEntity;
+    protected BeltHoldingEntity holder;
     protected long insertedTickLeft;
     protected long insertedTickRight;
     int progressLeft = 0;
@@ -29,7 +29,6 @@ public class BeltUpdatingLogic implements IBeltLogic {
     BeltUpdatingLogic(BeltHoldingEntity beltHoldingEntity, BeltHoldingEntity holder) {
         this.beltHoldingEntity = beltHoldingEntity;
         this.holder = holder;
-
     }
 
     void updatePacket(NBTTagCompound compound) {

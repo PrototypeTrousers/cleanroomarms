@@ -16,8 +16,12 @@ import proto.mechanicalarms.common.cap.CapabilityDualSidedHandler;
 public class TileSplitter extends TileBeltBasic {
     public Side lastOutputSide = Side.L;
     private TileSplitterDummy dummy;
-    private boolean worked;
+    boolean worked;
     private BeltHoldingEntity lastUpdated;
+
+    public TileSplitter() {
+        logic = new SplitterUpdatingLogic(this, this);
+    }
 
     @Override
     public ModularPanel buildUI(GuiData guiData, GuiSyncManager guiSyncManager) {
@@ -40,51 +44,30 @@ public class TileSplitter extends TileBeltBasic {
     }
 
     @Override
-    protected void handleItemTransfer(boolean left) {
-        TileEntity frontTe;
-        EnumFacing facing = getFront();
-
-        if (lastOutputSide == Side.L) {
-            frontTe = world.getTileEntity(pos.offset(facing.rotateY()).offset(facing));
-        } else {
-            frontTe = world.getTileEntity(pos.offset(facing));
-        }
-
-        boolean transferred = attemptTransfer(frontTe, facing, left);
-        if (!transferred) {
-            if (lastOutputSide == Side.R) {
-                frontTe = world.getTileEntity(pos.offset(facing.rotateY()).offset(facing));
-            } else {
-                frontTe = world.getTileEntity(pos.offset(facing));
-            }
-            attemptTransfer(frontTe, facing, left);
-        }
-        worked = true;
-    }
-
-    @Override
     public void update() {
-        if (lastUpdated == this) {
-            dummy.logic.update();
-            if (worked) {
-                lastOutputSide = lastOutputSide.opposite();
-                worked = false;
-            }
-            this.logic.update();
-            if (worked) {
-                lastOutputSide = lastOutputSide.opposite();
-                worked = false;
-            }
-        } else {
-            this.logic.update();
-            if (worked) {
-                lastOutputSide = lastOutputSide.opposite();
-                worked = false;
-            }
-            dummy.logic.update();
-            if (worked) {
-                lastOutputSide = lastOutputSide.opposite();
-                worked = false;
+        if (!world.isRemote) {
+            if (lastUpdated == this) {
+                dummy.logic.update();
+                if (worked) {
+                    lastOutputSide = lastOutputSide.opposite();
+                    worked = false;
+                }
+                this.logic.update();
+                if (worked) {
+                    lastOutputSide = lastOutputSide.opposite();
+                    worked = false;
+                }
+            } else {
+                this.logic.update();
+                if (worked) {
+                    lastOutputSide = lastOutputSide.opposite();
+                    worked = false;
+                }
+                dummy.logic.update();
+                if (worked) {
+                    lastOutputSide = lastOutputSide.opposite();
+                    worked = false;
+                }
             }
         }
     }
@@ -99,7 +82,8 @@ public class TileSplitter extends TileBeltBasic {
                     dummy = ts;
                 }
             }
-        } if (lastUpdated ==null) {
+        }
+        if (lastUpdated == null) {
             lastUpdated = this;
         }
     }
@@ -116,6 +100,36 @@ public class TileSplitter extends TileBeltBasic {
     @Override
     public boolean hasCapability(Capability<?> capability, @Nullable EnumFacing facing) {
         return capability == CapabilityDualSidedHandler.DUAL_SIDED_CAPABILITY;
+    }
+
+    class SplitterUpdatingLogic extends BeltUpdatingLogic {
+
+        SplitterUpdatingLogic(BeltHoldingEntity beltHoldingEntity, BeltHoldingEntity holder) {
+            super(beltHoldingEntity, holder);
+        }
+
+        @Override
+        protected void handleItemTransfer(boolean left) {
+            TileEntity frontTe;
+            EnumFacing facing = beltHoldingEntity.getFront();
+
+            if (lastOutputSide == Side.L) {
+                frontTe = world.getTileEntity(pos.offset(facing.rotateY()).offset(facing));
+            } else {
+                frontTe = world.getTileEntity(pos.offset(facing));
+            }
+
+            boolean transferred = attemptTransfer(frontTe, facing, left);
+            if (!transferred) {
+                if (lastOutputSide == Side.R) {
+                    frontTe = world.getTileEntity(pos.offset(facing.rotateY()).offset(facing));
+                } else {
+                    frontTe = world.getTileEntity(pos.offset(facing));
+                }
+                attemptTransfer(frontTe, facing, left);
+            }
+            worked = true;
+        }
     }
 }
 

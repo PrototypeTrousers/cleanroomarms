@@ -17,18 +17,30 @@ import proto.mechanicalarms.common.cap.CapabilityDualSidedHandler;
 import proto.mechanicalarms.common.cap.DualSidedHandler;
 
 public abstract class BeltHoldingEntity extends TileEntity implements IGuiHolder {
-    protected BeltUpdatingLogic logic = new BeltUpdatingLogic(this, this);
-    protected BeltItemHandler leftItemHandler = new BeltItemHandler(logic, 1, Side.L);
-    protected BeltItemHandler leftSideItemHandler = new BeltItemHandler(logic, 1, leftItemHandler, Side.L);
-    protected BeltItemHandler rightItemHandler = new BeltItemHandler(logic, 1, Side.R);
-    protected BeltItemHandler rightSideItemHandler = new BeltItemHandler(logic, 1, rightItemHandler, Side.R);
-    protected IDualSidedHandler dualBack = new DualSidedHandler(logic);
-    protected IDualSidedHandler dualLeft = new DualSidedHandler(logic, Side.L);
-    protected IDualSidedHandler dualRight = new DualSidedHandler(logic, Side.R);
+    protected BeltUpdatingLogic logic;
+    protected BeltItemHandler leftItemHandler;
+    protected BeltItemHandler leftSideItemHandler;
+    protected BeltItemHandler rightItemHandler;
+    protected BeltItemHandler rightSideItemHandler;
+    protected IDualSidedHandler dualBack;
+    protected IDualSidedHandler dualLeft;
+    protected IDualSidedHandler dualRight;
     protected int connected = -1;
     AxisAlignedBB renderBB;
     AxisAlignedBB pickerBB;
     Directions direction;
+
+    BeltHoldingEntity() {
+        logic = new BeltUpdatingLogic(this, this);
+        leftItemHandler = new BeltItemHandler(logic, 1, Side.L);
+        leftSideItemHandler = new BeltItemHandler(logic, 1, leftItemHandler, Side.L);
+        rightItemHandler = new BeltItemHandler(logic, 1, Side.R);
+        rightSideItemHandler = new BeltItemHandler(logic, 1, rightItemHandler, Side.R);
+        dualBack = new DualSidedHandler(logic);
+        dualLeft = new DualSidedHandler(logic, Side.L);
+        dualRight = new DualSidedHandler(logic, Side.R);
+    }
+
 
     @Override
     public NBTTagCompound writeToNBT(NBTTagCompound compound) {
@@ -90,7 +102,7 @@ public abstract class BeltHoldingEntity extends TileEntity implements IGuiHolder
     public void onLoad() {
         super.onLoad();
         if (connected == -1) {
-            updateConnected();
+            //updateConnected();
         }
         pickerBB = new AxisAlignedBB(this.pos);
     }
@@ -180,4 +192,7 @@ public abstract class BeltHoldingEntity extends TileEntity implements IGuiHolder
         connected = mask; // Store the bitmask in 'connected' (now an integer)
     }
 
+    public BeltUpdatingLogic getLogic() {
+        return logic;
+    }
 }

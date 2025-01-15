@@ -19,6 +19,10 @@ public class TileBeltBasic extends BeltHoldingEntity implements ITickable {
         return panel;
     }
 
+    public TileBeltBasic() {
+        logic = new BeltUpdatingLogic(this, this);
+    }
+
     @Override
     public AxisAlignedBB getRenderBoundingBox() {
         if (renderBB == null) {

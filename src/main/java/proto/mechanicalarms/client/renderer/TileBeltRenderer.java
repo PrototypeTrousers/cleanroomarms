@@ -288,9 +288,9 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
             zOff = 0.25f;
         }
 
-        ItemStack curStack = tileBeltBasic.getLeftItemHandler().getStackInSlot(0);
+        ItemStack curStack = tileBeltBasic.getLogic().getLeftItemHandler().getStackInSlot(0);
 
-        renderHoldingItem(tileBeltBasic, curStack, tileBeltBasic.getProgressLeft(), tileBeltBasic.getPreviousProgressLeft(), x + xOff, y, z + zOff);
+        renderHoldingItem(tileBeltBasic, curStack, tileBeltBasic.getLogic().getProgressLeft(), tileBeltBasic.getLogic().getPreviousProgressLeft(), x + xOff, y, z + zOff);
 
         //"right"
         if (facing == EnumFacing.NORTH) {
@@ -302,9 +302,9 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
         } else {
             zOff = -0.25f;
         }
-        curStack = tileBeltBasic.getRightItemHandler().getStackInSlot(0);
+        curStack = tileBeltBasic.getLogic().getRightItemHandler().getStackInSlot(0);
 
-        renderHoldingItem(tileBeltBasic, curStack, tileBeltBasic.getProgressRight(), tileBeltBasic.getPreviousProgressRight(), x + xOff, y, z + zOff);
+        renderHoldingItem(tileBeltBasic, curStack, tileBeltBasic.getLogic().getProgressRight(), tileBeltBasic.getLogic().getPreviousProgressRight(), x + xOff, y, z + zOff);
 
     }
 
