@@ -102,7 +102,7 @@ public abstract class BeltHoldingEntity extends TileEntity implements IGuiHolder
     public void onLoad() {
         super.onLoad();
         if (connected == -1) {
-            //updateConnected();
+            updateConnected();
         }
         pickerBB = new AxisAlignedBB(this.pos);
     }

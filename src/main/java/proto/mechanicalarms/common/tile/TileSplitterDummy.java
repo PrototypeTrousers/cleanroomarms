@@ -23,6 +23,7 @@ public class TileSplitterDummy extends BeltHoldingEntity {
             if (te instanceof TileSplitter ts) {
                 if (ts.getFront() == this.getFront()) {
                     controller = ts;
+                    controller.setDummy(this);
                 }
             }
         }

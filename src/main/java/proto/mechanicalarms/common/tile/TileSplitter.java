@@ -52,22 +52,20 @@ public class TileSplitter extends TileBeltBasic {
                     lastOutputSide = lastOutputSide.opposite();
                     worked = false;
                 }
+                lastUpdated = dummy;
                 this.logic.update();
-                if (worked) {
-                    lastOutputSide = lastOutputSide.opposite();
-                    worked = false;
-                }
             } else {
                 this.logic.update();
                 if (worked) {
                     lastOutputSide = lastOutputSide.opposite();
                     worked = false;
                 }
+                lastUpdated = this;
                 dummy.logic.update();
-                if (worked) {
-                    lastOutputSide = lastOutputSide.opposite();
-                    worked = false;
-                }
+            }
+            if (worked) {
+                lastOutputSide = lastOutputSide.opposite();
+                worked = false;
             }
         }
     }
@@ -75,17 +73,13 @@ public class TileSplitter extends TileBeltBasic {
 
     @Override
     public void onLoad() {
-        if (dummy == null) {
-            TileEntity te = world.getTileEntity(pos.offset(getFront().rotateY()));
-            if (te instanceof TileSplitterDummy ts) {
-                if (ts.getFront() == this.getFront()) {
-                    dummy = ts;
-                }
-            }
-        }
         if (lastUpdated == null) {
             lastUpdated = this;
         }
+    }
+
+    public void setDummy(TileSplitterDummy dummy) {
+        this.dummy = dummy;
     }
 
     @Nullable
