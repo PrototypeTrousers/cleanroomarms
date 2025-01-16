@@ -31,7 +31,15 @@ public abstract class BeltHoldingEntity extends TileEntity implements IGuiHolder
     Directions direction;
 
     BeltHoldingEntity() {
+        this.initLogic();
+        this.initCaps();
+    }
+
+    protected void initLogic() {
         logic = new BeltUpdatingLogic(this, this);
+    }
+
+    protected void initCaps() {
         leftItemHandler = new BeltItemHandler(logic, 1, Side.L);
         leftSideItemHandler = new BeltItemHandler(logic, 1, leftItemHandler, Side.L);
         rightItemHandler = new BeltItemHandler(logic, 1, Side.R);
@@ -40,7 +48,6 @@ public abstract class BeltHoldingEntity extends TileEntity implements IGuiHolder
         dualLeft = new DualSidedHandler(logic, Side.L);
         dualRight = new DualSidedHandler(logic, Side.R);
     }
-
 
     @Override
     public NBTTagCompound writeToNBT(NBTTagCompound compound) {

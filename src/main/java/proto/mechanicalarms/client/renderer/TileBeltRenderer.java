@@ -156,7 +156,7 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
             }
         }
 
-        float itemProgress = -0.5F + (lerp(previousProgress, progress, partialTicks) / 3F);
+        float itemProgress = -0.5F + (lerp(previousProgress, progress, partialTicks) / 7F);
         Vector3f vecProgress = new Vector3f();
 
         if (facing == EnumFacing.NORTH) {

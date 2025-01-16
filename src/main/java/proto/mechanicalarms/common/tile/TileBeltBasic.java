@@ -19,7 +19,8 @@ public class TileBeltBasic extends BeltHoldingEntity implements ITickable {
         return panel;
     }
 
-    public TileBeltBasic() {
+    @Override
+    protected void initLogic() {
         logic = new BeltUpdatingLogic(this, this);
     }
 

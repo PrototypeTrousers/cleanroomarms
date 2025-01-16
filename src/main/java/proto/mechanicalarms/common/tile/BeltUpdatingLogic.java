@@ -72,26 +72,26 @@ public class BeltUpdatingLogic implements IBeltLogic {
         }
         if (!this.holder.getWorld().isRemote) {
             if (tickLeft) {
-                if (progressLeft < 3 && !beltHoldingEntity.leftItemHandler.getStackInSlot(0).isEmpty()) {
+                if (progressLeft < 7 && !beltHoldingEntity.leftItemHandler.getStackInSlot(0).isEmpty()) {
                     previousProgressLeft++;
                     progressLeft++;
                 }
-                if (progressLeft >= 3) {
+                if (progressLeft >= 7) {
                     handleItemTransfer(true);
                 }
             }
             if (tickRight) {
-                if (progressRight < 3 && !beltHoldingEntity.rightItemHandler.getStackInSlot(0).isEmpty()) {
+                if (progressRight < 7 && !beltHoldingEntity.rightItemHandler.getStackInSlot(0).isEmpty()) {
                     previousProgressRight++;
                     progressRight++;
                 }
-                if (progressRight >= 3) {
+                if (progressRight >= 7) {
                     handleItemTransfer(false);
                 }
             }
         } else {
             if (tickLeft) {
-                if (progressLeft < 3) {
+                if (progressLeft < 7 && !beltHoldingEntity.leftItemHandler.getStackInSlot(0).isEmpty()) {
                     previousProgressLeft = progressLeft;
                     progressLeft++;
                 } else {
@@ -99,7 +99,7 @@ public class BeltUpdatingLogic implements IBeltLogic {
                 }
             }
             if (tickRight) {
-                if (progressRight < 3) {
+                if (progressRight < 7 && !beltHoldingEntity.rightItemHandler.getStackInSlot(0).isEmpty()) {
                     previousProgressRight = progressRight;
                     progressRight++;
                 } else {

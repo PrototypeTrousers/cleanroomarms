@@ -17,8 +17,10 @@ public class TileSplitter extends TileBeltBasic {
     public Side lastOutputSide = Side.L;
     private TileSplitterDummy dummy;
     public BeltHoldingEntity lastPushed = this;
+    boolean switchSide;
 
-    public TileSplitter() {
+    @Override
+    protected void initLogic() {
         logic = new SplitterUpdatingLogic(this, this);
     }
 
@@ -47,12 +49,23 @@ public class TileSplitter extends TileBeltBasic {
         if (!world.isRemote) {
             if (lastPushed == this) {
                 dummy.logic.update();
+                if (switchSide) {
+                    lastOutputSide = lastOutputSide.opposite();
+                    switchSide = false;
+                }
                 this.logic.update();
             } else {
                 this.logic.update();
+                if (switchSide) {
+                    lastOutputSide = lastOutputSide.opposite();
+                    switchSide = false;
+                }
                 dummy.logic.update();
             }
-            lastOutputSide = lastOutputSide.opposite();
+            if (switchSide) {
+                lastOutputSide = lastOutputSide.opposite();
+                switchSide = false;
+            }
         }
     }
 
@@ -103,9 +116,10 @@ public class TileSplitter extends TileBeltBasic {
                 } else {
                     frontTe = world.getTileEntity(pos.offset(facing));
                 }
-                attemptTransfer(frontTe, facing, left);
+                transferred = attemptTransfer(frontTe, facing, left);
             } if (transferred ) {
                 lastPushed = TileSplitter.this;
+                switchSide = true;
             }
         }
     }
