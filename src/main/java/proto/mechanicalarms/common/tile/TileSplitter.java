@@ -16,8 +16,7 @@ import proto.mechanicalarms.common.cap.CapabilityDualSidedHandler;
 public class TileSplitter extends TileBeltBasic {
     public Side lastOutputSide = Side.L;
     private TileSplitterDummy dummy;
-    boolean worked;
-    private BeltHoldingEntity lastUpdated;
+    public BeltHoldingEntity lastPushed = this;
 
     public TileSplitter() {
         logic = new SplitterUpdatingLogic(this, this);
@@ -46,42 +45,20 @@ public class TileSplitter extends TileBeltBasic {
     @Override
     public void update() {
         if (!world.isRemote) {
-            if (lastUpdated == this) {
+            if (lastPushed == this) {
                 dummy.logic.update();
-                if (worked) {
-                    lastOutputSide = lastOutputSide.opposite();
-                    worked = false;
-
-                }
                 this.logic.update();
-                if (worked) {
-                    lastOutputSide = lastOutputSide.opposite();
-                    worked = false;
-                }
-                lastUpdated = dummy;
             } else {
                 this.logic.update();
-                lastUpdated = this;
-                if (worked) {
-                    lastOutputSide = lastOutputSide.opposite();
-                    worked = false;
-
-                }
                 dummy.logic.update();
-                if (worked) {
-                    lastOutputSide = lastOutputSide.opposite();
-                    worked = false;
-                }
             }
+            lastOutputSide = lastOutputSide.opposite();
         }
     }
 
 
     @Override
     public void onLoad() {
-        if (lastUpdated == null) {
-            lastUpdated = this;
-        }
     }
 
     public void setDummy(TileSplitterDummy dummy) {
@@ -128,7 +105,7 @@ public class TileSplitter extends TileBeltBasic {
                 }
                 attemptTransfer(frontTe, facing, left);
             } if (transferred ) {
-                worked = true;
+                lastPushed = TileSplitter.this;
             }
         }
     }

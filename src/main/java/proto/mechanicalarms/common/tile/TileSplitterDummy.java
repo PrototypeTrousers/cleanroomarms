@@ -75,7 +75,7 @@ public class TileSplitterDummy extends BeltHoldingEntity {
                 attemptTransfer(frontTe, facing, left);
             }
             if (transferred) {
-                controller.worked = true;
+                controller.lastPushed = TileSplitterDummy.this;
             }
         }
     }
