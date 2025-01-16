@@ -68,13 +68,15 @@ public class TileSplitterDummy extends BeltHoldingEntity {
             boolean transferred = attemptTransfer(frontTe, facing, left);
             if (!transferred) {
                 if (controller.lastOutputSide == Side.R) {
-                    frontTe = world.getTileEntity(pos.offset(facing.rotateYCCW()).offset(facing));
-                } else {
                     frontTe = world.getTileEntity(pos.offset(facing));
+                } else {
+                    frontTe = world.getTileEntity(pos.offset(facing.rotateYCCW()).offset(facing));
                 }
                 attemptTransfer(frontTe, facing, left);
             }
-            controller.worked = true;
+            if (transferred) {
+                controller.worked = true;
+            }
         }
     }
 }

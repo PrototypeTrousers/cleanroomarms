@@ -51,21 +51,27 @@ public class TileSplitter extends TileBeltBasic {
                 if (worked) {
                     lastOutputSide = lastOutputSide.opposite();
                     worked = false;
+
                 }
-                lastUpdated = dummy;
-                this.logic.update();
-            } else {
                 this.logic.update();
                 if (worked) {
                     lastOutputSide = lastOutputSide.opposite();
                     worked = false;
                 }
+                lastUpdated = dummy;
+            } else {
+                this.logic.update();
                 lastUpdated = this;
+                if (worked) {
+                    lastOutputSide = lastOutputSide.opposite();
+                    worked = false;
+
+                }
                 dummy.logic.update();
-            }
-            if (worked) {
-                lastOutputSide = lastOutputSide.opposite();
-                worked = false;
+                if (worked) {
+                    lastOutputSide = lastOutputSide.opposite();
+                    worked = false;
+                }
             }
         }
     }
@@ -121,8 +127,9 @@ public class TileSplitter extends TileBeltBasic {
                     frontTe = world.getTileEntity(pos.offset(facing));
                 }
                 attemptTransfer(frontTe, facing, left);
+            } if (transferred ) {
+                worked = true;
             }
-            worked = true;
         }
     }
 }
