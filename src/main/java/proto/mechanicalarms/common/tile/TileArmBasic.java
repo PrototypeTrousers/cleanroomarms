@@ -37,8 +37,9 @@ public class TileArmBasic extends TileArmBase {
                     if (this.itemHandler.getStackInSlot(0).isEmpty()) {
                         for (int i = 0; i < itemHandler.getSlots(); i++) {
                             if (!itemHandler.extractItem(i, 1, true).isEmpty()) {
-                                ItemStack itemStack = itemHandler.extractItem(i, 1, false);
+                                ItemStack itemStack = itemHandler.extractItem(i, 1, true);
                                 if (!itemStack.isEmpty()) {
+                                    itemStack = itemHandler.extractItem(i, 1, false);
                                     this.itemHandler.insertItem(0, itemStack, false);
                                     return ActionResult.SUCCESS;
                                 }
@@ -48,12 +49,11 @@ public class TileArmBasic extends TileArmBase {
                 } else if (action == Action.DELIVER) {
                     ItemStack itemStack = this.itemHandler.extractItem(0, 1, true);
                     if (!itemStack.isEmpty()) {
-                        itemStack = this.itemHandler.extractItem(0, 1, false);
-                        if (!itemStack.isEmpty()) {
-                            for (int i = 0; i < itemHandler.getSlots(); i++) {
-                                if (itemHandler.insertItem(i, itemStack, false).isEmpty()) {
-                                    return ActionResult.SUCCESS;
-                                }
+                        for (int i = 0; i < itemHandler.getSlots(); i++) {
+                            if (itemHandler.insertItem(i, itemStack, true).isEmpty()) {
+                                itemStack = this.itemHandler.extractItem(0, 1, false);
+                                itemHandler.insertItem(i, itemStack, false);
+                                return ActionResult.SUCCESS;
                             }
                         }
                     }
