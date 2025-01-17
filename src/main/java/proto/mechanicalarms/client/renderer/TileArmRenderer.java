@@ -100,7 +100,7 @@ public class TileArmRenderer extends FastTESR<TileArmBasic> {
             modelInstance.setMeshRotationFunction(
                     "SecondArm", (quaternion) -> quaternion.rotateX(lerp(getRenderingTE().get().getAnimationRotation(1)[0],
                             getRenderingTE().get().getRotation(1)[0], partialTicks)));
-            modelInstance.attachModel("Claw", () -> renderHoldingItem(getRenderingTE().get()));
+            modelInstance.attachModel("SecondArm", () -> renderHoldingItem(getRenderingTE().get()));
             modelInstance.init();
         }
 
@@ -132,7 +132,7 @@ public class TileArmRenderer extends FastTESR<TileArmBasic> {
 
         matrix4fStack.setScale(0.375f);
         rot.rotateX((float) (Math.PI));
-        translate(matrix4fStack, 0f, 2f, 0.5f);
+        translate(matrix4fStack, -0.5f, 3f, 0.5f);
 
         Quaternion.rotateMatrix(matrix4fStack, rot);
 

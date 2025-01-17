@@ -24,7 +24,7 @@ public class TileArmBasic extends TileArmBase {
 
 
     public TileArmBasic() {
-        super(2.3f, InteractionType.ITEM);
+        super(1f, InteractionType.ITEM);
     }
 
     @Override

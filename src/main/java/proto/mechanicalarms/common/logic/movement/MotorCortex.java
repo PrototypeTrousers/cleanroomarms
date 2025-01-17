@@ -50,7 +50,7 @@ public class MotorCortex implements INBTSerializable<NBTTagList> {
         boolean distReached = false;
 
         animationRotation[1][0] = rotation[1][0];
-        rotation[1][0] = (rotateShortest(rotation[1][0], 0.1f, armArcTarget));
+        rotation[1][0] = (rotateShortest(rotation[1][0], 0.471239f, armArcTarget));
         if (rotation[1][0] == armArcTarget) {
             if (extraPitchArc != 0) {
                 distReached = true;
@@ -60,11 +60,11 @@ public class MotorCortex implements INBTSerializable<NBTTagList> {
         }
 
         animationRotation[0][0] = rotation[0][0];
-        rotation[0][0] = rotateShortest(rotation[0][0], 0.1f, pitch);
+        rotation[0][0] = rotateShortest(rotation[0][0], 0.471239f, pitch);
         boolean pitchReached = rotation[0][0] == pitch;
 
         animationRotation[0][1] = rotation[0][1];
-        rotation[0][1] = rotateShortest(rotation[0][1], 0.1f, yaw);
+        rotation[0][1] = rotateShortest(rotation[0][1], 0.471239f, yaw);
         float yawDiff = (Math.abs(rotation[0][1]) - Math.abs(animationRotation[0][1]));
         boolean yawReached = (yawDiff < 0.01 && yawDiff > -0.01);
 
