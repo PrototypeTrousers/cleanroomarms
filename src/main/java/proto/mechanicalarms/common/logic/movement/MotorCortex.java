@@ -28,6 +28,7 @@ public class MotorCortex implements INBTSerializable<NBTTagList> {
 
     public ActionResult move(Vec3d armPoint, Vec3d target, EnumFacing facing) {
         Vec3d combinedVec = target.subtract(armPoint);
+        combinedVec = combinedVec.add(facing.getOpposite().getXOffset(), facing.getOpposite().getYOffset(), facing.getOpposite().getZOffset());
         float pitch = (float) Math.atan2(combinedVec.y, Math.sqrt(combinedVec.x * combinedVec.x + combinedVec.z * combinedVec.z));
         pitch -= (float) (Math.PI/2);
         //model initial angle is -90 degrees
@@ -50,7 +51,7 @@ public class MotorCortex implements INBTSerializable<NBTTagList> {
         boolean distReached = false;
 
         animationRotation[1][0] = rotation[1][0];
-        rotation[1][0] = (rotateShortest(rotation[1][0], 0.471239f, armArcTarget));
+        rotation[1][0] = (rotateShortest(rotation[1][0], 0.3141595f, armArcTarget));
         if (rotation[1][0] == armArcTarget) {
             if (extraPitchArc != 0) {
                 distReached = true;
@@ -60,11 +61,11 @@ public class MotorCortex implements INBTSerializable<NBTTagList> {
         }
 
         animationRotation[0][0] = rotation[0][0];
-        rotation[0][0] = rotateShortest(rotation[0][0], 0.471239f, pitch);
+        rotation[0][0] = rotateShortest(rotation[0][0], 0.3141595f, pitch);
         boolean pitchReached = rotation[0][0] == pitch;
 
         animationRotation[0][1] = rotation[0][1];
-        rotation[0][1] = rotateShortest(rotation[0][1], 0.471239f, yaw);
+        rotation[0][1] = rotateShortest(rotation[0][1], 0.3141595f, yaw);
         float yawDiff = (Math.abs(rotation[0][1]) - Math.abs(animationRotation[0][1]));
         boolean yawReached = (yawDiff < 0.01 && yawDiff > -0.01);
 
@@ -73,117 +74,117 @@ public class MotorCortex implements INBTSerializable<NBTTagList> {
         //rotation[2][0] = -PI / 2 - rotation[1][0] - rotation[0][0];
 
         if (yawReached && pitchReached && distReached) {
-            float targetHandYaw = (PI - rotation[0][1]) % PI;
-            float targetHandPitch = (-rotation[1][0] - rotation[0][0]) % PI;
-
-            EnumFacing accessingSide = facing.getOpposite();
-
-            if (accessingSide == UP) {
-                targetHandYaw = 0;
-                targetHandPitch = +PI / 2 - rotation[1][0] - rotation[0][0];
-            } else if (accessingSide == DOWN) {
-                targetHandYaw = 0;
-                targetHandPitch = -PI / 2 - rotation[1][0] - rotation[0][0];
-            } else if (armPoint.x > target.x && armPoint.z < target.z) {
-                //arm is NE from target
-                if (accessingSide == SOUTH) {
-                    targetHandYaw = targetHandYaw - PI / 2;
-                } else if (accessingSide == NORTH) {
-                    targetHandPitch = targetHandPitch + PI;
-                    targetHandYaw = -targetHandYaw + PI / 2;
-                } else if (accessingSide == EAST) {
-                    targetHandPitch = targetHandPitch - PI;
-                    targetHandYaw = -targetHandYaw + PI;
-                } else {
-                    targetHandYaw = targetHandYaw + PI;
-                }
-            } else if (armPoint.x < target.x && armPoint.z < target.z) {
-                //arm is NW from target
-                if (accessingSide == SOUTH) {
-                    targetHandYaw = targetHandYaw - PI / 2;
-                } else if (accessingSide == NORTH) {
-                    targetHandPitch = targetHandPitch + PI;
-                    targetHandYaw = -targetHandYaw + PI / 2;
-                } else if (accessingSide == WEST) {
-                    targetHandPitch = targetHandPitch - PI;
-                    targetHandYaw = -targetHandYaw;
-                }
-            } else if (armPoint.x < target.x && armPoint.z > target.z) {
-                //arm is SW from target
-                if (accessingSide == NORTH) {
-                    targetHandYaw = targetHandYaw - PI / 2;
-                } else if (accessingSide == SOUTH) {
-                    targetHandPitch = targetHandPitch - PI;
-                    targetHandYaw = targetHandYaw + PI;
-                } else if (accessingSide == WEST) {
-                    targetHandPitch = targetHandPitch - PI;
-                    targetHandYaw = -targetHandYaw - PI;
-                } else {
-                    targetHandYaw = targetHandYaw + PI;
-                }
-            } else if (armPoint.x > target.x && armPoint.z > target.z) {
-                //arm is SE from target
-                if (accessingSide == NORTH) {
-                    targetHandYaw = targetHandYaw - PI / 2;
-                } else if (accessingSide == EAST) {
-                    targetHandPitch = targetHandPitch - PI;
-                    targetHandYaw = -targetHandYaw;
-                } else if (accessingSide == SOUTH) {
-                    targetHandYaw = -targetHandYaw + PI / 2;
-                    targetHandPitch = targetHandPitch - PI;
-                }
-            } else if (armPoint.x == target.x) {
-                if (armPoint.z > target.z) {
-                    if (accessingSide == EAST) {
-                        targetHandYaw = -targetHandYaw;
-                    } else if (accessingSide == SOUTH) {
-                        targetHandPitch = targetHandPitch + PI;
-                        targetHandYaw = 0;
-                    } else if (accessingSide == NORTH) {
-                        targetHandYaw = 0;
-                    }
-                } else {
-                    if (accessingSide == WEST) {
-                        targetHandYaw = -targetHandYaw;
-                    } else if (accessingSide == NORTH) {
-                        targetHandPitch = targetHandPitch + PI;
-                        targetHandYaw = 0;
-                    } else if (accessingSide == SOUTH) {
-                        targetHandYaw = 0;
-                    }
-                }
-            } else if (armPoint.z == target.z) {
-                if (armPoint.x > target.x) {
-                    if (accessingSide == SOUTH) {
-                        targetHandYaw = targetHandYaw + PI / 2;
-                    } else if (accessingSide == NORTH) {
-                        targetHandYaw = targetHandYaw - PI / 2;
-                    } else if (accessingSide == EAST) {
-                        targetHandPitch = targetHandPitch - PI;
-                    }
-                } else {
-                    if (accessingSide == NORTH) {
-                        targetHandYaw = targetHandYaw - PI / 2;
-                    } else if (accessingSide == SOUTH) {
-                        targetHandYaw = targetHandYaw + PI / 2;
-                    } else if (accessingSide == WEST) {
-                        targetHandPitch = targetHandPitch - PI;
-                    }
-                }
-            }
-
-            rotation[2][1] = rotateShortest(rotation[2][1], 0.10F, targetHandYaw);
-            float yawDiffHand = (Math.abs(rotation[2][1]) - Math.abs(animationRotation[2][1]));
-            boolean yawHandReached = (yawDiffHand < 0.01 && yawDiffHand > -0.01);
-
-            rotation[2][0] = rotateShortest(rotation[2][0], 0.10F, targetHandPitch);
-            float pitchDiffHand = (Math.abs(rotation[2][0]) - Math.abs(animationRotation[2][0]));
-            boolean pitchHandReached = (pitchDiffHand < 0.01 && pitchDiffHand > -0.01);
-
-            if (pitchHandReached && yawHandReached) {
-                return ActionResult.SUCCESS;
-            }
-            return ActionResult.CONTINUE;
+//            float targetHandYaw = (PI - rotation[0][1]) % PI;
+//            float targetHandPitch = (-rotation[1][0] - rotation[0][0]) % PI;
+//
+//            EnumFacing accessingSide = facing.getOpposite();
+//
+//            if (accessingSide == UP) {
+//                targetHandYaw = 0;
+//                targetHandPitch = +PI / 2 - rotation[1][0] - rotation[0][0];
+//            } else if (accessingSide == DOWN) {
+//                targetHandYaw = 0;
+//                targetHandPitch = -PI / 2 - rotation[1][0] - rotation[0][0];
+//            } else if (armPoint.x > target.x && armPoint.z < target.z) {
+//                //arm is NE from target
+//                if (accessingSide == SOUTH) {
+//                    targetHandYaw = targetHandYaw - PI / 2;
+//                } else if (accessingSide == NORTH) {
+//                    targetHandPitch = targetHandPitch + PI;
+//                    targetHandYaw = -targetHandYaw + PI / 2;
+//                } else if (accessingSide == EAST) {
+//                    targetHandPitch = targetHandPitch - PI;
+//                    targetHandYaw = -targetHandYaw + PI;
+//                } else {
+//                    targetHandYaw = targetHandYaw + PI;
+//                }
+//            } else if (armPoint.x < target.x && armPoint.z < target.z) {
+//                //arm is NW from target
+//                if (accessingSide == SOUTH) {
+//                    targetHandYaw = targetHandYaw - PI / 2;
+//                } else if (accessingSide == NORTH) {
+//                    targetHandPitch = targetHandPitch + PI;
+//                    targetHandYaw = -targetHandYaw + PI / 2;
+//                } else if (accessingSide == WEST) {
+//                    targetHandPitch = targetHandPitch - PI;
+//                    targetHandYaw = -targetHandYaw;
+//                }
+//            } else if (armPoint.x < target.x && armPoint.z > target.z) {
+//                //arm is SW from target
+//                if (accessingSide == NORTH) {
+//                    targetHandYaw = targetHandYaw - PI / 2;
+//                } else if (accessingSide == SOUTH) {
+//                    targetHandPitch = targetHandPitch - PI;
+//                    targetHandYaw = targetHandYaw + PI;
+//                } else if (accessingSide == WEST) {
+//                    targetHandPitch = targetHandPitch - PI;
+//                    targetHandYaw = -targetHandYaw - PI;
+//                } else {
+//                    targetHandYaw = targetHandYaw + PI;
+//                }
+//            } else if (armPoint.x > target.x && armPoint.z > target.z) {
+//                //arm is SE from target
+//                if (accessingSide == NORTH) {
+//                    targetHandYaw = targetHandYaw - PI / 2;
+//                } else if (accessingSide == EAST) {
+//                    targetHandPitch = targetHandPitch - PI;
+//                    targetHandYaw = -targetHandYaw;
+//                } else if (accessingSide == SOUTH) {
+//                    targetHandYaw = -targetHandYaw + PI / 2;
+//                    targetHandPitch = targetHandPitch - PI;
+//                }
+//            } else if (armPoint.x == target.x) {
+//                if (armPoint.z > target.z) {
+//                    if (accessingSide == EAST) {
+//                        targetHandYaw = -targetHandYaw;
+//                    } else if (accessingSide == SOUTH) {
+//                        targetHandPitch = targetHandPitch + PI;
+//                        targetHandYaw = 0;
+//                    } else if (accessingSide == NORTH) {
+//                        targetHandYaw = 0;
+//                    }
+//                } else {
+//                    if (accessingSide == WEST) {
+//                        targetHandYaw = -targetHandYaw;
+//                    } else if (accessingSide == NORTH) {
+//                        targetHandPitch = targetHandPitch + PI;
+//                        targetHandYaw = 0;
+//                    } else if (accessingSide == SOUTH) {
+//                        targetHandYaw = 0;
+//                    }
+//                }
+//            } else if (armPoint.z == target.z) {
+//                if (armPoint.x > target.x) {
+//                    if (accessingSide == SOUTH) {
+//                        targetHandYaw = targetHandYaw + PI / 2;
+//                    } else if (accessingSide == NORTH) {
+//                        targetHandYaw = targetHandYaw - PI / 2;
+//                    } else if (accessingSide == EAST) {
+//                        targetHandPitch = targetHandPitch - PI;
+//                    }
+//                } else {
+//                    if (accessingSide == NORTH) {
+//                        targetHandYaw = targetHandYaw - PI / 2;
+//                    } else if (accessingSide == SOUTH) {
+//                        targetHandYaw = targetHandYaw + PI / 2;
+//                    } else if (accessingSide == WEST) {
+//                        targetHandPitch = targetHandPitch - PI;
+//                    }
+//                }
+//            }
+//
+//            rotation[2][1] = rotateShortest(rotation[2][1], 0.10F, targetHandYaw);
+//            float yawDiffHand = (Math.abs(rotation[2][1]) - Math.abs(animationRotation[2][1]));
+//            boolean yawHandReached = (yawDiffHand < 0.01 && yawDiffHand > -0.01);
+//
+//            rotation[2][0] = rotateShortest(rotation[2][0], 0.10F, targetHandPitch);
+//            float pitchDiffHand = (Math.abs(rotation[2][0]) - Math.abs(animationRotation[2][0]));
+//            boolean pitchHandReached = (pitchDiffHand < 0.01 && pitchDiffHand > -0.01);
+//
+//            if (pitchHandReached && yawHandReached) {
+//                return ActionResult.SUCCESS;
+//            }
+            return ActionResult.SUCCESS;
         } else {
             float targetHandYaw = 0;
             float targetHandPitch = -PI / 2 - rotation[1][0] - rotation[0][0] + 0.01F;

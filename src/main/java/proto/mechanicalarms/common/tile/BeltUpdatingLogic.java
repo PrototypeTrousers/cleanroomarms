@@ -138,14 +138,14 @@ public class BeltUpdatingLogic implements IBeltLogic {
                 if (cap != null) {
                     if (left) {
                         if (cap.insertLeft(beltHoldingEntity.leftItemHandler.extractItem(0, 1, true), true) != beltHoldingEntity.leftItemHandler.getStackInSlot(0)) {
-                            cap.insertLeft(beltHoldingEntity.leftItemHandler.extractItem(0, 1, false), false);
                             progressLeft = 0;
+                            cap.insertLeft(beltHoldingEntity.leftItemHandler.extractItem(0, 1, false), false);
                             return true;
                         }
                     } else {
                         if (cap.insertRight(beltHoldingEntity.rightItemHandler.extractItem(0, 1, true), true) != beltHoldingEntity.rightItemHandler.getStackInSlot(0)) {
-                            cap.insertRight(beltHoldingEntity.rightItemHandler.extractItem(0, 1, false), false);
                             progressRight = 0;
+                            cap.insertRight(beltHoldingEntity.rightItemHandler.extractItem(0, 1, false), false);
                             return true;
                         }
                     }
@@ -154,14 +154,14 @@ public class BeltUpdatingLogic implements IBeltLogic {
                     if (icap != null) {
                         if (left) {
                             if (icap.insertItem(0, beltHoldingEntity.leftItemHandler.extractItem(0, 1, true), true) != beltHoldingEntity.leftItemHandler.getStackInSlot(0)) {
-                                icap.insertItem(0, beltHoldingEntity.leftItemHandler.extractItem(0, 1, false), false);
                                 progressLeft = 0;
+                                icap.insertItem(0, beltHoldingEntity.leftItemHandler.extractItem(0, 1, false), false);
                                 return true;
                             }
                         } else {
                             if (icap.insertItem(0, beltHoldingEntity.rightItemHandler.extractItem(0, 1, true), true) != beltHoldingEntity.rightItemHandler.getStackInSlot(0)) {
-                                icap.insertItem(0, beltHoldingEntity.rightItemHandler.extractItem(0, 1, false), false);
                                 progressRight = 0;
+                                icap.insertItem(0, beltHoldingEntity.rightItemHandler.extractItem(0, 1, false), false);
                                 return true;
                             }
                         }

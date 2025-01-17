@@ -103,6 +103,9 @@ public class BeltItemHandler extends ItemStackHandler {
     @NotNull
     @Override
     public ItemStack extractItem(int slot, int amount, boolean simulate) {
+        if (main != null) {
+            return main.extractItem(0, amount, simulate);
+        }
         return super.extractItem(slot, amount, simulate);
     }
 

@@ -77,7 +77,7 @@ public abstract class TileArmBase extends TileEntity implements ITickable, IGuiH
     @Override
     public void onLoad() {
         super.onLoad();
-        armPoint = new Vec3d(pos.getX() + 0.5, pos.getY() + 1.5, pos.getZ() + 0.5);
+        armPoint = new Vec3d(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5);
     }
 
     @Override
