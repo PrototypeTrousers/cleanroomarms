@@ -1,19 +1,20 @@
 package proto.mechanicalarms.common.proxy;
 
-import net.minecraftforge.common.capabilities.CapabilityManager;
-import proto.mechanicalarms.MechanicalArms;
-import proto.mechanicalarms.common.block.Blocks;
-import proto.mechanicalarms.common.cap.CapabilityDualSidedHandler;
-import proto.mechanicalarms.common.item.Items;
-import proto.mechanicalarms.common.tile.*;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.registry.EntityEntry;
 import net.minecraftforge.fml.common.registry.GameRegistry;
+import proto.mechanicalarms.MechanicalArms;
+import proto.mechanicalarms.common.block.Blocks;
+import proto.mechanicalarms.common.cap.CapabilityDualSidedHandler;
+import proto.mechanicalarms.common.events.ticking.TickHandler;
+import proto.mechanicalarms.common.item.Items;
+import proto.mechanicalarms.common.tile.*;
 
 @Mod.EventBusSubscriber
 public class CommonProxy
@@ -49,6 +50,7 @@ public class CommonProxy
 		Items.init();
 		Tiles.init();
 		CapabilityDualSidedHandler.register();
+		MinecraftForge.EVENT_BUS.register(TickHandler.INSTANCE);
 	}
 
 	public void init()

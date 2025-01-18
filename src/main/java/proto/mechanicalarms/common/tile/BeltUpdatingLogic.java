@@ -7,6 +7,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldServer;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
@@ -31,16 +32,30 @@ public class BeltUpdatingLogic implements IBeltLogic {
         this.holder = holder;
     }
 
+    //TODO remove this shit.
+    //Only here due to the fact that the client side tile entity can reliabily check if the inventory change
+    //When it receives the inventory change from the server side tile entity packet
+
     void updatePacket(NBTTagCompound compound) {
-        compound.setInteger("progressLeft", progressLeft);
-        compound.setInteger("progressRight", progressRight);
+        if (progressLeft == 0) {
+            compound.setInteger("progressLeft", progressLeft);
+        }
+        if (progressRight == 0) {
+            compound.setInteger("progressRight", progressRight);
+        }
     }
 
     public void onDataPacket(NetworkManager net, SPacketUpdateTileEntity packet) {
         // Here we get the packet from the server and read it into our client side tile entity
         NBTTagCompound compound = packet.getNbtCompound();
-        progressLeft = compound.getInteger("progressLeft");
-        progressRight = compound.getInteger("progressRight");
+        if (compound.hasKey("progressLeft")) {
+            progressLeft = compound.getInteger("progressLeft");
+            previousProgressLeft = progressLeft;
+        }
+        if (compound.hasKey("progressRight")) {
+            progressRight = compound.getInteger("progressRight");
+            previousProgressRight = progressRight;
+        }
     }
 
     public void update() {
@@ -52,6 +67,12 @@ public class BeltUpdatingLogic implements IBeltLogic {
             tickLeft = false;
         }
 
+        if (beltHoldingEntity.leftItemHandler.getStackInSlot(0).isEmpty()) {
+            progressLeft = 0;
+            previousProgressLeft = 0;
+            tickLeft = false;
+        }
+
         boolean tickRight = true;
         if (progressRight == 0 && insertedTickRight == beltHoldingEntity.getWorld().getTotalWorldTime()) {
             progressRight = 0;
@@ -60,20 +81,25 @@ public class BeltUpdatingLogic implements IBeltLogic {
             tickRight = false;
         }
 
+        if (beltHoldingEntity.rightItemHandler.getStackInSlot(0).isEmpty()) {
+            progressRight = 0;
+            previousProgressRight = 0;
+            tickRight = false;
+        }
+
         if (this.holder.getWorld().isBlockPowered(holder.getPos())) {
             this.previousProgressLeft = progressLeft;
             this.previousProgressRight = progressRight;
             return;
         }
-        if (beltHoldingEntity.leftItemHandler.getStackInSlot(0).isEmpty() && beltHoldingEntity.rightItemHandler.getStackInSlot(0).isEmpty()) {
-            previousProgressLeft = previousProgressRight = 0;
-            progressLeft = progressRight = 0;
+        if (!tickRight && !tickLeft) {
+            previousProgressLeft = progressLeft;
+            previousProgressRight = progressRight;
             return;
         }
         if (!this.holder.getWorld().isRemote) {
             if (tickLeft) {
-                if (progressLeft < 7 && !beltHoldingEntity.leftItemHandler.getStackInSlot(0).isEmpty()) {
-                    previousProgressLeft++;
+                if (progressLeft < 7) {
                     progressLeft++;
                 }
                 if (progressLeft >= 7) {
@@ -81,8 +107,7 @@ public class BeltUpdatingLogic implements IBeltLogic {
                 }
             }
             if (tickRight) {
-                if (progressRight < 7 && !beltHoldingEntity.rightItemHandler.getStackInSlot(0).isEmpty()) {
-                    previousProgressRight++;
+                if (progressRight < 7) {
                     progressRight++;
                 }
                 if (progressRight >= 7) {
@@ -91,19 +116,17 @@ public class BeltUpdatingLogic implements IBeltLogic {
             }
         } else {
             if (tickLeft) {
-                if (progressLeft < 7 && !beltHoldingEntity.leftItemHandler.getStackInSlot(0).isEmpty()) {
-                    previousProgressLeft = progressLeft;
-                    progressLeft++;
+                if (progressLeft < 7) {
+                    previousProgressLeft = progressLeft++;
                 } else {
-                    previousProgressLeft = progressLeft;
+                    previousProgressLeft = progressLeft = 7;
                 }
             }
             if (tickRight) {
-                if (progressRight < 7 && !beltHoldingEntity.rightItemHandler.getStackInSlot(0).isEmpty()) {
-                    previousProgressRight = progressRight;
-                    progressRight++;
+                if (progressRight < 7) {
+                    previousProgressRight = progressRight++;
                 } else {
-                    previousProgressRight = progressRight;
+                    previousProgressRight = progressRight = 7;
                 }
             }
         }
@@ -138,13 +161,11 @@ public class BeltUpdatingLogic implements IBeltLogic {
                 if (cap != null) {
                     if (left) {
                         if (cap.insertLeft(beltHoldingEntity.leftItemHandler.extractItem(0, 1, true), true) != beltHoldingEntity.leftItemHandler.getStackInSlot(0)) {
-                            progressLeft = 0;
                             cap.insertLeft(beltHoldingEntity.leftItemHandler.extractItem(0, 1, false), false);
                             return true;
                         }
                     } else {
                         if (cap.insertRight(beltHoldingEntity.rightItemHandler.extractItem(0, 1, true), true) != beltHoldingEntity.rightItemHandler.getStackInSlot(0)) {
-                            progressRight = 0;
                             cap.insertRight(beltHoldingEntity.rightItemHandler.extractItem(0, 1, false), false);
                             return true;
                         }
@@ -154,13 +175,11 @@ public class BeltUpdatingLogic implements IBeltLogic {
                     if (icap != null) {
                         if (left) {
                             if (icap.insertItem(0, beltHoldingEntity.leftItemHandler.extractItem(0, 1, true), true) != beltHoldingEntity.leftItemHandler.getStackInSlot(0)) {
-                                progressLeft = 0;
                                 icap.insertItem(0, beltHoldingEntity.leftItemHandler.extractItem(0, 1, false), false);
                                 return true;
                             }
                         } else {
                             if (icap.insertItem(0, beltHoldingEntity.rightItemHandler.extractItem(0, 1, true), true) != beltHoldingEntity.rightItemHandler.getStackInSlot(0)) {
-                                progressRight = 0;
                                 icap.insertItem(0, beltHoldingEntity.rightItemHandler.extractItem(0, 1, false), false);
                                 return true;
                             }
@@ -175,16 +194,14 @@ public class BeltUpdatingLogic implements IBeltLogic {
     public NBTTagCompound writeToNBT(NBTTagCompound compound) {
         compound.setInteger("progressLeft", progressLeft);
         compound.setInteger("progressRight", progressRight);
-        compound.setInteger("previousProgressLeft", previousProgressLeft);
-        compound.setInteger("previousProgressRight", previousProgressRight);
         return compound;
     }
 
     public void readFromNBT(NBTTagCompound compound) {
         progressLeft = compound.getInteger("progressLeft");
+        previousProgressLeft = progressLeft;
         progressRight = compound.getInteger("progressRight");
-        previousProgressLeft = compound.getInteger("previousProgressLeft");
-        previousProgressRight = compound.getInteger("previousProgressRight");
+        previousProgressRight = progressRight;
     }
 
     public ItemStackHandler getLeftItemHandler() {

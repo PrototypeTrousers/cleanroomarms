@@ -2,6 +2,7 @@ package proto.mechanicalarms.client.renderer;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenCustomHashMap;
 import net.minecraft.client.renderer.BufferBuilder;
+import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
@@ -40,7 +41,7 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
     ModelInstance baseBeltModel = new ModelInstance(ClientProxy.belt);
     ModelInstance slopedBeltModel = new ModelInstance(ClientProxy.beltSlope);
     float partialTicks;
-    ItemStack fakeStack = new ItemStack(Items.END_CRYSTAL);
+    ItemStack fakeStack = new ItemStack(Blocks.REDSTONE_BLOCK);
 
     public TileBeltRenderer() {
         super();

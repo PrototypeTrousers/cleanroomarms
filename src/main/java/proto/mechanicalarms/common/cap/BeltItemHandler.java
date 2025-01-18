@@ -74,11 +74,9 @@ public class BeltItemHandler extends ItemStackHandler {
             if (!simulate && returnStack.isEmpty()) {
                 if (side == Side.L) {
                     dualInventory.setProgressLeft(1);
-                    dualInventory.setPreviousProgressLeft(1);
                     dualInventory.updateLastTickLeft();
                 } else {
                     dualInventory.setProgressRight(1);
-                    dualInventory.setPreviousProgressRight(1);
                     dualInventory.updateLastTickRight();
                 }
             }
@@ -88,11 +86,9 @@ public class BeltItemHandler extends ItemStackHandler {
         ItemStack returnStack = super.insertItem(slot, stack, simulate);
         if (!simulate && returnStack.isEmpty()) {
             if (side == Side.L) {
-                dualInventory.setPreviousProgressLeft(-1);
                 dualInventory.setProgressLeft(0);
                 dualInventory.updateLastTickLeft();
             } else {
-                dualInventory.setPreviousProgressRight(-1);
                 dualInventory.setProgressRight(0);
                 dualInventory.updateLastTickRight();
             }

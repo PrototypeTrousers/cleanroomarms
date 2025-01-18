@@ -4,6 +4,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.items.ItemStackHandler;
 import proto.mechanicalarms.common.cap.BeltItemHandler;
+import proto.mechanicalarms.common.tile.Side;
 
 public interface IBeltLogic {
 

@@ -6,9 +6,10 @@ import com.cleanroommc.modularui.value.sync.GuiSyncManager;
 import com.cleanroommc.modularui.widgets.ItemSlot;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.math.AxisAlignedBB;
+import proto.mechanicalarms.common.logic.belt.BeltNet;
 
 
-public class TileBeltBasic extends BeltHoldingEntity implements ITickable {
+public class TileBeltBasic extends BeltHoldingEntity {
 
     @Override
     public ModularPanel buildUI(GuiData guiData, GuiSyncManager guiSyncManager) {
@@ -25,6 +26,12 @@ public class TileBeltBasic extends BeltHoldingEntity implements ITickable {
     }
 
     @Override
+    public void onLoad() {
+        super.onLoad();
+        BeltNet.addToGroup(this);
+    }
+
+    @Override
     public AxisAlignedBB getRenderBoundingBox() {
         if (renderBB == null) {
             renderBB = super.getRenderBoundingBox();
@@ -32,7 +39,6 @@ public class TileBeltBasic extends BeltHoldingEntity implements ITickable {
         return renderBB;
     }
 
-    @Override
     public void update() {
         logic.update();
     }

@@ -74,7 +74,8 @@ public abstract class BeltHoldingEntity extends TileEntity implements IGuiHolder
         // client. In contrast getUpdatePacket() is called when the tile entity
         // itself wants to sync to the client. In many cases you want to send
         // over the same information in getUpdateTag() as in getUpdatePacket().
-        return writeToNBT(new NBTTagCompound());
+        NBTTagCompound compound = super.getUpdateTag();
+        return writeToNBT(compound);
     }
 
     @Override
@@ -86,7 +87,6 @@ public abstract class BeltHoldingEntity extends TileEntity implements IGuiHolder
         NBTTagCompound compound = new NBTTagCompound();
         compound.setTag("leftInventory", leftItemHandler.serializeNBT());
         compound.setTag("rightInventory", rightItemHandler.serializeNBT());
-        compound.setInteger("directions", direction.ordinal());
         logic.updatePacket(compound);
         return new SPacketUpdateTileEntity(getPos(), 1, compound);
     }
@@ -142,15 +142,17 @@ public abstract class BeltHoldingEntity extends TileEntity implements IGuiHolder
                 return (T) dualBack;
             }
 
+            int maskedConnected = connected & ~(1 << 1);
+
             //left is 0
             if (this.direction.getHorizontalFacing().rotateYCCW() == facing) {
-                if ((connected & (1 << 0)) != 0 && (connected & ~(1 << 0)) == 0) {
+                if ((connected & (1 << 0)) != 0 && (maskedConnected & ~(1 << 0)) == 0) {
                     return (T) dualLeft;
                 }
             }
-            //right is 1
+            //right is 2
             if (this.direction.getHorizontalFacing().rotateY() == facing) {
-                if ((connected & (1 << 1)) != 0 && (connected & ~(1 << 1)) == 0) {
+                if ((connected & (1 << 2)) != 0 && (maskedConnected & ~(1 << 2)) == 0) {
                     return (T) dualRight;
                 }
             }
@@ -168,30 +170,94 @@ public abstract class BeltHoldingEntity extends TileEntity implements IGuiHolder
     }
 
     public void updateConnected() {
-        int mask = 0; // Initialize the bitmask as an integer
 
-        // Check the left connection and set bit 0 if true
-        if (world.getTileEntity(this.pos.offset(direction.getHorizontalFacing().rotateYCCW())) instanceof TileBeltBasic backBelt) {
-            if (backBelt.getFront() == this.getFront().rotateY()) {
-                mask |= (1 << 0); // Set bit 0
+        //bit 0 = left
+        //bit 1 = front
+        //bit 2 = right
+        //bit 3 = opposite
+        //bit 4 = opposite below
+        //bit 5 = opposite above
+        //bit 6 = front below
+        //bit 7 = front above
+
+
+        int mask = 0; // Initialize the bitmask as an integer
+        if (this.direction.getRelativeHeight() == Directions.RelativeHeight.LEVEL) {
+            // Check the left connection and set bit 0 if true
+            if (world.getTileEntity(this.pos.offset(direction.getHorizontalFacing().rotateYCCW())) instanceof TileBeltBasic backBelt) {
+                if (backBelt.getFront() == this.getFront().rotateY()) {
+                    mask |= (1 << 0); // Set bit 0
+                }
             }
-        }
-        // Check the right connection and set bit 1 if true
-        if (world.getTileEntity(this.pos.offset(direction.getHorizontalFacing().rotateY())) instanceof TileBeltBasic backBelt) {
-            if (backBelt.getFront() == this.getFront().rotateYCCW()) {
-                mask |= (1 << 1); // Set bit 1
+
+            // Check the front connection and set bit 1 if true
+            if (world.getTileEntity(this.pos.offset(direction.getHorizontalFacing())) instanceof TileBeltBasic backBelt) {
+                if (backBelt.getFront() != this.getFront().getOpposite()) {
+                    mask |= (1 << 1); // Set bit 1
+                }
             }
-        }
-        // Check the opposite direction and set bit 3 if true
-        if (world.getTileEntity(this.pos.offset(direction.getHorizontalFacing().getOpposite())) instanceof TileBeltBasic backBelt) {
-            if (backBelt.getFront() == this.getFront()) {
-                mask |= (1 << 3); // Set bit 3
+
+            // Check the right connection and set bit 2 if true
+            if (world.getTileEntity(this.pos.offset(direction.getHorizontalFacing().rotateY())) instanceof TileBeltBasic backBelt) {
+                if (backBelt.getFront() == this.getFront().rotateYCCW()) {
+                    mask |= (1 << 2); // Set bit 2
+                }
             }
-        }
-        // Check the opposite below direction and set bit 3 if true
-        if (world.getTileEntity(this.pos.offset(direction.getHorizontalFacing().getOpposite()).down()) instanceof TileBeltBasic backBelt) {
-            if (backBelt.getFront() == this.getFront()) {
-                mask |= (1 << 3); // Set bit 3
+
+            // Check the opposite direction and set bit 3 if true
+            if (world.getTileEntity(this.pos.offset(direction.getHorizontalFacing().getOpposite())) instanceof TileBeltBasic backBelt) {
+                if (backBelt.getFront() == this.getFront()) {
+                    mask |= (1 << 3); // Set bit 3
+                }
+            }
+
+            // Check the opposite below direction and set bit 4 if true
+            if (world.getTileEntity(this.pos.offset(direction.getHorizontalFacing().getOpposite()).down()) instanceof TileBeltBasic backBelt) {
+                if (backBelt.getFront() == this.getFront()) {
+                    mask |= (1 << 4); // Set bit 4
+                }
+            }
+        } else if (this.direction.getRelativeHeight() == Directions.RelativeHeight.ABOVE) {
+            // Check the front above connection and set bit 7 if true
+            if (world.getTileEntity(this.pos.offset(direction.getHorizontalFacing()).up()) instanceof TileBeltBasic backBelt) {
+                if (backBelt.getFront() != this.getFront().getOpposite()) {
+                    mask |= (1 << 7); // Set bit 7
+                }
+            }
+
+            // Check the opposite direction and set bit 3 if true
+            if (world.getTileEntity(this.pos.offset(direction.getHorizontalFacing().getOpposite())) instanceof TileBeltBasic backBelt) {
+                if (backBelt.getFront() == this.getFront()) {
+                    mask |= (1 << 3); // Set bit 3
+                }
+            }
+
+            // Check the opposite below direction and set bit 4 if true
+            if (world.getTileEntity(this.pos.offset(direction.getHorizontalFacing().getOpposite()).down()) instanceof TileBeltBasic backBelt) {
+                if (backBelt.getFront() == this.getFront()) {
+                    mask |= (1 << 4); // Set bit 4
+                }
+            }
+        } else if (this.direction.getRelativeHeight() == Directions.RelativeHeight.BELOW) {
+            // Check the front connection and set bit 1 if true
+            if (world.getTileEntity(this.pos.offset(direction.getHorizontalFacing())) instanceof TileBeltBasic backBelt) {
+                if (backBelt.getFront() != this.getFront().getOpposite()) {
+                    mask |= (1 << 1); // Set bit 1
+                }
+            }
+
+            // Check the opposite above direction and set bit 3 if true
+            if (world.getTileEntity(this.pos.offset(direction.getHorizontalFacing().getOpposite()).up()) instanceof TileBeltBasic backBelt) {
+                if (backBelt.getFront() == this.getFront()) {
+                    mask |= (1 << 5); // Set bit 5
+                }
+            }
+
+            // Check the front below connection and set bit 6 if true
+            if (world.getTileEntity(this.pos.offset(direction.getHorizontalFacing()).down()) instanceof TileBeltBasic backBelt) {
+                if (backBelt.getFront() != this.getFront().getOpposite()) {
+                    mask |= (1 << 6); // Set bit 5
+                }
             }
         }
 
@@ -199,7 +265,45 @@ public abstract class BeltHoldingEntity extends TileEntity implements IGuiHolder
         connected = mask; // Store the bitmask in 'connected' (now an integer)
     }
 
+    // Helper method to check if a specific bit is set
+    private boolean isBitSet(int bitIndex) {
+        return (connected & (1 << bitIndex)) != 0;
+    }
+
+    // Helper method to check left connection (bit 0)
+    public boolean isLeftConnected() {
+        return isBitSet(0);
+    }
+
+    // Helper method to check front connection (bit 1)
+    public boolean isFrontConnected() {
+        return isBitSet(1);
+    }
+
+    // Helper method to check right connection (bit 2)
+    public boolean isRightConnected() {
+        return isBitSet(2);
+    }
+
+    // Helper method to check opposite connection (bit 3)
+    public boolean isOppositeConnected() {
+        return isBitSet(3);
+    }
+
+    public boolean isBackConnected() {
+        return isBitSet(3) || isBitSet(4) || isBitSet(5);
+    }
+
+    public boolean isOnlyOppositeOrVerticalConnected() {
+        int mask = (1<<1)|(1 << 3) | (1 << 4) | (1 << 5); // Create a bitmask for bits 3, 4, and 5
+        return (connected & mask) != 0 && (connected & ~mask) == 0;
+    }
+
     public BeltUpdatingLogic getLogic() {
         return logic;
+    }
+
+    public int getConnected() {
+        return connected;
     }
 }
