@@ -38,6 +38,27 @@ public class BeltNet {
         beltNet.toRemove.add(entity);
     }
 
+    public void handleRemovals() {
+        for (BeltHoldingEntity entity : toRemove) {
+            boolean reached = false;
+            BeltGroup group = belt2GroupMap.get(entity);
+            List<BeltHoldingEntity> currentBeltsInGroup = new ArrayList<>(belt2GroupMap.get(entity).getBelts());
+            for (BeltHoldingEntity belt : currentBeltsInGroup) {
+                if (entity == belt) {
+                    reached = true;
+                    removeFromGroup(belt, group);
+                    continue;
+                }
+                if (reached) {
+                    removeFromGroup(belt, group);
+                    addToGroup(belt);
+                }
+            }
+            belt2GroupMap.remove(entity);
+        }
+        toRemove.clear();
+    }
+
     public void groupBelts() {
         processEntities(addFirst);
         processEntities(toAddBelt);
@@ -158,6 +179,7 @@ public class BeltNet {
     // Removes a belt from a specific group
     private void removeFromGroup(BeltHoldingEntity entity, BeltGroup group) {
         group.removeBeltHoldingEntity(entity);
+        belt2GroupMap.remove(entity);
         if (group.isEmpty()) {
             groups.remove(group);
         }
