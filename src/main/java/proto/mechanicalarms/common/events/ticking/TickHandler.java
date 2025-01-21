@@ -23,7 +23,7 @@ public class TickHandler {
             return;
         }
         BeltNet beltNet = beltNets.get(ev.world);
-        if (!beltNet.pendingEntities.isEmpty() || !beltNet.headCandidates.isEmpty()) {
+        if (!beltNet.toAddBelt.isEmpty() || !beltNet.addFirst.isEmpty()) {
             beltNets.get(ev.world).groupBelts();
         }
         for (BeltGroup group : beltNets.get(ev.world).groups) {
@@ -44,7 +44,7 @@ public class TickHandler {
             return;
         }
         BeltNet beltNet = beltNets.get(Minecraft.getMinecraft().world);
-        if (!beltNet.pendingEntities.isEmpty()) {
+        if (!beltNet.toAddBelt.isEmpty()) {
             beltNets.get(Minecraft.getMinecraft().world).groupBelts();
         }
         for (BeltGroup group : beltNets.get(Minecraft.getMinecraft().world).groups) {

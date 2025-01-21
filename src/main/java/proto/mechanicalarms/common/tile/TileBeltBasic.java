@@ -32,6 +32,11 @@ public class TileBeltBasic extends BeltHoldingEntity {
     }
 
     @Override
+    public void invalidate() {
+        BeltNet.removeFromGroup(this);
+    }
+
+    @Override
     public AxisAlignedBB getRenderBoundingBox() {
         if (renderBB == null) {
             renderBB = super.getRenderBoundingBox();

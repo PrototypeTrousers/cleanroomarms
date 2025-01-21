@@ -1,5 +1,6 @@
 package proto.mechanicalarms.common.logic.belt;
 
+import it.unimi.dsi.fastutil.objects.ObjectObjectMutablePair;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
@@ -12,9 +13,10 @@ import java.util.*;
 
 public class BeltNet {
     public static HashMap<World, BeltNet> beltNets = new HashMap<>();
-    public List<BeltHoldingEntity> pendingEntities = new ArrayList<>();
-    public List<BeltHoldingEntity> headCandidates = new ArrayList<>();
-    public Map<BeltHoldingEntity, BeltGroup> beltGroups = new HashMap<>();
+    public List<BeltHoldingEntity> toAddBelt = new ArrayList<>();
+    public List<BeltHoldingEntity> toRemove = new ArrayList<>();
+    public List<BeltHoldingEntity> addFirst = new ArrayList<>();
+    public Map<BeltHoldingEntity, BeltGroup> belt2GroupMap = new HashMap<>();
     public ObjectOpenHashSet<BeltGroup> groups = new ObjectOpenHashSet<>();
     public BeltNet(World world) {
     }
@@ -25,15 +27,20 @@ public class BeltNet {
         }
         BeltNet beltNet = beltNets.computeIfAbsent(entity.getWorld(), w -> new BeltNet(entity.getWorld()));
         if ((entity.getConnected() & (1 << 1)) == 0) {
-            beltNet.headCandidates.add(entity);
+            beltNet.addFirst.add(entity);
         } else {
-            beltNet.pendingEntities.add(entity);
+            beltNet.toAddBelt.add(entity);
         }
     }
 
+    public static void removeFromGroup(BeltHoldingEntity entity) {
+        BeltNet beltNet = beltNets.computeIfAbsent(entity.getWorld(), w -> new BeltNet(entity.getWorld()));
+        beltNet.toRemove.add(entity);
+    }
+
     public void groupBelts() {
-        processEntities(headCandidates);
-        processEntities(pendingEntities);
+        processEntities(addFirst);
+        processEntities(toAddBelt);
     }
 
     // Handles grouping of entities from a given list
@@ -41,42 +48,97 @@ public class BeltNet {
         Iterator<BeltHoldingEntity> iterator = entities.iterator();
         while (iterator.hasNext()) {
             BeltHoldingEntity entity = iterator.next();
-            if (beltGroups.containsKey(entity)) {
+
+            // If already grouped, skip this entity
+            if (belt2GroupMap.containsKey(entity)) {
                 iterator.remove();
                 continue;
             }
 
-            BeltHoldingEntity front = getFrontBelt(entity);
-            if (front != null && front.isOnlyConnectedToSide(entity.getFront())) {
-                addToGroup(entity, groups.get(front));
-                iterator.remove();
-                continue;
-            }
-            BeltGroup group = new BeltGroup();
-            beltGroups.put(entity, group);
-            groups.add(group);
+            List<BeltHoldingEntity> newBelts = new ArrayList<>();
+            ObjectObjectMutablePair<BeltGroup, BeltGroup> actualGroup = new ObjectObjectMutablePair<>(null, null);
 
-            if (entity.isBackConnected()) {
-                groupBeltsRecursive(entity, group);
-            } else {
-                group.addBeltHoldingEntity(entity);
+            // Recursively group belts connected in both directions
+            groupBeltsRecursive(entity, newBelts, actualGroup);
+            BeltGroup group = actualGroup.left();
+            if (group == null) {
+                group = new BeltGroup();
+                actualGroup.left(group);
             }
-
+            groups.add(actualGroup.left());
+            for (BeltHoldingEntity newBelt : newBelts) {
+                addToGroup(newBelt, actualGroup.left());
+                belt2GroupMap.put(entity, actualGroup.left());
+            }
+            if (actualGroup.right() != null) {
+                mergeGroups(actualGroup.right(), group);
+            }
             iterator.remove();
         }
     }
 
     // Recursively adds connected belts to the group
-    private void groupBeltsRecursive(BeltHoldingEntity entity, BeltGroup group) {
-        group.addBeltHoldingEntity(entity);
-        beltGroups.put(entity, group);
+    private void groupBeltsRecursive(BeltHoldingEntity entity, List<BeltHoldingEntity> newBelts, ObjectObjectMutablePair<BeltGroup, BeltGroup> group) {
+        if (entity == null || belt2GroupMap.containsKey(entity)) return;
+        belt2GroupMap.put(entity, null);
 
-        if (entity.isOnlyBackConnected()) {
+        // Add entity to the group
+        newBelts.add(entity);
+
+        // Handle back connections
+        if (entity.isBackConnected()) {
             BeltHoldingEntity backBelt = getBackBelt(entity);
-            if (backBelt != null && !beltGroups.containsKey(backBelt)) {
-                groupBeltsRecursive(backBelt, group);
+            if (backBelt != null && !belt2GroupMap.containsKey(backBelt)) {
+                groupBeltsRecursive(backBelt, newBelts, group);
             }
         }
+
+        // Handle front connections
+        if (entity.isFrontConnected()) {
+            BeltHoldingEntity frontBelt = getFrontBelt(entity);
+            if (frontBelt != null && frontBelt.isOnlyConnectedToSide(entity.getFront())) {
+                BeltGroup existingGroup = belt2GroupMap.get(frontBelt);
+                groupBeltsRecursive(frontBelt, newBelts, group);
+                if (existingGroup != null) {
+                    // If the front belt is already grouped, merge the current group into the existing one
+                    group.left(existingGroup);
+                }
+            }
+        }
+
+        if (entity.isOnlyRightConnected()) {
+            BeltHoldingEntity rightBelt = (BeltHoldingEntity) entity.getWorld().getTileEntity(entity.getPos().offset(entity.getFront().rotateY()));
+            if (rightBelt != null) {
+                BeltGroup existingGroup = belt2GroupMap.get(rightBelt);
+                groupBeltsRecursive(rightBelt, newBelts, group);
+                if (existingGroup != null) {
+                    // If the front belt is already grouped, merge the current group into the existing one
+                    group.right(existingGroup);
+                }
+            }
+        } else if (entity.isOnlyLeftConnected()) {
+            BeltHoldingEntity leftBelt = (BeltHoldingEntity) entity.getWorld().getTileEntity(entity.getPos().offset(entity.getFront().rotateYCCW()));
+            if (leftBelt != null) {
+                BeltGroup existingGroup = belt2GroupMap.get(leftBelt);
+                groupBeltsRecursive(leftBelt, newBelts, group);
+                if (existingGroup != null) {
+                    // If the front belt is already grouped, merge the current group into the existing one
+                    group.right(existingGroup);
+                }
+            }
+        }
+    }
+
+    // Merges one group into another
+    private void mergeGroups(BeltGroup sourceGroup, BeltGroup targetGroup) {
+        if (sourceGroup == targetGroup) return;
+
+        for (BeltHoldingEntity entity : sourceGroup.getBelts()) {
+            targetGroup.addBeltHoldingEntity(entity);
+            belt2GroupMap.put(entity, targetGroup);
+        }
+
+        groups.remove(sourceGroup);
     }
 
     // Adds a belt to a specific group
@@ -84,28 +146,20 @@ public class BeltNet {
         if (entity == null || group == null) return;
 
         // Remove entity from its current group if it exists
-        BeltGroup currentGroup = beltGroups.get(entity);
+        BeltGroup currentGroup = belt2GroupMap.get(entity);
         if (currentGroup != null) {
             removeFromGroup(entity, currentGroup);
         }
 
         group.addBeltHoldingEntity(entity);
-        beltGroups.put(entity, group);
+        belt2GroupMap.put(entity, group);
     }
 
-    // Removes a belt from its group and handles splitting groups if necessary
-    public void removeFromGroup(BeltHoldingEntity entity, BeltGroup group) {
-        if (entity == null || group == null) return;
-
+    // Removes a belt from a specific group
+    private void removeFromGroup(BeltHoldingEntity entity, BeltGroup group) {
         group.removeBeltHoldingEntity(entity);
-        beltGroups.remove(entity);
-
-        // If the group becomes disconnected, split it into smaller groups
         if (group.isEmpty()) {
             groups.remove(group);
-        }
-        if (group == groups.get(getBackBelt(entity)) && group == groups.get(getFrontBelt(entity))) {
-            splitGroup(group);
         }
     }
 
@@ -116,10 +170,10 @@ public class BeltNet {
         // Rebuild smaller groups from the disconnected belts
         List<BeltHoldingEntity> disconnectedBelts = new ArrayList<>(group.getBelts());
         for (BeltHoldingEntity entity : disconnectedBelts) {
-            if (!beltGroups.containsKey(entity)) {
+            if (!belt2GroupMap.containsKey(entity)) {
                 BeltGroup newGroup = new BeltGroup();
                 groups.add(newGroup);
-                groupBeltsRecursive(entity, newGroup);
+                //groupBeltsRecursive(entity, newBelts, newGroup);
             }
         }
     }
@@ -286,5 +340,25 @@ public class BeltNet {
 
         // Use the mask for further operations as needed, for example:
         //connected = mask; // Store the bitmask in 'connected' (now an integer)
+    }
+
+    public class MyObject<B> {
+        // Private field
+        private BeltGroup value;
+
+        // Constructor
+        public MyObject() {
+            this.value = value;
+        }
+
+        // Getter method
+        public BeltGroup getValue() {
+            return value;
+        }
+
+        // Setter method
+        public void setValue(BeltGroup value) {
+            this.value = value;
+        }
     }
 }
