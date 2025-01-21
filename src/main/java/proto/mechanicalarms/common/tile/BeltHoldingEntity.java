@@ -285,17 +285,30 @@ public abstract class BeltHoldingEntity extends TileEntity implements IGuiHolder
         return isBitSet(2);
     }
 
-    // Helper method to check opposite connection (bit 3)
-    public boolean isOppositeConnected() {
-        return isBitSet(3);
+    // Check if only connected to the front (bit 1)
+    public boolean isOnlyFrontConnected() {
+        int frontMask = (1 << 1); // Bit for front connection
+        return (connected & frontMask) != 0 && (connected & ~frontMask) == 0;
+    }
+
+    // Check if only connected to the left (bit 0)
+    public boolean isOnlyLeftConnected() {
+        int leftMask = (1 << 1) | (1 << 0); // Bit for left connection
+        return (connected & leftMask) != 0 && (connected & ~leftMask) == 0;
+    }
+
+    // Check if only connected to the right (bit 2)
+    public boolean isOnlyRightConnected() {
+        int rightMask = (1 << 1) | (1 << 2); // Bit for right connection
+        return (connected & rightMask) != 0 && (connected & ~rightMask) == 0;
     }
 
     public boolean isBackConnected() {
         return isBitSet(3) || isBitSet(4) || isBitSet(5);
     }
 
-    public boolean isOnlyOppositeOrVerticalConnected() {
-        int mask = (1<<1)|(1 << 3) | (1 << 4) | (1 << 5); // Create a bitmask for bits 3, 4, and 5
+    public boolean isOnlyBackConnected() {
+        int mask = (1 << 1) | (1 << 3) | (1 << 4) | (1 << 5); // Create a bitmask for bits 3, 4, and 5
         return (connected & mask) != 0 && (connected & ~mask) == 0;
     }
 
@@ -305,5 +318,18 @@ public abstract class BeltHoldingEntity extends TileEntity implements IGuiHolder
 
     public int getConnected() {
         return connected;
+    }
+
+    public boolean isOnlyConnectedToSide(EnumFacing facing) {
+        EnumFacing front = getFront();
+        if (facing == front) {
+            return isOnlyBackConnected();
+        } else if (facing == front.rotateY()) {
+            return isOnlyLeftConnected();
+        } else if (facing == front.rotateYCCW()) {
+            return isOnlyRightConnected();
+        } else {
+            return false;
+        }
     }
 }

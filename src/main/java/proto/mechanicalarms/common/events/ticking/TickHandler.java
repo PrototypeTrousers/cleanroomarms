@@ -1,8 +1,6 @@
 package proto.mechanicalarms.common.events.ticking;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.WorldClient;
-import net.minecraft.world.World;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
@@ -25,11 +23,11 @@ public class TickHandler {
             return;
         }
         BeltNet beltNet = beltNets.get(ev.world);
-        if (!beltNet.pendingEntities.isEmpty()) {
+        if (!beltNet.pendingEntities.isEmpty() || !beltNet.headCandidates.isEmpty()) {
             beltNets.get(ev.world).groupBelts();
         }
         for (BeltGroup group : beltNets.get(ev.world).groups) {
-            for (BeltHoldingEntity entity : group.getBeltHoldingEntities()) {
+            for (BeltHoldingEntity entity : group.getBelts()) {
                 if (entity instanceof TileBeltBasic tbb) {
                     tbb.update();
                 }
@@ -50,7 +48,7 @@ public class TickHandler {
             beltNets.get(Minecraft.getMinecraft().world).groupBelts();
         }
         for (BeltGroup group : beltNets.get(Minecraft.getMinecraft().world).groups) {
-            for (BeltHoldingEntity entity : group.getBeltHoldingEntities()) {
+            for (BeltHoldingEntity entity : group.getBelts()) {
                 if (entity instanceof TileBeltBasic tbb) {
                     tbb.update();
                 }

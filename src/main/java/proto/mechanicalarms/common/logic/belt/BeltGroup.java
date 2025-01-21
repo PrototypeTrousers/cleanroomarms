@@ -2,21 +2,28 @@ package proto.mechanicalarms.common.logic.belt;
 
 import proto.mechanicalarms.common.tile.BeltHoldingEntity;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class BeltGroup {
-    private final List<BeltHoldingEntity> beltHoldingEntities;
+    private final List<BeltHoldingEntity> belts;
 
     public BeltGroup() {
-        beltHoldingEntities = new ArrayList<>();
+        belts = new ArrayList<>();
     }
 
     public void addBeltHoldingEntity(BeltHoldingEntity entity) {
-        beltHoldingEntities.add(entity);
+        belts.add(entity);
     }
 
-    public List<BeltHoldingEntity> getBeltHoldingEntities() {
-        return beltHoldingEntities;
+    public List<BeltHoldingEntity> getBelts() {
+        return belts;
+    }
+
+    public void removeBeltHoldingEntity(BeltHoldingEntity entity) {
+        belts.remove(entity);
+    }
+
+    public boolean isEmpty() {
+        return belts.isEmpty();
     }
 }
