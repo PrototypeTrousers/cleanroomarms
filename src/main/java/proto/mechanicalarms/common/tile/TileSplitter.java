@@ -72,6 +72,7 @@ public class TileSplitter extends TileBeltBasic {
 
     @Override
     public void onLoad() {
+        super.onLoad();
     }
 
     public void setDummy(TileSplitterDummy dummy) {

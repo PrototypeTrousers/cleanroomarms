@@ -7,7 +7,6 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import net.minecraft.world.WorldServer;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
@@ -191,10 +190,9 @@ public class BeltUpdatingLogic implements IBeltLogic {
         return false;
     }
 
-    public NBTTagCompound writeToNBT(NBTTagCompound compound) {
+    public void writeToNBT(NBTTagCompound compound) {
         compound.setInteger("progressLeft", progressLeft);
         compound.setInteger("progressRight", progressRight);
-        return compound;
     }
 
     public void readFromNBT(NBTTagCompound compound) {
@@ -226,18 +224,8 @@ public class BeltUpdatingLogic implements IBeltLogic {
     }
 
     @Override
-    public void setPreviousProgressLeft(int previousProgressLeft) {
-        this.previousProgressLeft = previousProgressLeft;
-    }
-
-    @Override
     public void setProgressRight(int progressRight) {
         this.progressRight = progressRight;
-    }
-
-    @Override
-    public void setPreviousProgressRight(int previousProgressRight) {
-        this.previousProgressRight = previousProgressRight;
     }
 
     @Override
