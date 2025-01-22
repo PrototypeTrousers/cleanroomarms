@@ -34,9 +34,12 @@ public class TileBeltBasic extends BeltHoldingEntity {
     @Override
     public void updateConnected() {
         boolean onlySideConnected = false;
+        boolean bothSideConnected = false;
         if (connected != -1) {
             if (isOnlyLeftConnected() || isOnlyRightConnected()) {
                 onlySideConnected = true;
+            } else if (isLeftConnected() && isRightConnected()) {
+                bothSideConnected = true;
             }
         }
         super.updateConnected();
@@ -44,6 +47,12 @@ public class TileBeltBasic extends BeltHoldingEntity {
         if (onlySideConnected) {
             if (!isOnlyLeftConnected() && !isOnlyRightConnected()) {
                 BeltNet.splitFromGroup(this);
+            }
+        } else if (bothSideConnected) {
+            if (!isLeftConnected()) {
+                BeltNet.mergeConnectedGroups(this, (BeltHoldingEntity) world.getTileEntity(getPos().offset(getDirection().getHorizontalFacing().rotateY())));
+            } else if (!isRightConnected()) {
+                BeltNet.mergeConnectedGroups(this, (BeltHoldingEntity) world.getTileEntity(getPos().offset(getDirection().getHorizontalFacing().rotateYCCW())));
             }
         }
     }

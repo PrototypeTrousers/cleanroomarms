@@ -44,6 +44,11 @@ public class BeltNet {
         beltNet.split.add(entity);
     }
 
+    public static void mergeConnectedGroups(BeltHoldingEntity entity, BeltHoldingEntity entity2) {
+        BeltNet beltNet = beltNets.computeIfAbsent(entity.getWorld(), w -> new BeltNet(entity.getWorld()));
+        beltNet.mergeGroups(beltNet.belt2GroupMap.get(entity), beltNet.belt2GroupMap.get(entity2));
+    }
+
     public void handleRemovals() {
         for (BeltHoldingEntity entity : toRemove) {
             boolean reached = false;
