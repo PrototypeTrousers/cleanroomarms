@@ -51,7 +51,7 @@ public class TickHandler {
         if (!beltNet.toRemove.isEmpty()) {
             beltNet.handleRemovals();
         }
-        if (!beltNet.toAddBelt.isEmpty()) {
+        if (!beltNet.toAddBelt.isEmpty() || !beltNet.addFirst.isEmpty()) {
             beltNets.get(Minecraft.getMinecraft().world).groupBelts();
         }
         for (BeltGroup group : beltNets.get(Minecraft.getMinecraft().world).groups) {

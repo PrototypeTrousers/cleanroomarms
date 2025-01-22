@@ -89,7 +89,7 @@ public class BeltNet {
             groups.add(actualGroup.left());
             for (BeltHoldingEntity newBelt : newBelts) {
                 addToGroup(newBelt, actualGroup.left());
-                belt2GroupMap.put(entity, actualGroup.left());
+                belt2GroupMap.put(newBelt, actualGroup.left());
             }
             if (actualGroup.right() != null) {
                 mergeGroups(actualGroup.right(), group);
@@ -109,6 +109,11 @@ public class BeltNet {
         // Handle back connections
         if (entity.isBackConnected()) {
             BeltHoldingEntity backBelt = getBackBelt(entity);
+            BeltGroup existingGroup = belt2GroupMap.get(backBelt);
+            if (existingGroup != null) {
+                // If the front belt is already grouped, merge the current group into the existing one
+                group.left(existingGroup);
+            }
             if (backBelt != null && !belt2GroupMap.containsKey(backBelt)) {
                 groupBeltsRecursive(backBelt, newBelts, group);
             }
