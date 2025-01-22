@@ -190,6 +190,12 @@ public abstract class BeltHoldingEntity extends TileEntity implements IGuiHolder
                 }
             }
 
+            if (world.getTileEntity(this.pos.offset(direction.getHorizontalFacing().rotateYCCW()).down()) instanceof TileBeltBasic backBelt) {
+                if (backBelt.getFront() == this.getFront().rotateY()) {
+                    mask |= (1 << 0); // Set bit 0
+                }
+            }
+
             // Check the front connection and set bit 1 if true
             if (world.getTileEntity(this.pos.offset(direction.getHorizontalFacing())) instanceof TileBeltBasic backBelt) {
                 if (backBelt.getFront() != this.getFront().getOpposite()) {
@@ -199,6 +205,12 @@ public abstract class BeltHoldingEntity extends TileEntity implements IGuiHolder
 
             // Check the right connection and set bit 2 if true
             if (world.getTileEntity(this.pos.offset(direction.getHorizontalFacing().rotateY())) instanceof TileBeltBasic backBelt) {
+                if (backBelt.getFront() == this.getFront().rotateYCCW()) {
+                    mask |= (1 << 2); // Set bit 2
+                }
+            }
+
+            if (world.getTileEntity(this.pos.offset(direction.getHorizontalFacing().rotateY()).down()) instanceof TileBeltBasic backBelt) {
                 if (backBelt.getFront() == this.getFront().rotateYCCW()) {
                     mask |= (1 << 2); // Set bit 2
                 }
