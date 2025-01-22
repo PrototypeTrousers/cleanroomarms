@@ -183,9 +183,11 @@ public class BlockBelt extends Block implements ITileEntityProvider {
 
     @Override
     public void neighborChanged(IBlockState state, World worldIn, BlockPos pos, Block blockIn, BlockPos fromPos) {
-        TileEntity te = worldIn.getTileEntity(pos);
-        if (te instanceof TileBeltBasic tbb) {
-            tbb.updateConnected();
+        if (blockIn == this) {
+            TileEntity te = worldIn.getTileEntity(pos);
+            if (te instanceof TileBeltBasic tbb) {
+                tbb.updateConnected();
+            }
         }
     }
 

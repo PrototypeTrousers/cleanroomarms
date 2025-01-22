@@ -16,6 +16,7 @@ public class BeltNet {
     public List<BeltHoldingEntity> toAddBelt = new ArrayList<>();
     public List<BeltHoldingEntity> toRemove = new ArrayList<>();
     public List<BeltHoldingEntity> addFirst = new ArrayList<>();
+    public List<BeltHoldingEntity> split = new ArrayList<>();
     public Map<BeltHoldingEntity, BeltGroup> belt2GroupMap = new HashMap<>();
     public ObjectOpenHashSet<BeltGroup> groups = new ObjectOpenHashSet<>();
     public BeltNet(World world) {
@@ -57,6 +58,30 @@ public class BeltNet {
             belt2GroupMap.remove(entity);
         }
         toRemove.clear();
+    }
+
+    public void handleSplits() {
+        for (BeltHoldingEntity entity : split) {
+            boolean reached = false;
+            BeltGroup group = belt2GroupMap.get(entity);
+            BeltGroup newGroup = null;
+            List<BeltHoldingEntity> currentBeltsInGroup = new ArrayList<>(belt2GroupMap.get(entity).getBelts());
+            for (BeltHoldingEntity belt : currentBeltsInGroup) {
+                if (entity == belt) {
+                    reached = true;
+                    continue;
+                }
+                if (reached) {
+                    if (newGroup == null) {
+                        newGroup = new BeltGroup();
+                        groups.add(newGroup);
+                    }
+                    removeFromGroup(belt, group);
+                    belt2GroupMap.put(belt, newGroup);
+                }
+            }
+        }
+        split.clear();
     }
 
     public void groupBelts() {
@@ -122,12 +147,16 @@ public class BeltNet {
         // Handle front connections
         if (entity.isFrontConnected()) {
             BeltHoldingEntity frontBelt = getFrontBelt(entity);
-            if (frontBelt != null && frontBelt.isOnlyConnectedToSide(entity.getFront())) {
-                BeltGroup existingGroup = belt2GroupMap.get(frontBelt);
-                groupBeltsRecursive(frontBelt, newBelts, group);
-                if (existingGroup != null) {
-                    // If the front belt is already grouped, merge the current group into the existing one
-                    group.left(existingGroup);
+            if (frontBelt != null) {
+                if (frontBelt.isOnlyConnectedToSide(entity.getFront())) {
+                    BeltGroup existingGroup = belt2GroupMap.get(frontBelt);
+                    groupBeltsRecursive(frontBelt, newBelts, group);
+                    if (existingGroup != null) {
+                        // If the front belt is already grouped, merge the current group into the existing one
+                        group.left(existingGroup);
+                    }
+                } else if (frontBelt.isOnlyConnectedToSide(entity.getFront().getOpposite())) {
+                    split.add(frontBelt);
                 }
             }
         }

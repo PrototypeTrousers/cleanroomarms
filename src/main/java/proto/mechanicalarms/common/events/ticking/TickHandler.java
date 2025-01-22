@@ -23,6 +23,11 @@ public class TickHandler {
             return;
         }
         BeltNet beltNet = beltNets.get(ev.world);
+
+        if (!beltNet.split.isEmpty()) {
+            beltNet.handleSplits();
+        }
+
         if (!beltNet.toRemove.isEmpty()) {
             beltNet.handleRemovals();
         }
@@ -48,6 +53,9 @@ public class TickHandler {
             return;
         }
         BeltNet beltNet = beltNets.get(Minecraft.getMinecraft().world);
+        if (!beltNet.split.isEmpty()) {
+            beltNet.handleSplits();
+        }
         if (!beltNet.toRemove.isEmpty()) {
             beltNet.handleRemovals();
         }
@@ -66,5 +74,5 @@ public class TickHandler {
     @SubscribeEvent
     public void onWorldUnload(final WorldEvent.Unload ev) {
         beltNets.remove(ev.getWorld());
-        }
+    }
 }
