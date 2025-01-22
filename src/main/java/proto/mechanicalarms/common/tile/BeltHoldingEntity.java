@@ -308,8 +308,9 @@ public abstract class BeltHoldingEntity extends TileEntity implements IGuiHolder
     }
 
     public boolean isOnlyBackConnected() {
-        int mask = (1 << 1) | (1 << 3) | (1 << 4) | (1 << 5); // Create a bitmask for bits 3, 4, and 5
-        return (connected & mask) != 0 && (connected & ~mask) == 0;
+        int mask = (1 << 3) | (1 << 4) | (1 << 5); // Create a bitmask for bits 3, 4, and 5
+        int ignoreBit1Mask = ~(1 << 1);           // Create a mask to ignore bit 1
+        return (connected & mask) != 0 && (connected & ~mask & ignoreBit1Mask) == 0;
     }
 
     public BeltUpdatingLogic getLogic() {

@@ -157,9 +157,14 @@ public class BeltNet {
                     BeltGroup existingGroup = belt2GroupMap.get(frontBelt);
                     groupBeltsRecursive(frontBelt, newBelts, group);
                     if (existingGroup != null) {
-                        // If the front belt is already grouped, merge the current group into the existing one
-                        group.left(existingGroup);
+                        if (group.left() == null) {
+                            group.left(existingGroup);
+                        } else {
+                            // If the front belt is already grouped, merge the current group into the existing one
+                            group.right(existingGroup);
+                        }
                     }
+
                 } else if (frontBelt.isOnlyConnectedToSide(entity.getFront().getOpposite())) {
                     split.add(frontBelt);
                 }
@@ -171,7 +176,9 @@ public class BeltNet {
             if (rightBelt != null) {
                 BeltGroup existingGroup = belt2GroupMap.get(rightBelt);
                 groupBeltsRecursive(rightBelt, newBelts, group);
-                if (existingGroup != null) {
+                if (group.left() == null) {
+                    group.left(existingGroup);
+                } else {
                     // If the front belt is already grouped, merge the current group into the existing one
                     group.right(existingGroup);
                 }
@@ -181,7 +188,9 @@ public class BeltNet {
             if (leftBelt != null) {
                 BeltGroup existingGroup = belt2GroupMap.get(leftBelt);
                 groupBeltsRecursive(leftBelt, newBelts, group);
-                if (existingGroup != null) {
+                if (group.left() == null) {
+                    group.left(existingGroup);
+                } else {
                     // If the front belt is already grouped, merge the current group into the existing one
                     group.right(existingGroup);
                 }
