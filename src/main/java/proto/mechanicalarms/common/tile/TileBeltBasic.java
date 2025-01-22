@@ -32,6 +32,23 @@ public class TileBeltBasic extends BeltHoldingEntity {
     }
 
     @Override
+    public void updateConnected() {
+        boolean onlySideConnected = false;
+        if (connected != -1) {
+            if (isOnlyLeftConnected() || isOnlyRightConnected()) {
+                onlySideConnected = true;
+            }
+        }
+        super.updateConnected();
+
+        if (onlySideConnected) {
+            if (!isOnlyLeftConnected() && !isOnlyRightConnected()) {
+                BeltNet.splitFromGroup(this);
+            }
+        }
+    }
+
+    @Override
     public void invalidate() {
         BeltNet.removeFromGroup(this);
     }

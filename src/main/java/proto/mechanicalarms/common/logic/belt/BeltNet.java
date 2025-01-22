@@ -39,6 +39,11 @@ public class BeltNet {
         beltNet.toRemove.add(entity);
     }
 
+    public static void splitFromGroup(BeltHoldingEntity entity) {
+        BeltNet beltNet = beltNets.computeIfAbsent(entity.getWorld(), w -> new BeltNet(entity.getWorld()));
+        beltNet.split.add(entity);
+    }
+
     public void handleRemovals() {
         for (BeltHoldingEntity entity : toRemove) {
             boolean reached = false;
