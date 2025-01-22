@@ -177,12 +177,12 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
 
         float yProgress = 0;
         if (tileBeltBasic.getDirection().getRelativeHeight() == Directions.RelativeHeight.BELOW) {
-            yProgress = 1.0625F - (float) (lerp(previousProgress, progress, partialTicks) * 0.375);
+            yProgress = 1.0625F - (float) (lerp(previousProgress, progress, partialTicks) * 1/7F);
             rot.rotateX((float) (-Math.PI / 4));
 
 
         } else if (tileBeltBasic.getDirection().getRelativeHeight() == Directions.RelativeHeight.ABOVE) {
-            yProgress = (float) (0.0625F + lerp(previousProgress, progress, partialTicks) * 0.375);
+            yProgress = (float) (0.0625F + lerp(previousProgress, progress, partialTicks) * 1/7F);
             rot.rotateX((float) (Math.PI / 4));
         }
 
