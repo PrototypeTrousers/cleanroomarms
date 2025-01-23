@@ -305,14 +305,16 @@ public abstract class BeltHoldingEntity extends TileEntity implements IGuiHolder
 
     // Check if only connected to the left (bit 0)
     public boolean isOnlyLeftConnected() {
-        int leftMask = (1 << 1) | (1 << 0); // Bit for left connection
-        return (connected & leftMask) != 0 && (connected & ~leftMask) == 0;
+        int leftMask = (1 << 0); // Bit for left connection
+        int ignoreBit1Mask = ~(1 << 1);           // Create a mask to ignore bit 1
+        return (connected & leftMask) != 0 && (connected & ~leftMask & ignoreBit1Mask) == 0;
     }
 
     // Check if only connected to the right (bit 2)
     public boolean isOnlyRightConnected() {
-        int rightMask = (1 << 1) | (1 << 2); // Bit for right connection
-        return (connected & rightMask) != 0 && (connected & ~rightMask) == 0;
+        int rightMask =  (1 << 2); // Bit for right connection
+        int ignoreBit1Mask = ~(1 << 1);           // Create a mask to ignore bit 1
+        return (connected & rightMask) != 0 && (connected & ~rightMask & ignoreBit1Mask) == 0;
     }
 
     public boolean isBackConnected() {

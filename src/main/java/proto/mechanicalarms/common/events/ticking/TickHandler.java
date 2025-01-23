@@ -49,6 +49,9 @@ public class TickHandler {
         if (ev.phase == TickEvent.Phase.START) {
             return;
         }
+        if (Minecraft.getMinecraft().isGamePaused()) {
+            return;
+        }
         if (beltNets.get(Minecraft.getMinecraft().world) == null) {
             return;
         }
