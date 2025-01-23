@@ -73,10 +73,10 @@ public class BeltItemHandler extends ItemStackHandler {
             ItemStack returnStack = main.insertItem(0, stack, simulate);
             if (!simulate && returnStack.isEmpty()) {
                 if (side == Side.L) {
-                    dualInventory.setProgressLeft(1);
+                    dualInventory.setProgressLeft(3);
                     dualInventory.updateLastTickLeft();
                 } else {
-                    dualInventory.setProgressRight(1);
+                    dualInventory.setProgressRight(3);
                     dualInventory.updateLastTickRight();
                 }
             }
