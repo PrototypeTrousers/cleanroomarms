@@ -53,7 +53,10 @@ public class BeltNet {
         for (BeltHoldingEntity entity : toRemove) {
             boolean reached = false;
             BeltGroup group = belt2GroupMap.get(entity);
-            List<BeltHoldingEntity> currentBeltsInGroup = new ArrayList<>(belt2GroupMap.get(entity).getBelts());
+            if (group == null) {
+                continue;
+            }
+            List<BeltHoldingEntity> currentBeltsInGroup = new ArrayList<>(group.getBelts());
             for (BeltHoldingEntity belt : currentBeltsInGroup) {
                 if (entity == belt) {
                     reached = true;
@@ -87,7 +90,7 @@ public class BeltNet {
                         groups.add(newGroup);
                     }
                     removeFromGroup(belt, group);
-                    belt2GroupMap.put(belt, newGroup);
+                    addToGroup(belt, newGroup);
                 }
             }
         }
