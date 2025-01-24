@@ -157,8 +157,7 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
             }
         }
 
-        float progressFactor = (lerp(previousProgress, progress, partialTicks) / 7F);
-        float itemProgress = -0.5F + progressFactor;
+        float itemProgress = -0.5F + (lerp(previousProgress, progress, partialTicks) / 7F);
         Vector3f vecProgress = new Vector3f();
 
         if (facing == EnumFacing.NORTH) {
@@ -169,6 +168,14 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
                     vecProgress.x = -itemProgress;
                 } else {
                     vecProgress.x = (float) -zOff;
+                    vecProgress.z = -itemProgress;
+                }
+            } else if (tileBeltBasic.isOnlyLeftConnected()) {
+                if (itemProgress < 0) {
+                    vecProgress.z = (float) xOff;
+                    vecProgress.x = itemProgress;
+                } else {
+                    vecProgress.x = (float) zOff;
                     vecProgress.z = -itemProgress;
                 }
             }
@@ -184,6 +191,14 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
                     vecProgress.x = (float) zOff;
                     vecProgress.z = itemProgress;
                 }
+            }else if (tileBeltBasic.isOnlyLeftConnected()) {
+                if (itemProgress < 0) {
+                    vecProgress.z = (float) xOff;
+                    vecProgress.x = -itemProgress;
+                } else {
+                    vecProgress.x = (float) -zOff;
+                    vecProgress.z = itemProgress;
+                }
             }
         }
         if (facing == EnumFacing.EAST) {
@@ -197,6 +212,14 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
                     vecProgress.z = (float) -xOff;
                     vecProgress.x = itemProgress;
                 }
+            }else if (tileBeltBasic.isOnlyLeftConnected()) {
+                if (itemProgress < 0) {
+                    vecProgress.x = (float) -zOff;
+                    vecProgress.z = itemProgress;
+                } else {
+                    vecProgress.z = (float) xOff;
+                    vecProgress.x = itemProgress;
+                }
             }
 
         } else if (facing == EnumFacing.WEST) {
@@ -208,6 +231,14 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
                     vecProgress.z = itemProgress;
                 } else {
                     vecProgress.z = (float) -xOff;
+                    vecProgress.x = -itemProgress;
+                }
+            } else if (tileBeltBasic.isOnlyLeftConnected()) {
+                if (itemProgress < 0) {
+                    vecProgress.x = (float) -zOff;
+                    vecProgress.z = -itemProgress;
+                } else {
+                    vecProgress.z = (float) xOff;
                     vecProgress.x = -itemProgress;
                 }
             }
