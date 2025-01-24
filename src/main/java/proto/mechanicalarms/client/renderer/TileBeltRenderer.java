@@ -112,7 +112,7 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
         setRenderingTE(null);
     }
 
-    void renderHoldingItemLeft(TileBeltBasic tileBeltBasic, ItemStack curStack, int progress, int previousProgress, double x, double y, double z, double xOff, double yOff, double zOff) {
+    void renderHoldingItem(TileBeltBasic tileBeltBasic, ItemStack curStack, int progress, int previousProgress, double x, double y, double z, double xOff, double yOff, double zOff) {
         if (curStack.isEmpty()) {
             return;
         }
@@ -330,7 +330,7 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
 
         ItemStack curStack = tileBeltBasic.getLogic().getLeftItemHandler().getStackInSlot(0);
 
-        renderHoldingItemLeft(tileBeltBasic, curStack, tileBeltBasic.getLogic().getProgressLeft(), tileBeltBasic.getLogic().getPreviousProgressLeft(), x, y, z, xOff, yOff, zOff);
+        renderHoldingItem(tileBeltBasic, curStack, tileBeltBasic.getLogic().getProgressLeft(), tileBeltBasic.getLogic().getPreviousProgressLeft(), x, y, z, xOff, yOff, zOff);
 
         //"right"
         if (facing == EnumFacing.NORTH) {
@@ -344,7 +344,7 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
         }
         curStack = tileBeltBasic.getLogic().getRightItemHandler().getStackInSlot(0);
 
-        //renderHoldingItemRight(tileBeltBasic, curStack, tileBeltBasic.getLogic().getProgressRight(), tileBeltBasic.getLogic().getPreviousProgressRight(), x, y, z, xOff, yOff, zOff);
+        renderHoldingItem(tileBeltBasic, curStack, tileBeltBasic.getLogic().getProgressRight(), tileBeltBasic.getLogic().getPreviousProgressRight(), x, y, z, xOff, yOff, zOff);
     }
 
     Matrix4f fbToM4f(FloatBuffer fb, Matrix4f mat) {
