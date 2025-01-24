@@ -112,7 +112,7 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
         setRenderingTE(null);
     }
 
-    void renderHoldingItem(TileBeltBasic tileBeltBasic, ItemStack curStack, int progress, int previousProgress, double x, double y, double z, double xOff, double yOff, double zOff) {
+    void renderHoldingItemLeft(TileBeltBasic tileBeltBasic, ItemStack curStack, int progress, int previousProgress, double x, double y, double z, double xOff, double yOff, double zOff) {
         if (curStack.isEmpty()) {
             return;
         }
@@ -157,36 +157,70 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
             }
         }
 
-        float itemProgress = -0.5F + (lerp(previousProgress, progress, partialTicks) / 7F);
+        float progressFactor = (lerp(previousProgress, progress, partialTicks) / 7F);
+        float itemProgress = -0.5F + progressFactor;
         Vector3f vecProgress = new Vector3f();
 
         if (facing == EnumFacing.NORTH) {
             vecProgress.z = -itemProgress;
             if (tileBeltBasic.isOnlyRightConnected()) {
-//                vecProgress.x = (float) (- itemProgress / 2 + xOff);
-//                vecProgress.z += (float) xOff;
+                if (itemProgress < 0) {
+                    vecProgress.z = (float) -xOff;
+                    vecProgress.x = -itemProgress;
+                } else {
+                    vecProgress.x = (float) -zOff;
+                    vecProgress.z = -itemProgress;
+                }
             }
         }
         if (facing == EnumFacing.SOUTH) {
             vecProgress.z = itemProgress;
             rot.rotateY((float) (Math.PI));
+            if (tileBeltBasic.isOnlyRightConnected()) {
+                if (itemProgress < 0) {
+                    vecProgress.z = (float) -xOff;
+                    vecProgress.x = itemProgress;
+                } else {
+                    vecProgress.x = (float) zOff;
+                    vecProgress.z = itemProgress;
+                }
+            }
         }
         if (facing == EnumFacing.EAST) {
             vecProgress.x = itemProgress;
             rot.rotateY((float) (-Math.PI / 2));
+            if (tileBeltBasic.isOnlyRightConnected()) {
+                if (itemProgress < 0) {
+                    vecProgress.x = (float) zOff;
+                    vecProgress.z = -itemProgress;
+                } else {
+                    vecProgress.z = (float) -xOff;
+                    vecProgress.x = itemProgress;
+                }
+            }
+
         } else if (facing == EnumFacing.WEST) {
             vecProgress.x = -itemProgress;
             rot.rotateY((float) (Math.PI / 2));
+            if (tileBeltBasic.isOnlyRightConnected()) {
+                if (itemProgress < 0) {
+                    vecProgress.x = (float) zOff;
+                    vecProgress.z = itemProgress;
+                } else {
+                    vecProgress.z = (float) -xOff;
+                    vecProgress.x = -itemProgress;
+                }
+            }
         }
 
         float yProgress = 0;
         if (tileBeltBasic.getDirection().getRelativeHeight() == Directions.RelativeHeight.BELOW) {
-            yProgress = 1.0625F - (float) (lerp(previousProgress, progress, partialTicks) * 1/7F);
+            yProgress = 1.0625F - (float) (lerp(previousProgress, progress, partialTicks) * 1 / 7F);
             rot.rotateX((float) (-Math.PI / 4));
 
 
         } else if (tileBeltBasic.getDirection().getRelativeHeight() == Directions.RelativeHeight.ABOVE) {
-            yProgress = (float) (0.0625F + lerp(previousProgress, progress, partialTicks) * 1/7F);
+            yProgress = (float) (0.0625F + lerp(previousProgress, progress, partialTicks) * 1 / 7F);
             rot.rotateX((float) (Math.PI / 4));
         }
 
@@ -284,33 +318,33 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
 
         //"left"
         if (facing == EnumFacing.NORTH) {
-            xOff = -0.25f;
+            xOff = -0.20f;
         } else if (facing == EnumFacing.SOUTH) {
-            xOff = 0.25f;
+            xOff = 0.20f;
         } else if (facing == EnumFacing.EAST) {
-            zOff = -0.25f;
+            zOff = -0.20f;
         } else {
-            zOff = 0.25f;
+            zOff = 0.20f;
         }
 
 
         ItemStack curStack = tileBeltBasic.getLogic().getLeftItemHandler().getStackInSlot(0);
 
-        renderHoldingItem(tileBeltBasic, curStack, tileBeltBasic.getLogic().getProgressLeft(), tileBeltBasic.getLogic().getPreviousProgressLeft(), x, y, z, xOff, yOff, zOff);
+        renderHoldingItemLeft(tileBeltBasic, curStack, tileBeltBasic.getLogic().getProgressLeft(), tileBeltBasic.getLogic().getPreviousProgressLeft(), x, y, z, xOff, yOff, zOff);
 
         //"right"
         if (facing == EnumFacing.NORTH) {
-            xOff = 0.25f;
+            xOff = 0.20f;
         } else if (facing == EnumFacing.SOUTH) {
-            xOff = -0.25f;
+            xOff = -0.20f;
         } else if (facing == EnumFacing.EAST) {
-            zOff = 0.25f;
+            zOff = 0.20f;
         } else {
-            zOff = -0.25f;
+            zOff = -0.20f;
         }
         curStack = tileBeltBasic.getLogic().getRightItemHandler().getStackInSlot(0);
 
-        renderHoldingItem(tileBeltBasic, curStack, tileBeltBasic.getLogic().getProgressRight(), tileBeltBasic.getLogic().getPreviousProgressRight(), x, y, z, xOff, yOff, zOff);
+        //renderHoldingItemRight(tileBeltBasic, curStack, tileBeltBasic.getLogic().getProgressRight(), tileBeltBasic.getLogic().getPreviousProgressRight(), x, y, z, xOff, yOff, zOff);
     }
 
     Matrix4f fbToM4f(FloatBuffer fb, Matrix4f mat) {
