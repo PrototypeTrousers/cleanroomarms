@@ -42,10 +42,8 @@ java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
 sourceSets {
     main {
-        java {
-            srcDir addCleanroomMinecraftSources
-        }
         resources {
+            srcDir addCleanroomMinecraftSources
             srcDir 'src/generated/resources'
         }
         blossom {
@@ -86,8 +84,11 @@ repositories {
     mavenCentral()
 }
 
+
+
 dependencies {
     implementation "com.cleanroommc:cleanroom:${cleanroom_version}"
+    implementation(files("build/cg/versions/1.12.2/cleanroom/build/libs/cleanroomminecraft/minecraft-srg-1.12.2.jar"))
 
     shadow("de.javagl:jgltf-model:2.0.4")
     shadow("org.joml:joml:1.10.8")
@@ -98,7 +99,7 @@ dependencies {
     annotationProcessor 'com.google.guava:guava:33.0.0-jre'
     annotationProcessor 'com.google.code.gson:gson:2.10.1'
 
-    annotationProcessor('com.cleanroommc:sponge-mixin:0.20.7+mixin.0.8.7')
+    //annotationProcessor('com.cleanroommc:sponge-mixin:0.20.7+mixin.0.8.7')
 
     //also add the mod jar to the run mod folder...
     compileOnly('curse.maven:modularui-624243:5153414-sources-5153415')
@@ -119,6 +120,7 @@ dependencies {
 configurations.configureEach {
     exclude group:'net.minecraft', module:'client'
     exclude group:'net.minecraft', module:'mappings_stable'
+
 }
 
 tasks.withType(JavaCompile).configureEach {
