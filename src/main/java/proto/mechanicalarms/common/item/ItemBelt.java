@@ -3,6 +3,7 @@ package proto.mechanicalarms.common.item;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.tileentity.TileEntityItemStackRenderer;
 import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
@@ -19,16 +20,15 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.DrawBlockHighlightEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.relauncher.Side;
+import org.lwjgl3.opengl.GL11;
 import proto.mechanicalarms.MechanicalArms;
 import proto.mechanicalarms.client.renderer.InstanceRender;
-import proto.mechanicalarms.common.block.Blocks;
 import proto.mechanicalarms.common.block.properties.Directions;
 import proto.mechanicalarms.common.tile.TileBeltBasic;
 
@@ -51,10 +51,10 @@ public class ItemBelt extends ItemBlock {
     @SubscribeEvent
     public static void onPlayerTick(TickEvent.PlayerTickEvent playerTickEvent) {
         if (playerTickEvent.side == Side.CLIENT) {
-            if (playerTickEvent.player.getHeldItem(EnumHand.MAIN_HAND).getItem() instanceof ItemBelt) {
+            if (playerTickEvent.player.getHeldItem(EnumHand.MAIN_HAND).getItem() instanceof ItemBlock ib) {
                 RayTraceResult rt = rayTraceI(playerTickEvent.player.world, playerTickEvent.player, false);
                 if (rt != null && rt.typeOfHit == RayTraceResult.Type.BLOCK) {
-                    bs = Blocks.BELT_BASE.getStateForPlacement(playerTickEvent.player.world, rt.getBlockPos().offset(rt.sideHit), rt.sideHit, (float) rt.hitVec.x, (float) rt.hitVec.y, (float) rt.hitVec.z, 0, playerTickEvent.player);
+                    bs = ib.getBlock().getStateForPlacement(playerTickEvent.player.world, rt.getBlockPos().offset(rt.sideHit), rt.sideHit, (float) rt.hitVec.x, (float) rt.hitVec.y, (float) rt.hitVec.z, 0, playerTickEvent.player);
                 }
             } else {
                 bs = null;
@@ -69,18 +69,42 @@ public class ItemBelt extends ItemBlock {
                     return;
                 }
                 Entity entity = event.getPlayer();
-                TileEntity tileEntity = Blocks.BELT_BASE.createTileEntity(Minecraft.getMinecraft().world, bs);
-                //tileEntity.setWorld((World) blockAccess);
-                TileEntitySpecialRenderer<TileEntity> terd = TileEntityRendererDispatcher.instance.getRenderer(tileEntity);
                 BlockPos ghostPos = event.getTarget().getBlockPos().offset(event.getTarget().sideHit);
 
                 double x = entity.lastTickPosX + (entity.posX - entity.lastTickPosX) * (double) event.getPartialTicks();
                 double y = entity.lastTickPosY + (entity.posY - entity.lastTickPosY) * (double) event.getPartialTicks();
                 double z = entity.lastTickPosZ + (entity.posZ - entity.lastTickPosZ) * (double) event.getPartialTicks();
+//                if (bs.getBlock().hasTileEntity(bs)) {
+//                    TileEntity tileEntity = bs.getBlock().createTileEntity(Minecraft.getMinecraft().world, bs);
+//                    if (tileEntity != null) {
+//                        tileEntity.setWorld(Minecraft.getMinecraft().world);
+//                        TileEntitySpecialRenderer<TileEntity> terd = TileEntityRendererDispatcher.instance.getRenderer(tileEntity);
+//                        if (terd != null) {
+//                            if (tileEntity.hasFastRenderer()) {
+//                                terd.renderTileEntityFast(tileEntity, (double) ghostPos.getX() - x,
+//                                        (double) ghostPos.getY() - y,
+//                                        (double) ghostPos.getZ() - z, 1, -1, 0.3F, Tessellator.getInstance().getBuffer());
+//                            } else {
+//                                terd.render(tileEntity, (double) ghostPos.getX() - x, (double) ghostPos.getY() - y, (double) ghostPos.getZ() - z, 1, -1, 0.3F);
+//                            }
+//                        }
+//                    }
+//                }
+                GlStateManager.pushMatrix();
 
-                terd.renderTileEntityFast(tileEntity, (double) ghostPos.getX() - x,
-                        (double) ghostPos.getY() - y,
-                        (double) ghostPos.getZ() - z, 1, -1, 0.3F, Tessellator.getInstance().getBuffer());
+                GlStateManager.enableBlend();
+                GlStateManager.blendFunc(GL11.GL_SRC_COLOR, GL11.GL_ONE_MINUS_SRC_COLOR);
+
+                GlStateManager.enableCull();
+                GlStateManager.cullFace(GlStateManager.CullFace.BACK);
+                GlStateManager.translate(-x, -y, -z);
+                GlStateManager.translate(ghostPos.getX(), ghostPos.getY(), ghostPos.getZ());
+                GlStateManager.rotate(-90.0F, 0.0F, 1.0F, 0.0F);
+                GlStateManager.enableTexture2D();
+                Minecraft.getMinecraft().getBlockRendererDispatcher().renderBlockBrightness(bs.getActualState(Minecraft.getMinecraft().world, ghostPos) , 0.85f);
+                GlStateManager.disableBlend();
+                GlStateManager.popMatrix();
+                GlStateManager.disableCull();
                 //InstanceRender.draw();
             }
         }
