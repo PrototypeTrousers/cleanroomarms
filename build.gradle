@@ -94,14 +94,15 @@ cleanroom {
     implementation ("curse.maven:littletiles-257818:5180387")
     implementation ("curse.maven:creativecore-257814:4722163")
     implementation ("curse.maven:censoredasm-460609:6124959")
+    implementation ("curse.maven:ie-231951:2974106")
+
+    at()
 }
 
 
 dependencies {
-
-    implementation "com.cleanroommc:cleanroom:${cleanroom_version}"
     implementation(files("build/cg/versions/1.12.2/cleanroom/build/libs/cleanroomminecraft/minecraft-srg-1.12.2.jar"))
-
+    implementation "com.cleanroommc:cleanroom:${cleanroom_version}"
     shadow("de.javagl:jgltf-model:2.0.4")
     shadow("org.joml:joml:1.10.8")
     implementation("de.javagl:jgltf-model:2.0.4")
@@ -111,14 +112,6 @@ dependencies {
     annotationProcessor 'org.ow2.asm:asm:9.6'
     annotationProcessor 'com.google.guava:guava:33.0.0-jre'
     annotationProcessor 'com.google.code.gson:gson:2.10.1'
-
-    implementation ("curse.maven:Fugue-1005815:5977040")
-    //implementation ("curse.maven:ie-231951:2974106")
-    //implementation ("curse.maven:avaritia-261348:3143349")
-    //implementation ("curse.maven:CodeChicken-242818:2779848")
-    implementation ("curse.maven:littletiles-257818:5180387")
-    implementation ("curse.maven:creativecore-257814:4722163")
-    implementation ("curse.maven:censoredasm-460609:6124959")
 
     //annotationProcessor('com.cleanroommc:sponge-mixin:0.20.7+mixin.0.8.7')
 

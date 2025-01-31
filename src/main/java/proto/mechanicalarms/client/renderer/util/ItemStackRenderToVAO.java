@@ -1,6 +1,6 @@
 package proto.mechanicalarms.client.renderer.util;
 
-import codechicken.lib.render.item.IItemRenderer;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GLAllocation;
 import net.minecraft.client.renderer.GlStateManager;
@@ -108,13 +108,13 @@ public class ItemStackRenderToVAO implements InstanceableModel {
         if (model.isBuiltInRenderer()) {
             GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
             GlStateManager.enableRescaleNormal();
-            if (model instanceof IItemRenderer cc) {
-                texGL = Minecraft.getMinecraft().getRenderItem().getItemModelMesher().getModelManager().getTextureMap().getGlTextureId();
-                cc.renderItem(stack, ItemCameraTransforms.TransformType.NONE);
-            } else {
+//            if (model instanceof IItemRenderer cc) {
+//                texGL = Minecraft.getMinecraft().getRenderItem().getItemModelMesher().getModelManager().getTextureMap().getGlTextureId();
+//                cc.renderItem(stack, ItemCameraTransforms.TransformType.NONE);
+//            } else {
                 stack.getItem().getTileEntityItemStackRenderer().renderByItem(stack);
                 texGL = GL11.glGetInteger(GL11.GL_TEXTURE_BINDING_2D);
-            }
+//            }
         } else {
             Minecraft.getMinecraft().getRenderItem().renderModel(model, stack);
             texGL = Minecraft.getMinecraft().getRenderItem().getItemModelMesher().getModelManager().getTextureMap().getGlTextureId();

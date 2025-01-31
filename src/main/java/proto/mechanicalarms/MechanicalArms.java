@@ -27,7 +27,6 @@ public class MechanicalArms {
     public void onPreInit(FMLPreInitializationEvent event) {
         logger = event.getModLog();
         proxy.preInit();
-
     }
 
     @EventHandler
