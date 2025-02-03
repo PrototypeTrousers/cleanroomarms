@@ -78,7 +78,7 @@ public class BlockArm extends Block implements ITileEntityProvider {
     @Override
     public boolean onBlockActivated(World worldIn, @NotNull BlockPos pos, @NotNull IBlockState state, @NotNull EntityPlayer playerIn, @NotNull EnumHand hand, @NotNull EnumFacing facing, float hitX, float hitY, float hitZ) {
         if (!worldIn.isRemote) {
-            TileEntityGuiFactory.open(playerIn, pos);
+            TileEntityGuiFactory.INSTANCE.open(playerIn, pos);
         }
         return true;
     }

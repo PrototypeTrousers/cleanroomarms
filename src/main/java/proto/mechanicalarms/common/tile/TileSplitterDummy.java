@@ -2,7 +2,7 @@ package proto.mechanicalarms.common.tile;
 
 import com.cleanroommc.modularui.factory.GuiData;
 import com.cleanroommc.modularui.screen.ModularPanel;
-import com.cleanroommc.modularui.value.sync.GuiSyncManager;
+import com.cleanroommc.modularui.value.sync.PanelSyncManager;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraftforge.common.capabilities.Capability;
@@ -45,8 +45,8 @@ public class TileSplitterDummy extends BeltHoldingEntity {
     }
 
     @Override
-    public ModularPanel buildUI(GuiData data, GuiSyncManager syncManager) {
-        return controller.buildUI(data, syncManager);
+    public ModularPanel buildUI(GuiData guiData, PanelSyncManager panelSyncManager) {
+        return controller.buildUI(guiData, panelSyncManager);
     }
 
     class SplitterDummyUpdatingLogic extends BeltUpdatingLogic {

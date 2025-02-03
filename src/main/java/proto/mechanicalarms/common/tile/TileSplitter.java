@@ -3,7 +3,7 @@ package proto.mechanicalarms.common.tile;
 import com.cleanroommc.modularui.factory.GuiData;
 import com.cleanroommc.modularui.screen.ModularPanel;
 import com.cleanroommc.modularui.utils.Alignment;
-import com.cleanroommc.modularui.value.sync.GuiSyncManager;
+import com.cleanroommc.modularui.value.sync.PanelSyncManager;
 import com.cleanroommc.modularui.widgets.ItemSlot;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
@@ -26,7 +26,7 @@ public class TileSplitter extends TileBeltBasic implements ITickable {
     }
 
     @Override
-    public ModularPanel buildUI(GuiData guiData, GuiSyncManager guiSyncManager) {
+    public ModularPanel buildUI(GuiData guiData, PanelSyncManager panelSyncManager) {
         ModularPanel panel = new ModularPanel("Splitter");
         panel.padding(2);
         panel.align(Alignment.Center);

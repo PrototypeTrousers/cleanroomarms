@@ -174,7 +174,7 @@ public class BlockBelt extends Block implements ITileEntityProvider {
             }
         } else {
             if (!worldIn.isRemote) {
-                TileEntityGuiFactory.open(playerIn, pos);
+                TileEntityGuiFactory.INSTANCE.open(playerIn, pos);
             }
             return true;
         }

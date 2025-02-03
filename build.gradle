@@ -10,7 +10,7 @@ buildscript {
     dependencies {
         classpath group: 'com.cleanroommc', name: 'CleanroomGradle', version: '0.0.1+', changing: true
         classpath "net.kyori:blossom:2.1.0"
-        classpath 'com.gradleup.shadow:shadow-gradle-plugin:8.3.3'
+        classpath 'com.gradleup.shadow:shadow-gradle-plugin:8.3.6'
     }
 }
 apply plugin: 'java'
@@ -20,12 +20,12 @@ apply plugin: 'maven-publish'
 apply plugin: 'net.kyori.blossom'
 apply plugin: 'com.gradleup.shadow'
 
-//reobf {
-//    shadowJar {}
-//}
-
-//jar.finalizedBy(reobfShadowJar)
-//jar.finalizedBy('reobfJar')
+def reobfShadow = tasks.register('reobfShadow', com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar) {
+    archiveClassifier = "all-obf"
+    from cleanroomobfuscate.outputs
+    configurations = [project.configurations.shadow]
+    minimize()
+}
 
 
 tasks.named('shadowJar', com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar) {
@@ -88,26 +88,26 @@ repositories {
 
 cleanroom {
     implementation ("curse.maven:Fugue-1005815:5977040")
-    //implementation ("curse.maven:ie-231951:2974106")
-    //implementation ("curse.maven:avaritia-261348:3143349")
-    //implementation ("curse.maven:CodeChicken-242818:2779848")
-    implementation ("curse.maven:littletiles-257818:5180387")
-    implementation ("curse.maven:creativecore-257814:4722163")
-    implementation ("curse.maven:censoredasm-460609:6124959")
-    implementation ("curse.maven:ie-231951:2974106")
-
+//    //implementation ("curse.maven:ie-231951:2974106")
+//    //implementation ("curse.maven:avaritia-261348:3143349")
+//    //implementation ("curse.maven:CodeChicken-242818:2779848")
+//    implementation ("curse.maven:littletiles-257818:5180387")
+//    implementation ("curse.maven:creativecore-257814:4722163")
+//    implementation ("curse.maven:censoredasm-460609:6124959")
+//    implementation ("curse.maven:ie-231951:2974106")
+    implementation("de.javagl:jgltf-model:2.0.4")
+    implementation("org.joml:joml:1.10.8")
     at()
 }
 
 
 dependencies {
-    implementation(files("build/cg/versions/1.12.2/cleanroom/build/libs/cleanroomminecraft/minecraft-srg-1.12.2.jar"))
+    //implementation(files("build/cg/versions/1.12.2/cleanroom/build/libs/cleanroomminecraft/cleanroomminecraft-srg-1.12.2.jar"))
     implementation "com.cleanroommc:cleanroom:${cleanroom_version}"
     shadow("de.javagl:jgltf-model:2.0.4")
     shadow("org.joml:joml:1.10.8")
-    implementation("de.javagl:jgltf-model:2.0.4")
-    implementation("org.joml:joml:1.10.8")
-    compileOnly('curse.maven:modularui-624243:5153414-sources-5153415')
+
+    compileOnly('curse.maven:modularui-624243:6109237-sources-6109238')
 
     annotationProcessor 'org.ow2.asm:asm:9.6'
     annotationProcessor 'com.google.guava:guava:33.0.0-jre'

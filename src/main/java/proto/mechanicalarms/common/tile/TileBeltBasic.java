@@ -2,9 +2,8 @@ package proto.mechanicalarms.common.tile;
 
 import com.cleanroommc.modularui.factory.GuiData;
 import com.cleanroommc.modularui.screen.ModularPanel;
-import com.cleanroommc.modularui.value.sync.GuiSyncManager;
+import com.cleanroommc.modularui.value.sync.PanelSyncManager;
 import com.cleanroommc.modularui.widgets.ItemSlot;
-import net.minecraft.util.ITickable;
 import net.minecraft.util.math.AxisAlignedBB;
 import proto.mechanicalarms.common.logic.belt.BeltNet;
 
@@ -12,7 +11,7 @@ import proto.mechanicalarms.common.logic.belt.BeltNet;
 public class TileBeltBasic extends BeltHoldingEntity {
 
     @Override
-    public ModularPanel buildUI(GuiData guiData, GuiSyncManager guiSyncManager) {
+    public ModularPanel buildUI(GuiData guiData, PanelSyncManager panelSyncManager) {
         ModularPanel panel = ModularPanel.defaultPanel("tutorial_gui");
         panel.child(new ItemSlot().slot(leftItemHandler, 0));
         panel.child(new ItemSlot().slot(rightItemHandler, 0).left(18));

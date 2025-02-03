@@ -1,8 +1,5 @@
 package proto.mechanicalarms.common.tile;
 
-import proto.mechanicalarms.common.logic.behavior.Action;
-import proto.mechanicalarms.common.logic.behavior.ActionResult;
-import proto.mechanicalarms.common.logic.behavior.InteractionType;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
@@ -11,8 +8,10 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.items.ItemStackHandler;
 import org.apache.commons.lang3.tuple.Pair;
+import proto.mechanicalarms.common.logic.behavior.Action;
+import proto.mechanicalarms.common.logic.behavior.ActionResult;
+import proto.mechanicalarms.common.logic.behavior.InteractionType;
 
 
 public class TileArmBasic extends TileArmBase {
