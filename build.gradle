@@ -100,6 +100,10 @@ cleanroom {
     at()
 }
 
+mixinProps {
+    enableMixins(true)
+}
+
 
 dependencies {
     //implementation(files("build/cg/versions/1.12.2/cleanroom/build/libs/cleanroomminecraft/cleanroomminecraft-srg-1.12.2.jar"))
@@ -113,7 +117,7 @@ dependencies {
     annotationProcessor 'com.google.guava:guava:33.0.0-jre'
     annotationProcessor 'com.google.code.gson:gson:2.10.1'
 
-    //annotationProcessor('com.cleanroommc:sponge-mixin:0.20.7+mixin.0.8.7')
+    annotationProcessor('com.cleanroommc:sponge-mixin:0.20.7+mixin.0.8.7')
 
     //also add the mod jar to the run mod folder...
     //implementation fg.deobf("curse.maven:plonk-345779:4480769")
