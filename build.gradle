@@ -3,6 +3,13 @@ buildscript {
         maven { url = 'https://maven.minecraftforge.net' }
         maven { url = 'https://repo.spongepowered.org/repository/maven-public' }
         maven { url = 'https://maven.outlands.top/releases' }
+        maven {
+            name = "paper"
+            url = uri("https://repo.papermc.io/repository/maven-public/")
+            mavenContent {
+                includeGroup("org.cadixdev")
+            }
+        }
         mavenCentral()
         mavenLocal()
         gradlePluginPortal()
@@ -87,7 +94,7 @@ repositories {
 }
 
 cleanroom {
-    implementation ("curse.maven:Fugue-1005815:5977040")
+//    implementation ("curse.maven:Fugue-1005815:5977040")
 //    //implementation ("curse.maven:ie-231951:2974106")
 //    //implementation ("curse.maven:avaritia-261348:3143349")
 //    //implementation ("curse.maven:CodeChicken-242818:2779848")
@@ -111,7 +118,7 @@ dependencies {
     shadow("de.javagl:jgltf-model:2.0.4")
     shadow("org.joml:joml:1.10.8")
 
-    compileOnly('curse.maven:modularui-624243:6109237-sources-6109238')
+//    compileOnly('curse.maven:modularui-624243:6109237-sources-6109238')
 
     annotationProcessor 'org.ow2.asm:asm:9.6'
     annotationProcessor 'com.google.guava:guava:33.0.0-jre'
