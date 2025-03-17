@@ -12,6 +12,7 @@ import net.minecraftforge.fml.common.registry.GameRegistry;
 import proto.mechanicalarms.MechanicalArms;
 import proto.mechanicalarms.common.block.Blocks;
 import proto.mechanicalarms.common.cap.CapabilityDualSidedHandler;
+import proto.mechanicalarms.common.entities.Entities;
 import proto.mechanicalarms.common.events.ticking.TickHandler;
 import proto.mechanicalarms.common.item.Items;
 import proto.mechanicalarms.common.tile.*;
@@ -49,6 +50,7 @@ public class CommonProxy
 		Blocks.init();
 		Items.init();
 		Tiles.init();
+		Entities.init();
 		CapabilityDualSidedHandler.register();
 		MinecraftForge.EVENT_BUS.register(TickHandler.INSTANCE);
 	}
