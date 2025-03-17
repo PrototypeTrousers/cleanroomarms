@@ -1,16 +1,5 @@
 package proto.mechanicalarms.common.tile;
 
-import com.cleanroommc.modularui.api.IGuiHolder;
-import com.cleanroommc.modularui.drawable.GuiTextures;
-import com.cleanroommc.modularui.factory.GuiData;
-import com.cleanroommc.modularui.screen.ModularPanel;
-import com.cleanroommc.modularui.value.sync.DoubleSyncValue;
-import com.cleanroommc.modularui.value.sync.GuiSyncManager;
-import com.cleanroommc.modularui.widgets.ItemSlot;
-import com.cleanroommc.modularui.widgets.ProgressWidget;
-import net.minecraftforge.items.ItemStackHandler;
-import proto.mechanicalarms.common.logic.behavior.*;
-import proto.mechanicalarms.common.logic.movement.MotorCortex;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SPacketUpdateTileEntity;
@@ -19,13 +8,16 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
+import net.minecraftforge.items.ItemStackHandler;
 import org.apache.commons.lang3.tuple.Pair;
+import proto.mechanicalarms.common.logic.behavior.*;
+import proto.mechanicalarms.common.logic.movement.MotorCortex;
 
+import static net.minecraftforge.common.util.Constants.NBT.TAG_FLOAT;
 import static proto.mechanicalarms.common.logic.behavior.Action.DELIVER;
 import static proto.mechanicalarms.common.logic.behavior.Action.RETRIEVE;
-import static net.minecraftforge.common.util.Constants.NBT.TAG_FLOAT;
 
-public abstract class TileArmBase extends TileEntity implements ITickable, IGuiHolder {
+public abstract class TileArmBase extends TileEntity implements ITickable {//}, IGuiHolder {
     private final Targeting targeting = new Targeting();
     private final MotorCortex motorCortex;
     private final WorkStatus workStatus = new WorkStatus();
@@ -97,18 +89,18 @@ public abstract class TileArmBase extends TileEntity implements ITickable, IGuiH
         return compound;
     }
 
-    @Override
-    public ModularPanel buildUI(GuiData guiData, GuiSyncManager guiSyncManager) {
-        ModularPanel panel = ModularPanel.defaultPanel("tutorial_gui");
-        panel.child(new ProgressWidget()
-                        .size(20)
-                        .leftRel(0.5f).topRelAnchor(0.25f, 0.5f)
-                        .texture(GuiTextures.PROGRESS_ARROW, 20)
-                        .value(new DoubleSyncValue(() -> this.progress / 100.0, val -> this.progress = (int) (val * 100))));
-        panel.child(new ItemSlot().slot(itemHandler, 0));
-        panel.bindPlayerInventory();
-        return panel;
-    }
+//    @Override
+//    public ModularPanel buildUI(GuiData guiData, GuiSyncManager guiSyncManager) {
+//        ModularPanel panel = ModularPanel.defaultPanel("tutorial_gui");
+//        panel.child(new ProgressWidget()
+//                        .size(20)
+//                        .leftRel(0.5f).topRelAnchor(0.25f, 0.5f)
+//                        .texture(GuiTextures.PROGRESS_ARROW, 20)
+//                        .value(new DoubleSyncValue(() -> this.progress / 100.0, val -> this.progress = (int) (val * 100))));
+//        panel.child(new ItemSlot().slot(itemHandler, 0));
+//        panel.bindPlayerInventory();
+//        return panel;
+//    }
 
     public abstract ActionResult interact(Action retrieve, Pair<BlockPos, EnumFacing> blkFacePair);
 

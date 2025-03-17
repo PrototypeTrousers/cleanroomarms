@@ -7,7 +7,7 @@ import de.javagl.jgltf.model.NodeModel;
 import de.javagl.jgltf.model.v2.MaterialModelV2;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.ResourceLocation;
-import org.lwjgl3.opengl.*;
+import org.lwjgl.opengl.*;
 import proto.mechanicalarms.MechanicalArms;
 import proto.mechanicalarms.client.jgltf.EmbeddedTexture;
 import proto.mechanicalarms.client.renderer.util.Quaternion;

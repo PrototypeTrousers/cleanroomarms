@@ -1,228 +1,281 @@
-buildscript {
-    repositories {
-        maven { url = 'https://maven.minecraftforge.net' }
-        maven { url = 'https://repo.spongepowered.org/repository/maven-public' }
-        maven { url = 'https://maven.outlands.top/releases' }
-        mavenCentral()
-        gradlePluginPortal()
-    }
-    dependencies {
-        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '6.10.+', changing: true
-        classpath "net.kyori:blossom:2.1.0"
-        classpath "org.spongepowered:mixingradle:0.7.+"
-        classpath 'com.gradleup.shadow:shadow-gradle-plugin:8.3.3'
-    }
-}
-apply plugin: 'net.minecraftforge.gradle'
-apply plugin: 'eclipse'
-apply plugin: 'maven-publish'
-apply plugin: 'java'
-apply plugin: 'net.kyori.blossom'
-apply plugin: 'org.spongepowered.mixin'
-apply plugin: 'com.gradleup.shadow'
+/**
+ * It is advised that you do not edit anything in the build.gradle; unless you are sure of what you are doing
+ */
+import org.jetbrains.changelog.Changelog
+import org.jetbrains.gradle.ext.Gradle
 
-reobf {
-    shadowJar {}
+plugins {
+    id 'java'
+    id 'java-library'
+    id 'maven-publish'
+    id 'org.jetbrains.gradle.plugin.idea-ext' version '1.1.10'
+    id("com.gradleup.shadow") version '9.0.0-beta10'
+    id 'org.jetbrains.changelog' version '2.2.1'
+    id 'xyz.wagyourtail.unimined' version '1.3.13'
+    id 'net.kyori.blossom' version '2.1.0'
 }
 
-jar.finalizedBy(reobfShadowJar)
-jar.finalizedBy('reobfJar')
+apply from: 'gradle/scripts/helpers.gradle'
 
+// Early Assertions
+assertProperty 'mod_version'
+assertProperty 'root_package'
+assertProperty 'mod_id'
+assertProperty 'mod_name'
 
-tasks.named('shadowJar', com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar) {
-    configurations = [project.configurations.shadow]
-    minimize()
+assertSubProperties 'use_access_transformer', 'access_transformer_locations'
+assertSubProperties 'is_coremod', 'coremod_includes_mod', 'coremod_plugin_class_name'
+assertSubProperties 'use_asset_mover', 'asset_mover_version'
+
+setDefaultProperty 'generate_sources_jar', true, false
+setDefaultProperty 'generate_javadocs_jar', true, false
+setDefaultProperty 'use_dependency_at_files', true, true
+setDefaultProperty 'minecraft_username', true, 'Developer'
+setDefaultProperty 'extra_jvm_args', false, ''
+
+version = propertyString('mod_version')
+group = propertyString('root_package')
+
+base {
+    archivesName.set(propertyString('mod_id'))
 }
 
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(21))
+    }
+    if (propertyBool('generate_sources_jar')) {
+        withSourcesJar()
+    }
+    if (propertyBool('generate_javadocs_jar')) {
+        withJavadocJar()
+    }
+}
 
-version = "${minecraft_version}-${mod_version}"
-group = mod_base_package
-archivesBaseName = mod_id
+configurations {
+    embed
+    contain
+    implementation.extendsFrom(embed)
+}
 
-java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+unimined.minecraft {
+    version "1.12.2"
 
-minecraft {
-
-    mappings channel: mappings_channel, version: mappings_version
-
-    accessTransformer = file('src/main/resources/META-INF/arm_at.cfg')
-
-    legacy {
-        fixClasspath = true
-        extractMappings = true
-        attachMappings = true
+    mappings {
+        mcp("stable", "39-1.12")
     }
 
-    runs {
-        client {
-            workingDirectory project.file('run/client')
-
-            property 'forge.logging.markers', 'REGISTRIES'
-            property 'forge.logging.console.level', 'debug'
-            mods {
-                "${mod_id}" {
-                    source sourceSets.main
-                }
-            }
+    cleanroom {
+        if (propertyBool('use_access_transformer')) {
+            accessTransformer(file("src/main/resources/META-INF/accesstransformer.cfg"))
         }
 
-        server {
-            workingDirectory project.file('run/server')
-
-            property 'forge.logging.markers', 'REGISTRIES'
-            property 'forge.logging.console.level', 'debug'
-
-            mods {
-                "${mod_id}" {
-                    source sourceSets.main
-                }
-            }
-        }
+        mixinConfig("mechanicalarms.mixins.json")
+        loader "0.3.0-alpha"
+        runs.config("client", {args += extra_jvm_args.split(" ")})
+        runs.config("server", {args += extra_jvm_args.split(" ")})
+        runs.auth.username = minecraft_username
     }
 }
 
-sourceSets {
-    main {
-        resources {
-            srcDir 'src/generated/resources'
-        }
-        blossom {
-            resources {
-                property("mod_id", mod_id)
-                property("mod_name", mod_name)
-                property("mod_description", mod_description)
-                property("mod_version", mod_version)
-                property("mod_authors", mod_authors)
-            }
-            javaSources {
-                property("MODNAME", mod_name)
-                property("MODID", mod_id)
-                property("VERSION", version)
-                property("CLEANROOM_VERSION", cleanroom_version)
-            }
-        }
-    }
-}
-
-mixin {add sourceSets.main, mod_id + ".mixins.refmap.json"}
 repositories {
     maven {
-        name 'Cleanroom Maven'
-        url 'https://maven.cleanroommc.com/'
+        name 'CleanroomMC Maven'
+        url 'https://maven.cleanroommc.com'
     }
-    maven {
-        url "https://repo.cleanroommc.com/snapshots"
-    }
-    maven {
-        url "https://maven.outlands.top/releases/"
-    }
-    maven {
-        name = "cursemaven"
-        url = "https://www.cursemaven.com"
-    }
+}
 
-    mavenCentral()
+configurations.minecraftLibraries {
+    exclude group: 'org.lwjgl.lwjgl', module: 'lwjgl'
+    exclude group: 'org.lwjgl.lwjgl', module: 'lwjgl-platform'
+    exclude group: "com.mojang:patchy"
+    exclude group: "oshi-project:oshi-core"
+    exclude group: "com.ibm.icu:icu4j-core-mojang"
+    exclude group: "net.java.jutils"
+    exclude group: "net.java.dev.jna", module: 'platform'
 }
 
 dependencies {
-    minecraft "com.cleanroommc:cleanroom:${cleanroom_version}"
-
-    shadow("de.javagl:jgltf-model:2.0.4")
-    shadow("org.joml:joml:1.10.8")
-    implementation("de.javagl:jgltf-model:2.0.4")
     implementation("org.joml:joml:1.10.8")
-
-    annotationProcessor 'org.ow2.asm:asm:9.6'
-    annotationProcessor 'com.google.guava:guava:33.0.0-jre'
-    annotationProcessor 'com.google.code.gson:gson:2.10.1'
-
-    annotationProcessor('com.cleanroommc:sponge-mixin:0.20.7+mixin.0.8.7')
-
-    //also add the mod jar to the run mod folder...
+    implementation("de.javagl:jgltf-model:2.0.4")
     compileOnly('curse.maven:modularui-624243:5153414-sources-5153415')
-    //implementation fg.deobf("curse.maven:plonk-345779:4480769")
-    implementation fg.deobf("curse.maven:effortlessbuilding-302113:2847346")
+    implementation "curse.maven:Fugue-1005815:6278969"
 
-//    implementation fg.deobf("curse.maven:ie-231951:2974106")
-//    implementation fg.deobf("curse.maven:avaritia-261348:3143349")
-    implementation fg.deobf("curse.maven:CodeChicken-242818:2779848")
-    implementation "curse.maven:Fugue-1005815:5977040"
-    implementation "curse.maven:littletiles-257818:5180387"
-    implementation "curse.maven:creativecore-257814:4722163"
-//    implementation "curse.maven:AR-236542:4671856"
-//    implementation "curse.maven:libVulpes-236541:3801015"
-//    implementation "curse.maven:Galacticraft-564236:4671122"
+    if (propertyBool('use_asset_mover')) {
+        implementation "com.cleanroommc:assetmover:${propertyString('asset_mover_version')}"
+    }
+    if (propertyBool('enable_junit_testing')) {
+        testImplementation 'org.junit.jupiter:junit-jupiter:5.7.1'
+        testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    }
+}
+
+apply from: 'gradle/scripts/dependencies.gradle'
+
+sourceSets {
+    main {
+        blossom {
+            javaSources {
+                property("mod_id", propertyString('mod_id'))
+                property("mod_name", propertyString('mod_name'))
+                property("mod_version", propertyString('mod_version'))
+            }
+        }
+    }
+}
+
+processResources {
+
+    inputs.property 'mod_id', propertyString('mod_id')
+    inputs.property 'mod_name', propertyString('mod_name')
+    inputs.property 'mod_version', propertyString('mod_version')
+    inputs.property 'mod_description', propertyString('mod_description')
+    inputs.property 'mod_authors', "${propertyStringList('mod_authors', ',').join(', ')}"
+    inputs.property 'mod_credits', propertyString('mod_credits')
+    inputs.property 'mod_url', propertyString('mod_url')
+    inputs.property 'mod_update_json', propertyString('mod_update_json')
+    inputs.property 'mod_logo_path', propertyString('mod_logo_path')
+    inputs.property 'mixin_refmap', propertyString('mixin_refmap')
+    inputs.property 'mixin_package', propertyString('mixin_package')
+    inputs.property 'mixin_configs', propertyStringList('mixin_configs').join(' ')
+
+    def filterList = ['mcmod.info', 'pack.mcmeta']
+    filterList.addAll(propertyStringList('mixin_configs').collect(config -> "mixins.${config}.json" as String))
+
+    filesMatching(filterList) { fcd ->
+        fcd.expand(
+                'mod_id': propertyString('mod_id'),
+                'mod_name': propertyString('mod_name'),
+                'mod_version': propertyString('mod_version'),
+                'mod_description': propertyString('mod_description'),
+                'mod_authors': "${propertyStringList('mod_authors', ',').join(', ')}",
+                'mod_credits': propertyString('mod_credits'),
+                'mod_url': propertyString('mod_url'),
+                'mod_update_json': propertyString('mod_update_json'),
+                'mod_logo_path': propertyString('mod_logo_path'),
+                'mixin_refmap': propertyString('mixin_refmap'),
+                'mixin_package': propertyString('mixin_package')
+        )
+    }
+    
+    if (propertyBool('use_access_transformer')) {
+        rename '(.+_at.cfg)', 'META-INF/$1'
+    }
+
+}
+
+jar {
+    if (configurations.contain.size() > 0) {
+        into('/') {
+            from configurations.contain
+        }
+    }
+    doFirst{
+        manifest {
+            def attribute_map = [:]
+            attribute_map['ModType'] = "CRL"
+            if (configurations.contain.size() > 0) {
+                attribute_map['ContainedDeps'] = configurations.contain.collect { it.name }.join(' ')
+                attribute_map['NonModDeps'] = true
+            }
+            if (propertyBool('is_coremod')) {
+                attribute_map['FMLCorePlugin'] = propertyString('coremod_plugin_class_name')
+                if (propertyBool('coremod_includes_mod')) {
+                    attribute_map['FMLCorePluginContainsFMLMod'] = true
+                    def currentTasks = gradle.startParameter.taskNames
+                    if (currentTasks[0] == 'build' || currentTasks[0] == 'prepareObfModsFolder' || currentTasks[0] == 'runObfClient') {
+                        attribute_map['ForceLoadAsMod'] = true
+                    }
+                }
+            }
+            if (propertyBool('use_access_transformer')) {
+                attribute_map['FMLAT'] = propertyString('access_transformer_locations')
+            }
+            attributes(attribute_map)
+        }
+    }
+    finalizedBy(shadowJar)
+}
+
+shadowJar {
+    configurations = [project.configurations.shadow]
+    archiveClassifier = "shadow"
+}
+
+idea {
+    module {
+        inheritOutputDirs = true
+    }
+    project {
+        settings {
+            runConfigurations {
+                "1. Run Client"(Gradle) {
+                    taskNames = ["runClient"]
+                }
+                "2. Run Server"(Gradle) {
+                    taskNames = ["runServer"]
+                }
+                "3. Run Obfuscated Client"(Gradle) {
+                    taskNames = ["runObfClient"]
+                }
+                "4. Run Obfuscated Server"(Gradle) {
+                    taskNames = ["runObfServer"]
+                }
+            }
+            compiler.javac {
+                afterEvaluate {
+                    javacAdditionalOptions = "-encoding utf8"
+                    moduleJavacAdditionalOptions = [
+                            (project.name + ".main"): tasks.compileJava.options.compilerArgs.collect { '"' + it + '"' }.join(' ')
+                    ]
+                }
+            }
+        }
+    }
+}
+
+compileTestJava {
+    sourceCompatibility = targetCompatibility = JavaVersion.VERSION_21
+}
+
+test {
+    useJUnitPlatform()
+    javaLauncher.set(javaToolchains.launcherFor {
+        languageVersion = JavaLanguageVersion.of(21)
+    })
+    if (propertyBool('show_testing_output')) {
+        testLogging {
+            showStandardStreams = true
+        }
+    }
+}
+
+String parserChangelog() {
+    if (!file('CHANGELOG.md').exists()) {
+        throw new GradleException('publish_with_changelog is true, but CHANGELOG.md does not exist in the workspace!')
+    }
+    String parsedChangelog = changelog.renderItem(
+            changelog.get(propertyString('mod_version')).withHeader(false).withEmptySections(false),
+            Changelog.OutputType.MARKDOWN)
+    if (parsedChangelog.isEmpty()) {
+        throw new GradleException('publish_with_changelog is true, but the changelog for the latest version is empty!')
+    }
+    return parsedChangelog
 }
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
 }
 
-jar {
-    manifest {
-        attributes([
-                'Specification-Title': mod_id,
-                'Specification-Vendor': mod_authors,
-                'Specification-Version': '1', // We are version 1 of ourselves
-                'FMLCorePluginContainsFMLMod': true,
-                'TweakClass': 'org.spongepowered.asm.launch.MixinTweaker',
-                'FMLCorePlugin': 'proto.mechanicalarms.ArmsCore',
-                'ForceLoadAsMod': true,
-                'FMLAT': 'arm_at.cfg',
-                'Implementation-Title': project.name,
-                'Implementation-Version': mod_version,
-                'Implementation-Vendor': mod_authors,
-                'Implementation-Timestamp': new Date().format('yyyy-MM-dd\'T\'HH:mm:ssZ')
-        ])
+tasks.register('cleanroomAfterSync') {
+    group 'cleanroom helpers'
+}
+
+idea.project.settings {
+    taskTriggers {
+        afterSync 'cleanroomAfterSync'
     }
 }
 
-task copyDependenciesToLocalMaven {
-    group = "Custom Tasks"
-    description = "Copies downloaded dependencies and their transitive dependencies from both runtimeClasspath and compileClasspath to the local Maven repository."
-
-    doLast {
-        def localMavenRepo = new File(System.getProperty('user.home'), '.m2/repository')
-
-        // Helper method to copy artifacts
-        def copyArtifacts = { configuration ->
-            configuration.resolvedConfiguration.resolvedArtifacts.each { artifact ->
-                def groupPath = artifact.moduleVersion.id.group.replace('.', '/')
-                def artifactId = artifact.name
-                def version = artifact.moduleVersion.id.version
-                def destDir = new File(localMavenRepo, "$groupPath/$artifactId/$version")
-
-                destDir.mkdirs()
-
-                def destFile = new File(destDir, "${artifactId}-${version}.${artifact.extension}")
-                if (!destFile.exists()) {
-                    copy {
-                        from artifact.file
-                        into destDir
-                        rename { "${artifactId}-${version}.${artifact.extension}" }
-                    }
-                    println "Copied: $artifactId-$version to $destDir"
-                } else {
-                    println "Already exists: $artifactId-$version in $destDir"
-                }
-            }
-        }
-
-        // Process both runtimeClasspath and compileClasspath
-        copyArtifacts(configurations.runtimeClasspath)
-        copyArtifacts(configurations.compileClasspath)
-    }
-}
-
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            artifact jar
-        }
-    }
-    repositories {
-        maven {
-            url "file://${project.projectDir}/mcmodsrepo"
-        }
-    }
-}
+apply from: 'gradle/scripts/publishing.gradle'
+apply from: 'gradle/scripts/extra.gradle'

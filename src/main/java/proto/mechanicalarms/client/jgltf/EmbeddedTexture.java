@@ -4,7 +4,7 @@ import de.javagl.jgltf.model.TextureModel;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.TextureUtil;
 import net.minecraft.client.resources.IResourceManager;
-import org.lwjgl3.opengl.GL11;
+import org.lwjgl.opengl.GL11;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;

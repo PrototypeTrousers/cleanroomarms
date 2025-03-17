@@ -1,6 +1,6 @@
 package proto.mechanicalarms.client.renderer.shaders;
 
-import org.lwjgl3.opengl.GL20;
+import org.lwjgl.opengl.GL20;
 
 import java.util.ArrayList;
 import java.util.List;

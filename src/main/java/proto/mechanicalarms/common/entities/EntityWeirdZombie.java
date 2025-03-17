@@ -19,6 +19,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import proto.mechanicalarms.MechanicalArms;
+import proto.mechanicalarms.common.entities.ai.EntityAIWeirdZombieAttack;
 
 import javax.annotation.Nullable;
 

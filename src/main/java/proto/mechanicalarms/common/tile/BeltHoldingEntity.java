@@ -1,6 +1,5 @@
 package proto.mechanicalarms.common.tile;
 
-import com.cleanroommc.modularui.api.IGuiHolder;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SPacketUpdateTileEntity;
@@ -16,7 +15,7 @@ import proto.mechanicalarms.common.cap.BeltItemHandler;
 import proto.mechanicalarms.common.cap.CapabilityDualSidedHandler;
 import proto.mechanicalarms.common.cap.DualSidedHandler;
 
-public abstract class BeltHoldingEntity extends TileEntity implements IGuiHolder {
+public abstract class BeltHoldingEntity extends TileEntity {//implements IGuiHolder {
     protected BeltUpdatingLogic logic;
     protected BeltItemHandler leftItemHandler;
     protected BeltItemHandler leftSideItemHandler;

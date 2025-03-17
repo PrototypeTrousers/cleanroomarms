@@ -2,7 +2,7 @@ package proto.mechanicalarms.client.renderer.instances;
 
 import net.minecraft.client.renderer.GLAllocation;
 import net.minecraft.item.ItemStack;
-import org.lwjgl3.opengl.*;
+import org.lwjgl.opengl.*;
 import proto.mechanicalarms.client.events.Tick;
 import proto.mechanicalarms.client.renderer.util.ItemStackRenderToVAO;
 

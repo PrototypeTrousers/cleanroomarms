@@ -3,7 +3,7 @@ package proto.mechanicalarms.client.renderer;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.VertexFormat;
 import net.minecraft.client.renderer.vertex.VertexFormatElement;
-import org.lwjgl3.opengl.GL11;
+import org.lwjgl.opengl.GL11;
 import proto.mechanicalarms.client.renderer.util.Matrix4fStack;
 
 import javax.vecmath.AxisAngle4f;

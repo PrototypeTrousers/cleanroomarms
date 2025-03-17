@@ -3,9 +3,9 @@ package proto.mechanicalarms.client.renderer.shaders;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.ResourceLocation;
 import org.apache.commons.io.IOUtils;
-import org.lwjgl3.BufferUtils;
-import org.lwjgl3.opengl.GL11;
-import org.lwjgl3.opengl.GL20;
+import org.lwjgl.BufferUtils;
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL20;
 import proto.mechanicalarms.MechanicalArms;
 
 import java.io.IOException;

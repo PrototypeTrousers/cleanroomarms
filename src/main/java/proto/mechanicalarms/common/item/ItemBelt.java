@@ -26,7 +26,7 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.relauncher.Side;
-import org.lwjgl3.opengl.GL11;
+import org.lwjgl.opengl.GL11;
 import proto.mechanicalarms.MechanicalArms;
 import proto.mechanicalarms.client.renderer.InstanceRender;
 import proto.mechanicalarms.common.block.properties.Directions;

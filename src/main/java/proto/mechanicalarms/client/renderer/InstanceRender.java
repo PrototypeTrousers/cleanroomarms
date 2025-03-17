@@ -11,7 +11,7 @@ import proto.mechanicalarms.client.renderer.shaders.Shader;
 import proto.mechanicalarms.client.renderer.shaders.ShaderManager;
 import net.minecraft.client.renderer.GLAllocation;
 import net.minecraft.util.ResourceLocation;
-import org.lwjgl3.opengl.*;
+import org.lwjgl.opengl.*;
 import proto.mechanicalarms.client.renderer.util.ItemStackRenderToVAO;
 
 import javax.vecmath.Matrix4f;

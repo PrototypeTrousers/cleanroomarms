@@ -7,14 +7,10 @@ import net.minecraft.client.resources.IResource;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
-import org.lwjgl3.opengl.GL11;
+import org.lwjgl.opengl.GL11;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.nio.ByteBuffer;
-
-import static org.lwjgl3.opengl.GL15.*;
-import static org.lwjgl3.opengl.GL21.GL_PIXEL_UNPACK_BUFFER;
 
 public class Tick {
     public static Tick INSTANCE = new Tick();

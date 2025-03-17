@@ -11,14 +11,14 @@ import proto.mechanicalarms.common.logic.belt.BeltNet;
 
 public class TileBeltBasic extends BeltHoldingEntity {
 
-    @Override
-    public ModularPanel buildUI(GuiData guiData, GuiSyncManager guiSyncManager) {
-        ModularPanel panel = ModularPanel.defaultPanel("tutorial_gui");
-        panel.child(new ItemSlot().slot(leftItemHandler, 0));
-        panel.child(new ItemSlot().slot(rightItemHandler, 0).left(18));
-        panel.bindPlayerInventory();
-        return panel;
-    }
+//    @Override
+//    public ModularPanel buildUI(GuiData guiData, GuiSyncManager guiSyncManager) {
+//        ModularPanel panel = ModularPanel.defaultPanel("tutorial_gui");
+//        panel.child(new ItemSlot().slot(leftItemHandler, 0));
+//        panel.child(new ItemSlot().slot(rightItemHandler, 0).left(18));
+//        panel.bindPlayerInventory();
+//        return panel;
+//    }
 
     @Override
     protected void initLogic() {

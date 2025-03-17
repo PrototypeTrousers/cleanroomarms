@@ -44,10 +44,10 @@ public class TileSplitterDummy extends BeltHoldingEntity {
         return capability == CapabilityDualSidedHandler.DUAL_SIDED_CAPABILITY;
     }
 
-    @Override
-    public ModularPanel buildUI(GuiData data, GuiSyncManager syncManager) {
-        return controller.buildUI(data, syncManager);
-    }
+//    @Override
+//    public ModularPanel buildUI(GuiData data, GuiSyncManager syncManager) {
+//        return controller.buildUI(data, syncManager);
+//    }
 
     class SplitterDummyUpdatingLogic extends BeltUpdatingLogic {
 
