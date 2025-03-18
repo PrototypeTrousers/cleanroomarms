@@ -6,13 +6,14 @@ import net.minecraft.client.renderer.entity.RenderLiving;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.client.registry.IRenderFactory;
+import proto.mechanicalarms.MechanicalArms;
 import proto.mechanicalarms.common.entities.EntityWeirdZombie;
 
 import javax.annotation.Nonnull;
 
 public class RenderWeirdZombie extends RenderLiving<EntityWeirdZombie> {
 
-    private ResourceLocation mobTexture = new ResourceLocation("modtut:textures/entity/weirdzombie.png");
+    private ResourceLocation mobTexture = new ResourceLocation(MechanicalArms.MODID,"textures/entity/weirdzombie.png");
 
     public static final Factory FACTORY = new Factory();
 

@@ -25,6 +25,7 @@ import proto.mechanicalarms.client.renderer.TileBeltRenderer;
 import proto.mechanicalarms.client.renderer.TileSplitterRender;
 import proto.mechanicalarms.common.block.BlockBelt;
 import proto.mechanicalarms.common.block.Blocks;
+import proto.mechanicalarms.common.entities.Entities;
 import proto.mechanicalarms.common.item.Items;
 import proto.mechanicalarms.common.tile.TileArmBasic;
 import proto.mechanicalarms.common.tile.TileBeltBasic;
@@ -76,6 +77,7 @@ public class ClientProxy extends CommonProxy {
     @Override
     public void preInit() {
         super.preInit();
+        Entities.initModels();
         OBJLoader.INSTANCE.addDomain(MechanicalArms.MODID);
         ClientRegistry.bindTileEntitySpecialRenderer(TileArmBasic.class, new TileArmRenderer());
         ClientRegistry.bindTileEntitySpecialRenderer(TileSplitter.class, new TileSplitterRender());
