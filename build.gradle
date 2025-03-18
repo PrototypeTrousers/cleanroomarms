@@ -88,11 +88,11 @@ repositories {
 configurations.minecraftLibraries {
     exclude group: 'org.lwjgl.lwjgl', module: 'lwjgl'
     exclude group: 'org.lwjgl.lwjgl', module: 'lwjgl-platform'
-    exclude group: "com.mojang:patchy"
-    exclude group: "oshi-project:oshi-core"
-    exclude group: "com.ibm.icu:icu4j-core-mojang"
+    exclude group: "com.mojang', module: 'patchy"
+    exclude group: "oshi-project', module: 'oshi-core"
     exclude group: "net.java.jutils"
     exclude group: "net.java.dev.jna", module: 'platform'
+    exclude group: "com.ibm.icu", module: 'icu4j-core-mojang'
 }
 
 dependencies {
