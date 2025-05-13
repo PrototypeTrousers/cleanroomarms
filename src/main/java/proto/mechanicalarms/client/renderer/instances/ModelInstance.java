@@ -27,7 +27,7 @@ public class ModelInstance {
         StopWatch s = StopWatch.createStarted();
         GltfModel g = ModelInstancer.loadglTFModel(resourceLocation);
         s.stop();
-        System.out.printf("load from disk took" + (s.getStopTime() - s.getStartTime()) + " ms");
+        System.out.printf("load from disk took" + (s.getTime() - s.getStartTime()) + " ms");
         this.root = new NodeInstance();
         ModelInstancer.makeVertexArrayObjects(this, g, root);
     }
