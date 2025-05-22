@@ -1,5 +1,14 @@
 package proto.mechanicalarms.common.tile;
 
+import com.cleanroommc.modularui.api.IGuiHolder;
+import com.cleanroommc.modularui.drawable.GuiTextures;
+import com.cleanroommc.modularui.factory.GuiData;
+import com.cleanroommc.modularui.screen.ModularPanel;
+import com.cleanroommc.modularui.screen.UISettings;
+import com.cleanroommc.modularui.value.sync.DoubleSyncValue;
+import com.cleanroommc.modularui.value.sync.PanelSyncManager;
+import com.cleanroommc.modularui.widgets.ProgressWidget;
+import com.cleanroommc.modularui.widgets.slot.ItemSlot;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SPacketUpdateTileEntity;
@@ -17,7 +26,7 @@ import static net.minecraftforge.common.util.Constants.NBT.TAG_FLOAT;
 import static proto.mechanicalarms.common.logic.behavior.Action.DELIVER;
 import static proto.mechanicalarms.common.logic.behavior.Action.RETRIEVE;
 
-public abstract class TileArmBase extends TileEntity implements ITickable {//}, IGuiHolder {
+public abstract class TileArmBase extends TileEntity implements ITickable, IGuiHolder {
     private final Targeting targeting = new Targeting();
     private final MotorCortex motorCortex;
     private final WorkStatus workStatus = new WorkStatus();
@@ -89,18 +98,18 @@ public abstract class TileArmBase extends TileEntity implements ITickable {//}, 
         return compound;
     }
 
-//    @Override
-//    public ModularPanel buildUI(GuiData guiData, GuiSyncManager guiSyncManager) {
-//        ModularPanel panel = ModularPanel.defaultPanel("tutorial_gui");
-//        panel.child(new ProgressWidget()
-//                        .size(20)
-//                        .leftRel(0.5f).topRelAnchor(0.25f, 0.5f)
-//                        .texture(GuiTextures.PROGRESS_ARROW, 20)
-//                        .value(new DoubleSyncValue(() -> this.progress / 100.0, val -> this.progress = (int) (val * 100))));
-//        panel.child(new ItemSlot().slot(itemHandler, 0));
-//        panel.bindPlayerInventory();
-//        return panel;
-//    }
+    @Override
+    public ModularPanel buildUI(GuiData guiData, PanelSyncManager panelSyncManager, UISettings uiSettings) {
+        ModularPanel panel = ModularPanel.defaultPanel("tutorial_gui");
+        panel.child(new ProgressWidget()
+                        .size(20)
+                        .leftRel(0.5f).topRelAnchor(0.25f, 0.5f)
+                        .texture(GuiTextures.PROGRESS_ARROW, 20)
+                        .value(new DoubleSyncValue(() -> this.progress / 100.0, val -> this.progress = (int) (val * 100))));
+        panel.child(new ItemSlot().slot(itemHandler, 0));
+        panel.bindPlayerInventory();
+        return panel;
+    }
 
     public abstract ActionResult interact(Action retrieve, Pair<BlockPos, EnumFacing> blkFacePair);
 

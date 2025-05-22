@@ -9,11 +9,13 @@ import net.minecraft.client.renderer.block.model.ItemTransformVec3f;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.client.ForgeHooksClient;
 import net.minecraftforge.client.model.BakedItemModel;
+import net.minecraftforge.common.model.TRSRTransformation;
 import org.lwjgl.opengl.*;
 import proto.mechanicalarms.client.renderer.ProtoTesselator;
 import proto.mechanicalarms.client.renderer.instances.InstanceableModel;
 import proto.mechanicalarms.client.renderer.instances.ItemStackEffectModel;
 
+import javax.vecmath.Matrix4f;
 import javax.vecmath.Vector3f;
 import java.nio.FloatBuffer;
 
@@ -49,37 +51,79 @@ public class ItemStackRenderToVAO implements InstanceableModel {
         this.setupVAO(this.stack);
     }
 
+    public static float[] getEulerAnglesYXZ(Matrix4f m) {
+        // Extract the column vectors of the 3x3 rotation+scale matrix
+        Vector3f xAxis = new Vector3f(m.m00, m.m01, m.m02);
+        Vector3f yAxis = new Vector3f(m.m10, m.m11, m.m12);
+        Vector3f zAxis = new Vector3f(m.m20, m.m21, m.m22);
+
+        // Compute scale factors
+        float scaleX = xAxis.length();
+        float scaleY = yAxis.length();
+        float scaleZ = zAxis.length();
+
+        // Normalize axes to remove scale
+        xAxis.scale(1.0f / scaleX);
+        yAxis.scale(1.0f / scaleY);
+        zAxis.scale(1.0f / scaleZ);
+
+        // Build a pure rotation matrix
+        float[][] rot = new float[3][3];
+        rot[0][0] = xAxis.x; rot[0][1] = xAxis.y; rot[0][2] = xAxis.z;
+        rot[1][0] = yAxis.x; rot[1][1] = yAxis.y; rot[1][2] = yAxis.z;
+        rot[2][0] = zAxis.x; rot[2][1] = zAxis.y; rot[2][2] = zAxis.z;
+
+        // Now extract Euler angles (YXZ order)
+        float[] angles = new float[3];
+
+        angles[1] = (float) Math.asin(-rot[2][0]); // Y
+
+        if (Math.abs(rot[2][0]) < 0.99999f) {
+            angles[0] = (float) Math.atan2(rot[2][1], rot[2][2]); // X
+            angles[2] = (float) Math.atan2(rot[1][0], rot[0][0]); // Z
+        } else {
+            // Gimbal lock case
+            angles[0] = 0;
+            angles[2] = (float) Math.atan2(-rot[0][1], rot[1][1]);
+        }
+
+        return angles;
+    }
+
     public synchronized void setupVAO(ItemStack stack) {
         IBakedModel mm = Minecraft.getMinecraft().getRenderItem().getItemModelMesher().getItemModel(stack);
         IBakedModel model = mm.getOverrides().handleItemState(mm, stack, null, null);
-        model = ForgeHooksClient.handleCameraTransforms(model, ItemCameraTransforms.TransformType.NONE, false);
+        Matrix4f matModelfixed = ForgeHooksClient.handlePerspective(model, ItemCameraTransforms.TransformType.FIXED).getValue();
+        Matrix4f matModelGui = ForgeHooksClient.handlePerspective(model, ItemCameraTransforms.TransformType.GUI).getValue();
+        Matrix4f matModelGround = ForgeHooksClient.handlePerspective(model, ItemCameraTransforms.TransformType.GROUND).getValue();
 
-        ItemTransformVec3f ft = model.getItemCameraTransforms().fixed;
-        ItemTransformVec3f gt = model.getItemCameraTransforms().gui;
-        ItemTransformVec3f groundt = model.getItemCameraTransforms().ground;
 
+        float[] ft = matModelfixed != null ? getEulerAnglesYXZ(matModelfixed) : new float[] {0, 0, 0};
+        float[] gt = matModelGui != null ? getEulerAnglesYXZ(matModelGui) : new float[] {0, 0, 0};
+        float[] groundt = matModelGround != null ? getEulerAnglesYXZ(matModelGround) : new float[] {0, 0, 0};
+        
         if (model instanceof BakedItemModel) {
             renderType = RenderType.ITEM;
         } else if (model.isBuiltInRenderer()) {
-            if (gt.rotation.x == 30 && (gt.rotation.y == 45 || gt.rotation.y == 225)) {
+            if (gt[0] == 30 && (gt[1] == 45 || gt[1] == 225)) {
                 renderType = RenderType.BLOCK;
-            } else if (ft.rotation.y > 0 && ft.rotation.y % 90 == 0) {
+            } else if (ft[1] > 0 && ft[1] % 90 == 0) {
                 renderType =RenderType.ITEM;
             } else {
                 renderType = RenderType.BLOCK;
             }
         }
         else {
-            if (groundt.rotation.x == 0) {
-                if (ft.rotation.x > 0 && ft.rotation.x % 90 == 0) {
+            if (groundt[0] == 0) {
+                if (ft[0] > 0 && ft[0] % 90 == 0) {
                     renderType = RenderType.BLOCK;
-                }else if (ft.rotation.x == 0) {
+                }else if (ft[0] == 0) {
                     renderType = RenderType.BLOCK;
-                } else if (ft.rotation.y > 0 && ft.rotation.y % 90 == 0) {
+                } else if (ft[1] > 0 && ft[1] % 90 == 0) {
                     renderType = RenderType.ITEM;
                 }
 
-            } else if (gt.rotation.x == 30 && (gt.rotation.y == 45 || gt.rotation.y == 225)) {
+            } else if (gt[0] == 30 && (gt[1] == 45 || gt[1] == 225)) {
                 renderType = RenderType.BLOCK;
             } else {
                 renderType = RenderType.ITEM;

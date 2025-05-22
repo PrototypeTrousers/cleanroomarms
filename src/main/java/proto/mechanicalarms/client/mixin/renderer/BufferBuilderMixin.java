@@ -14,7 +14,7 @@ import proto.mechanicalarms.client.renderer.ProtoTesselator;
 public class BufferBuilderMixin {
 
     @Unique
-    private static boolean cleanroomarms$inited;
+    private boolean cleanroomarms$inited;
 
     @Inject(method = "begin", at = @At("HEAD"), cancellable = true)
     void keepGoing(int p_181668_1_, VertexFormat p_181668_2_, CallbackInfo ci) {

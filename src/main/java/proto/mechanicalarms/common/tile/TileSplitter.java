@@ -1,10 +1,12 @@
 package proto.mechanicalarms.common.tile;
 
+import com.cleanroommc.modularui.api.IGuiHolder;
 import com.cleanroommc.modularui.factory.GuiData;
 import com.cleanroommc.modularui.screen.ModularPanel;
+import com.cleanroommc.modularui.screen.UISettings;
 import com.cleanroommc.modularui.utils.Alignment;
-import com.cleanroommc.modularui.value.sync.GuiSyncManager;
-import com.cleanroommc.modularui.widgets.ItemSlot;
+import com.cleanroommc.modularui.value.sync.PanelSyncManager;
+import com.cleanroommc.modularui.widgets.slot.ItemSlot;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
@@ -14,7 +16,7 @@ import org.jetbrains.annotations.Nullable;
 import proto.mechanicalarms.common.cap.CapabilityDualSidedHandler;
 
 
-public class TileSplitter extends TileBeltBasic implements ITickable {
+public class TileSplitter extends TileBeltBasic implements ITickable, IGuiHolder {
     public Side lastOutputSide = Side.L;
     private TileSplitterDummy dummy;
     public BeltHoldingEntity lastPushed = this;
@@ -25,17 +27,17 @@ public class TileSplitter extends TileBeltBasic implements ITickable {
         logic = new SplitterUpdatingLogic(this, this);
     }
 
-//    @Override
-//    public ModularPanel buildUI(GuiData guiData, GuiSyncManager guiSyncManager) {
-//        ModularPanel panel = new ModularPanel("Splitter");
-//        panel.padding(2);
-//        panel.align(Alignment.Center);
-//        panel.child(new ItemSlot().slot(leftItemHandler, 0));
-//        panel.child(new ItemSlot().slot(rightItemHandler, 0).left(20));
-//
-//        panel.bindPlayerInventory();
-//        return panel;
-//    }
+    @Override
+    public ModularPanel buildUI(GuiData guiData, PanelSyncManager panelSyncManager, UISettings uiSettings) {
+        ModularPanel panel = new ModularPanel("Splitter");
+        panel.padding(2);
+        panel.align(Alignment.Center);
+        panel.child(new ItemSlot().slot(leftItemHandler, 0));
+        panel.child(new ItemSlot().slot(rightItemHandler, 0).left(20));
+
+        panel.bindPlayerInventory();
+        return panel;
+    }
 
     @Override
     public AxisAlignedBB getRenderBoundingBox() {

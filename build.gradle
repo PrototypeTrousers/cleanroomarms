@@ -62,7 +62,13 @@ unimined.minecraft {
     version "1.12.2"
 
     mappings {
+        searge()
         mcp("stable", "39-1.12")
+        stubs(["searge", "mcp"]) {
+            c(["net/minecraft/client/settings/KeyBinding"]) {// can change the target names of a class, or use null/empty list to skip
+                f(["b;Lnet/minecraftforge/client/settings/KeyBindingMap;", "HASH"])
+            }
+        }
     }
 
     cleanroom {
@@ -88,11 +94,8 @@ repositories {
 dependencies {
     implementation("org.joml:joml:1.10.8")
     implementation("de.javagl:jgltf-model:2.0.4")
-    compileOnly('curse.maven:modularui-624243:5153414-sources-5153415')
-    implementation "curse.maven:Fugue-1005815:6278969"
-    compileOnly('org.lwjgl.lwjgl:lwjgl_util:2.9.3') {
-        transitive = false
-    }
+    runtimeOnly("curse.maven:Fugue-1005815:6278969")
+    compileOnly("curse.maven:modularui-624243:6535584-sources-deobf")
 
     if (propertyBool('use_asset_mover')) {
         implementation "com.cleanroommc:assetmover:${propertyString('asset_mover_version')}"
