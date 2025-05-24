@@ -162,16 +162,27 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
         vecProgress.z = -itemProgress;
         vecProgress.x = isLeft ? -0.2f : 0.2f;
 
-        if (itemProgress < 0) {
-            if (tileBeltBasic.isOnlyRightConnected()) {
-                vecProgress.z = -vecProgress.x ;
-                vecProgress.x = -itemProgress;
-            }
-            if (tileBeltBasic.isOnlyLeftConnected()) {
-                vecProgress.z = vecProgress.x ;
-                vecProgress.x = itemProgress;
-            }
+
+        if (tileBeltBasic.isOnlyRightConnected()) {
+            vecProgress.z = -vecProgress.x;
+            vecProgress.x = -itemProgress;
         }
+        if (tileBeltBasic.isOnlyLeftConnected()) {
+
+            float r;
+            if (isLeft) {
+                r = 0.2f;
+            } else {
+                r = 0.8f;
+            }
+
+            float rpow = (float) Math.pow(r, 4);
+            double xp44 = rpow - Math.pow(itemProgress * r - r / 2, 4);
+            double xx = Math.pow(xp44, 0.25);  // Positive root
+
+            vecProgress.x = (float) xx - 0.6f;
+        }
+
 
         Matrix4f m2 = new Matrix4f();
         m2.setIdentity();
