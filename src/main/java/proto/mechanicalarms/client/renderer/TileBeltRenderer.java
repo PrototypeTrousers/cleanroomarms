@@ -172,25 +172,19 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
 
             float r;
             if (isLeft) {
-                r = 0.2f;
+                r = 0.4f;
             } else {
                 r = 0.8f;
             }
 
-            float yNormalized = itemProgressa / r;
-            float yPower4 = (float) Math.pow(yNormalized - 1, 4);
+            float xNormalized = (float) Math.pow(itemProgressa, 0.25);
+            float yNormalizedPositive = (float) Math.pow(1.0f - itemProgressa, 0.25);
 
-            float inner = 1.0f - yPower4;
-            if (inner < 0.0f) {
-                inner = 0.0f;
-            }
+            float xx = r * xNormalized;
+            float yx = r * yNormalizedPositive; // y is negative in the bottom-right quadrant
 
-            float xx = r * (float) Math.pow(inner, 0.25);
-
-            vecProgress.x = xx -0.6f;
-
-            vecProgress.z = (-0.2f) + (-itemProgress) * 0.8f;
-
+            vecProgress.x = xx - 0.6f;
+            vecProgress.z = yx - 0.6f;
         }
 
 
