@@ -158,6 +158,7 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
         }
 
         float itemProgress = -0.5F + (lerp(previousProgress, progress, partialTicks) / 7F);
+        float itemProgressa = (lerp(previousProgress, progress, partialTicks) / 7F);
         Vector3f vecProgress = new Vector3f();
         vecProgress.z = -itemProgress;
         vecProgress.x = isLeft ? -0.2f : 0.2f;
@@ -176,11 +177,20 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
                 r = 0.8f;
             }
 
-            float rpow = (float) Math.pow(r, 4);
-            double xp44 = rpow - Math.pow(itemProgress * r - r / 2, 4);
-            double xx = Math.pow(xp44, 0.25);  // Positive root
+            float yNormalized = itemProgressa / r;
+            float yPower4 = (float) Math.pow(yNormalized - 1, 4);
 
-            vecProgress.x = (float) xx - 0.6f;
+            float inner = 1.0f - yPower4;
+            if (inner < 0.0f) {
+                inner = 0.0f;
+            }
+
+            float xx = r * (float) Math.pow(inner, 0.25);
+
+            vecProgress.x = xx -0.6f;
+
+            vecProgress.z = (-0.2f) + (-itemProgress) * 0.8f;
+
         }
 
 
