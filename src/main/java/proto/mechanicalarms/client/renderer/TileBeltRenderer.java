@@ -144,13 +144,14 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
 
         EnumFacing facing = tileBeltBasic.getFront();
 
-
         if (itemvao.renderType == RenderType.ITEM) {
             if (facing == EnumFacing.NORTH) {
                 rot.rotateX((float) (-Math.PI / 2));
             } else if (facing == EnumFacing.EAST) {
+                rot.rotateX((float) (-Math.PI / 2));
                 rot.rotateZ((float) (-Math.PI / 2));
             } else if (facing == EnumFacing.WEST) {
+                rot.rotateX((float) (Math.PI / 2));
                 rot.rotateZ((float) (Math.PI / 2));
             } else {
                 rot.rotateX((float) (Math.PI / 2));
@@ -163,10 +164,23 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
         vecProgress.z = -itemProgress;
         vecProgress.x = isLeft ? -0.2f : 0.2f;
 
-
         if (tileBeltBasic.isOnlyRightConnected()) {
-            vecProgress.z = -vecProgress.x;
-            vecProgress.x = -itemProgress;
+
+            float r;
+            if (isLeft) {
+                r = 0.8f;
+            } else {
+                r = 0.4f;
+            }
+
+            float xNormalized = (float) Math.pow(itemProgressa, 0.25);
+            float yNormalizedPositive = (float) Math.pow(1.0f - itemProgressa, 0.25);
+
+            float xx = r * xNormalized;
+            float yx = r * yNormalizedPositive; // y is negative in the bottom-right quadrant
+
+            vecProgress.x = -xx + 0.6f;
+            vecProgress.z = yx - 0.6f;
         }
         if (tileBeltBasic.isOnlyLeftConnected()) {
 
@@ -187,7 +201,6 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
             vecProgress.z = yx - 0.6f;
         }
 
-
         Matrix4f m2 = new Matrix4f();
         m2.setIdentity();
         translate(m2, 1, 0, 0);
@@ -203,12 +216,10 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
         m2.transform(vecProgress);
         float yProgress = 0;
         if (tileBeltBasic.getDirection().getRelativeHeight() == Directions.RelativeHeight.BELOW) {
-            yProgress = 1.0625F - (float) (lerp(previousProgress, progress, partialTicks) * 1 / 7F);
+            yProgress = 1.0625F - (lerp(previousProgress, progress, partialTicks) * 1 / 7F);
             rot.rotateX((float) (-Math.PI / 4));
-
-
         } else if (tileBeltBasic.getDirection().getRelativeHeight() == Directions.RelativeHeight.ABOVE) {
-            yProgress = (float) (0.0625F + lerp(previousProgress, progress, partialTicks) * 1 / 7F);
+            yProgress = 0.0625F + lerp(previousProgress, progress, partialTicks) * 1 / 7F;
             rot.rotateX((float) (Math.PI / 4));
         }
 
@@ -216,12 +227,8 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
 
         translate(itemBeltMtx, p);
         itemBeltMtx.setScale(itemvao.suggestedScale.x / 1.5f);
-
         Quaternion.rotateMatrix(itemBeltMtx, rot);
-
-
         translate(itemBeltMtx, ap);
-
 
         matrix4fStack.mul(itemBeltMtx);
 
