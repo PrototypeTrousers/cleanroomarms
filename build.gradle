@@ -96,6 +96,7 @@ dependencies {
     implementation("de.javagl:jgltf-model:2.0.4")
     runtimeOnly("curse.maven:Fugue-1005815:6278969")
     runtimeOnly("curse.maven:Spark-361579:3542217")
+    runtimeOnly("curse.maven:WorldEdit-225608:2460570")
     compileOnly("curse.maven:modularui-624243:6535584-sources-deobf")
 
     if (propertyBool('use_asset_mover')) {

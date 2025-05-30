@@ -78,19 +78,21 @@ public class BeltNet {
             boolean reached = false;
             BeltGroup group = belt2GroupMap.get(entity);
             BeltGroup newGroup = null;
-            List<BeltHoldingEntity> currentBeltsInGroup = new ArrayList<>(belt2GroupMap.get(entity).getBelts());
-            for (BeltHoldingEntity belt : currentBeltsInGroup) {
-                if (entity == belt) {
-                    reached = true;
-                    continue;
-                }
-                if (reached) {
-                    if (newGroup == null) {
-                        newGroup = new BeltGroup();
-                        groups.add(newGroup);
+            if (group != null) {
+                List<BeltHoldingEntity> currentBeltsInGroup = new ArrayList<>(group.getBelts());
+                for (BeltHoldingEntity belt : currentBeltsInGroup) {
+                    if (entity == belt) {
+                        reached = true;
+                        continue;
                     }
-                    removeFromGroup(belt, group);
-                    addToGroup(belt, newGroup);
+                    if (reached) {
+                        if (newGroup == null) {
+                            newGroup = new BeltGroup();
+                            groups.add(newGroup);
+                        }
+                        removeFromGroup(belt, group);
+                        addToGroup(belt, newGroup);
+                    }
                 }
             }
         }
