@@ -191,6 +191,7 @@ public class BlockBelt extends Block implements ITileEntityProvider {
         TileEntity te = worldIn.getTileEntity(pos);
         if (te instanceof TileBeltBasic tbb) {
             tbb.updateConnected();
+            tbb.updateRedstone();
         }
     }
 

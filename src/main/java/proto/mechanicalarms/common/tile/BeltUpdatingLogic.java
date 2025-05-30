@@ -86,7 +86,7 @@ public class BeltUpdatingLogic implements IBeltLogic {
             tickRight = false;
         }
 
-        if (this.holder.getWorld().isBlockPowered(holder.getPos())) {
+        if (this.holder.isDisabledByRedstone()) {
             this.previousProgressLeft = progressLeft;
             this.previousProgressRight = progressRight;
             return;

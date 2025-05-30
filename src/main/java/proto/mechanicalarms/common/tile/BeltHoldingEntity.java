@@ -31,6 +31,7 @@ public abstract class BeltHoldingEntity extends TileEntity implements IGuiHolder
     AxisAlignedBB renderBB;
     AxisAlignedBB pickerBB;
     Directions direction;
+    boolean disabledByRedstone;
 
     BeltHoldingEntity() {
         this.initLogic();
@@ -90,6 +91,7 @@ public abstract class BeltHoldingEntity extends TileEntity implements IGuiHolder
         compound.setTag("leftInventory", leftItemHandler.serializeNBT());
         compound.setTag("rightInventory", rightItemHandler.serializeNBT());
         compound.setInteger("connected", connected);
+        compound.setBoolean("disabledByRedstone", disabledByRedstone);
         logic.updatePacket(compound);
         return new SPacketUpdateTileEntity(getPos(), 1, compound);
     }
@@ -101,6 +103,7 @@ public abstract class BeltHoldingEntity extends TileEntity implements IGuiHolder
         leftItemHandler.deserializeNBT(compound.getCompoundTag("leftInventory"));
         rightItemHandler.deserializeNBT(compound.getCompoundTag("rightInventory"));
         connected = compound.getInteger("connected");
+        disabledByRedstone = compound.getBoolean("disabledByRedstone");
         logic.onDataPacket(net, packet);
     }
 
@@ -113,7 +116,16 @@ public abstract class BeltHoldingEntity extends TileEntity implements IGuiHolder
     public void onLoad() {
         super.onLoad();
         updateConnected();
+        disabledByRedstone = world.isBlockPowered(this.pos);
         pickerBB = new AxisAlignedBB(this.pos);
+    }
+
+    public boolean isDisabledByRedstone() {
+        return disabledByRedstone;
+    }
+
+    public void updateRedstone() {
+        disabledByRedstone = world.isBlockPowered(this.pos);
     }
 
     public boolean isSlope() {
