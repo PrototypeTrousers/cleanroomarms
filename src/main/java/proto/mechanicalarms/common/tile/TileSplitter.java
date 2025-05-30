@@ -7,6 +7,7 @@ import com.cleanroommc.modularui.screen.UISettings;
 import com.cleanroommc.modularui.utils.Alignment;
 import com.cleanroommc.modularui.value.sync.PanelSyncManager;
 import com.cleanroommc.modularui.widgets.slot.ItemSlot;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.AxisAlignedBB;
@@ -25,6 +26,19 @@ public class TileSplitter extends TileBeltBasic implements IGuiHolder {
     @Override
     protected void initLogic() {
         logic = new SplitterUpdatingLogic(this, this);
+    }
+
+    @Override
+    public NBTTagCompound writeToNBT(NBTTagCompound compound) {
+        super.writeToNBT(compound);
+        compound.setInteger("lastOutput", this.lastOutputSide.ordinal());
+        return compound;
+    }
+
+    @Override
+    public void readFromNBT(NBTTagCompound compound) {
+        super.readFromNBT(compound);
+        this.lastOutputSide = Side.values()[compound.getInteger("lastOutput")];
     }
 
     @Override
