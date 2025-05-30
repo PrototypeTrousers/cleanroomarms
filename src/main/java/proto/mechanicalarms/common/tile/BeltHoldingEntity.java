@@ -1,6 +1,7 @@
 package proto.mechanicalarms.common.tile;
 
 import com.cleanroommc.modularui.api.IGuiHolder;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SPacketUpdateTileEntity;
@@ -11,6 +12,7 @@ import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.items.CapabilityItemHandler;
 import org.jetbrains.annotations.Nullable;
 import proto.mechanicalarms.api.capability.IDualSidedHandler;
+import proto.mechanicalarms.common.block.BlockBelt;
 import proto.mechanicalarms.common.block.properties.Directions;
 import proto.mechanicalarms.common.cap.BeltItemHandler;
 import proto.mechanicalarms.common.cap.CapabilityDualSidedHandler;
@@ -87,6 +89,7 @@ public abstract class BeltHoldingEntity extends TileEntity implements IGuiHolder
         NBTTagCompound compound = new NBTTagCompound();
         compound.setTag("leftInventory", leftItemHandler.serializeNBT());
         compound.setTag("rightInventory", rightItemHandler.serializeNBT());
+        compound.setInteger("connected", connected);
         logic.updatePacket(compound);
         return new SPacketUpdateTileEntity(getPos(), 1, compound);
     }
@@ -97,6 +100,7 @@ public abstract class BeltHoldingEntity extends TileEntity implements IGuiHolder
         NBTTagCompound compound = packet.getNbtCompound();
         leftItemHandler.deserializeNBT(compound.getCompoundTag("leftInventory"));
         rightItemHandler.deserializeNBT(compound.getCompoundTag("rightInventory"));
+        connected = compound.getInteger("connected");
         logic.onDataPacket(net, packet);
     }
 
@@ -108,9 +112,7 @@ public abstract class BeltHoldingEntity extends TileEntity implements IGuiHolder
     @Override
     public void onLoad() {
         super.onLoad();
-        if (connected == -1) {
-            updateConnected();
-        }
+        updateConnected();
         pickerBB = new AxisAlignedBB(this.pos);
     }
 
@@ -182,92 +184,108 @@ public abstract class BeltHoldingEntity extends TileEntity implements IGuiHolder
 
 
         int mask = 0; // Initialize the bitmask as an integer
+        IBlockState bs;
         if (this.direction.getRelativeHeight() == Directions.RelativeHeight.LEVEL) {
             // Check the left connection and set bit 0 if true
-            if (world.getTileEntity(this.pos.offset(direction.getHorizontalFacing().rotateYCCW())) instanceof TileBeltBasic backBelt) {
-                if (backBelt.getFront() == this.getFront().rotateY()) {
+
+            bs = world.getBlockState(this.pos.offset(direction.getHorizontalFacing().rotateYCCW()));
+            if (bs.getBlock() instanceof BlockBelt) {
+                if (( bs.getValue(BlockBelt.FACING).getHorizontalFacing()) == this.getFront().rotateY()) {
                     mask |= (1 << 0); // Set bit 0
                 }
             }
 
-            if (world.getTileEntity(this.pos.offset(direction.getHorizontalFacing().rotateYCCW()).down()) instanceof TileBeltBasic backBelt) {
-                if (backBelt.getFront() == this.getFront().rotateY()) {
+            bs = world.getBlockState(this.pos.offset(direction.getHorizontalFacing().rotateYCCW()).down());
+            if (bs.getBlock() instanceof BlockBelt) {
+                if (( bs.getValue(BlockBelt.FACING).getHorizontalFacing()) == this.getFront().rotateY()) {
                     mask |= (1 << 0); // Set bit 0
                 }
             }
 
             // Check the front connection and set bit 1 if true
-            if (world.getTileEntity(this.pos.offset(direction.getHorizontalFacing())) instanceof TileBeltBasic backBelt) {
-                if (backBelt.getFront() != this.getFront().getOpposite()) {
+            bs = world.getBlockState(this.pos.offset(direction.getHorizontalFacing()));
+            if (bs.getBlock() instanceof BlockBelt) {
+                if (( bs.getValue(BlockBelt.FACING).getHorizontalFacing()) == this.getFront().getOpposite()) {
                     mask |= (1 << 1); // Set bit 1
                 }
             }
 
             // Check the right connection and set bit 2 if true
-            if (world.getTileEntity(this.pos.offset(direction.getHorizontalFacing().rotateY())) instanceof TileBeltBasic backBelt) {
-                if (backBelt.getFront() == this.getFront().rotateYCCW()) {
+            bs = world.getBlockState(this.pos.offset(direction.getHorizontalFacing().rotateY()));
+            if (bs.getBlock() instanceof BlockBelt) {
+                if (( bs.getValue(BlockBelt.FACING).getHorizontalFacing()) == this.getFront().rotateYCCW()) {
                     mask |= (1 << 2); // Set bit 2
                 }
             }
 
-            if (world.getTileEntity(this.pos.offset(direction.getHorizontalFacing().rotateY()).down()) instanceof TileBeltBasic backBelt) {
-                if (backBelt.getFront() == this.getFront().rotateYCCW()) {
+            bs = world.getBlockState(this.pos.offset(direction.getHorizontalFacing().rotateY()).down());
+            if (bs.getBlock() instanceof BlockBelt) {
+                if (( bs.getValue(BlockBelt.FACING).getHorizontalFacing()) == this.getFront().rotateYCCW()) {
                     mask |= (1 << 2); // Set bit 2
                 }
             }
 
             // Check the opposite direction and set bit 3 if true
-            if (world.getTileEntity(this.pos.offset(direction.getHorizontalFacing().getOpposite())) instanceof TileBeltBasic backBelt) {
-                if (backBelt.getFront() == this.getFront()) {
+
+            bs = world.getBlockState(this.pos.offset(direction.getHorizontalFacing().getOpposite()));
+            if (bs.getBlock() instanceof BlockBelt) {
+                if (( bs.getValue(BlockBelt.FACING).getHorizontalFacing()) == this.getFront()) {
                     mask |= (1 << 3); // Set bit 3
                 }
             }
 
             // Check the opposite below direction and set bit 4 if true
-            if (world.getTileEntity(this.pos.offset(direction.getHorizontalFacing().getOpposite()).down()) instanceof TileBeltBasic backBelt) {
-                if (backBelt.getFront() == this.getFront()) {
+            bs = world.getBlockState(this.pos.offset(direction.getHorizontalFacing().getOpposite()).down());
+            if (bs.getBlock() instanceof BlockBelt) {
+                if (( bs.getValue(BlockBelt.FACING).getHorizontalFacing()) == this.getFront()) {
                     mask |= (1 << 4); // Set bit 4
                 }
             }
         } else if (this.direction.getRelativeHeight() == Directions.RelativeHeight.ABOVE) {
             // Check the front above connection and set bit 7 if true
-            if (world.getTileEntity(this.pos.offset(direction.getHorizontalFacing()).up()) instanceof TileBeltBasic backBelt) {
-                if (backBelt.getFront() != this.getFront().getOpposite()) {
+            bs = world.getBlockState(this.pos.offset(direction.getHorizontalFacing()).up());
+            if (bs.getBlock() instanceof BlockBelt) {
+                if (( bs.getValue(BlockBelt.FACING).getHorizontalFacing()) == this.getFront().getOpposite()) {
                     mask |= (1 << 7); // Set bit 7
                 }
             }
 
             // Check the opposite direction and set bit 3 if true
-            if (world.getTileEntity(this.pos.offset(direction.getHorizontalFacing().getOpposite())) instanceof TileBeltBasic backBelt) {
-                if (backBelt.getFront() == this.getFront()) {
+            bs = world.getBlockState(this.pos.offset(direction.getHorizontalFacing().getOpposite()));
+            if (bs.getBlock() instanceof BlockBelt) {
+                if (( bs.getValue(BlockBelt.FACING).getHorizontalFacing()) == this.getFront()) {
                     mask |= (1 << 3); // Set bit 3
                 }
             }
 
             // Check the opposite below direction and set bit 4 if true
-            if (world.getTileEntity(this.pos.offset(direction.getHorizontalFacing().getOpposite()).down()) instanceof TileBeltBasic backBelt) {
-                if (backBelt.getFront() == this.getFront()) {
+            bs = world.getBlockState(this.pos.offset(direction.getHorizontalFacing().getOpposite()).down());
+            if (bs.getBlock() instanceof BlockBelt) {
+                if (( bs.getValue(BlockBelt.FACING).getHorizontalFacing()) == this.getFront()) {
                     mask |= (1 << 4); // Set bit 4
                 }
             }
         } else if (this.direction.getRelativeHeight() == Directions.RelativeHeight.BELOW) {
             // Check the front connection and set bit 1 if true
-            if (world.getTileEntity(this.pos.offset(direction.getHorizontalFacing())) instanceof TileBeltBasic backBelt) {
-                if (backBelt.getFront() != this.getFront().getOpposite()) {
+            bs = world.getBlockState(this.pos.offset(direction.getHorizontalFacing()));
+            if (bs.getBlock() instanceof BlockBelt) {
+                if (( bs.getValue(BlockBelt.FACING).getHorizontalFacing()) == this.getFront().getOpposite()) {
                     mask |= (1 << 1); // Set bit 1
                 }
             }
 
             // Check the opposite above direction and set bit 3 if true
-            if (world.getTileEntity(this.pos.offset(direction.getHorizontalFacing().getOpposite()).up()) instanceof TileBeltBasic backBelt) {
-                if (backBelt.getFront() == this.getFront()) {
-                    mask |= (1 << 5); // Set bit 5
+            bs = world.getBlockState(this.pos.offset(direction.getHorizontalFacing().getOpposite()).up());
+            if (bs.getBlock() instanceof BlockBelt) {
+                if (( bs.getValue(BlockBelt.FACING).getHorizontalFacing()) == this.getFront()) {
+                    mask |= (1 << 3); // Set bit 3
                 }
             }
 
             // Check the front below connection and set bit 6 if true
-            if (world.getTileEntity(this.pos.offset(direction.getHorizontalFacing()).down()) instanceof TileBeltBasic backBelt) {
-                if (backBelt.getFront() != this.getFront().getOpposite()) {
+            bs = world.getBlockState(this.pos.offset(direction.getHorizontalFacing()).down());
+            if (bs.getBlock() instanceof BlockBelt) {
+                if (( bs.getValue(BlockBelt.FACING).getHorizontalFacing()) == this.getFront().getOpposite()) {
                     mask |= (1 << 6); // Set bit 5
                 }
             }
