@@ -48,12 +48,15 @@ public class BlockBelt extends Block implements ITileEntityProvider {
     @Override
     public void onBlockPlacedBy(World worldIn, BlockPos pos, IBlockState state, EntityLivingBase placer, ItemStack stack) {
         super.onBlockPlacedBy(worldIn, pos, state, placer, stack);
-        if (state.getValue(FACING).getRelativeHeight() == Directions.RelativeHeight.ABOVE) {
-            EnumFacing facing = state.getValue(FACING).getHorizontalFacing();
-            TileEntity te = worldIn.getTileEntity(pos.offset(facing).up());
-            if (te instanceof TileBeltBasic tbb) {
-                tbb.updateConnected();
-            }
+        EnumFacing facing = state.getValue(FACING).getHorizontalFacing();
+        TileEntity te =
+                switch (state.getValue(FACING).getRelativeHeight()) {
+                    case ABOVE -> worldIn.getTileEntity(pos.offset(facing).up());
+                    case LEVEL -> worldIn.getTileEntity(pos.offset(facing));
+                    case BELOW -> worldIn.getTileEntity(pos.offset(facing).down());
+                };
+        if (te instanceof TileBeltBasic tbb) {
+            tbb.updateConnected();
         }
     }
 
