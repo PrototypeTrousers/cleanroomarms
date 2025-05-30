@@ -9,14 +9,14 @@ import com.cleanroommc.modularui.value.sync.PanelSyncManager;
 import com.cleanroommc.modularui.widgets.slot.ItemSlot;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.util.ITickable;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraftforge.common.capabilities.Capability;
 import org.jetbrains.annotations.Nullable;
 import proto.mechanicalarms.common.cap.CapabilityDualSidedHandler;
+import proto.mechanicalarms.common.logic.belt.BeltNet;
 
 
-public class TileSplitter extends TileBeltBasic implements ITickable, IGuiHolder {
+public class TileSplitter extends TileBeltBasic implements IGuiHolder {
     public Side lastOutputSide = Side.L;
     private TileSplitterDummy dummy;
     public BeltHoldingEntity lastPushed = this;
@@ -75,6 +75,7 @@ public class TileSplitter extends TileBeltBasic implements ITickable, IGuiHolder
 
     @Override
     public void onLoad() {
+        BeltNet.addToGroup(this);
         //super.onLoad();
     }
 

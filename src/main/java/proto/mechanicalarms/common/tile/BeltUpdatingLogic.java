@@ -169,6 +169,21 @@ public class BeltUpdatingLogic implements IBeltLogic {
                             return true;
                         }
                     }
+                } else {
+                    IItemHandler icap = frontTe.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, facing.getOpposite());
+                    if (icap != null) {
+                        if (left) {
+                            if (icap.insertItem(0, beltHoldingEntity.leftItemHandler.extractItem(0, 1, true), true) != beltHoldingEntity.leftItemHandler.getStackInSlot(0)) {
+                                icap.insertItem(0, beltHoldingEntity.leftItemHandler.extractItem(0, 1, false), false);
+                                return true;
+                            }
+                        } else {
+                            if (icap.insertItem(0, beltHoldingEntity.rightItemHandler.extractItem(0, 1, true), true) != beltHoldingEntity.rightItemHandler.getStackInSlot(0)) {
+                                icap.insertItem(0, beltHoldingEntity.rightItemHandler.extractItem(0, 1, false), false);
+                                return true;
+                            }
+                        }
+                    }
                 }
             }
         }

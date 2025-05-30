@@ -8,6 +8,7 @@ import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.items.CapabilityItemHandler;
 import org.jetbrains.annotations.Nullable;
@@ -125,7 +126,11 @@ public abstract class BeltHoldingEntity extends TileEntity implements IGuiHolder
     }
 
     public void updateRedstone() {
-        disabledByRedstone = world.isBlockPowered(this.pos);
+        boolean now = world.isBlockPowered(this.pos);
+        if (disabledByRedstone != now) {
+            disabledByRedstone = now;
+            ((WorldServer) world).getPlayerChunkMap().markBlockForUpdate(this.pos);
+        }
     }
 
     public boolean isSlope() {
@@ -217,7 +222,7 @@ public abstract class BeltHoldingEntity extends TileEntity implements IGuiHolder
             // Check the front connection and set bit 1 if true
             bs = world.getBlockState(this.pos.offset(direction.getHorizontalFacing()));
             if (bs.getBlock() instanceof BlockBelt) {
-                if (( bs.getValue(BlockBelt.FACING).getHorizontalFacing()) == this.getFront().getOpposite()) {
+                if (( bs.getValue(BlockBelt.FACING).getHorizontalFacing()) != this.getFront().getOpposite()) {
                     mask |= (1 << 1); // Set bit 1
                 }
             }
@@ -257,7 +262,7 @@ public abstract class BeltHoldingEntity extends TileEntity implements IGuiHolder
             // Check the front above connection and set bit 7 if true
             bs = world.getBlockState(this.pos.offset(direction.getHorizontalFacing()).up());
             if (bs.getBlock() instanceof BlockBelt) {
-                if (( bs.getValue(BlockBelt.FACING).getHorizontalFacing()) == this.getFront().getOpposite()) {
+                if (( bs.getValue(BlockBelt.FACING).getHorizontalFacing()) != this.getFront().getOpposite()) {
                     mask |= (1 << 7); // Set bit 7
                 }
             }
@@ -281,7 +286,7 @@ public abstract class BeltHoldingEntity extends TileEntity implements IGuiHolder
             // Check the front connection and set bit 1 if true
             bs = world.getBlockState(this.pos.offset(direction.getHorizontalFacing()));
             if (bs.getBlock() instanceof BlockBelt) {
-                if (( bs.getValue(BlockBelt.FACING).getHorizontalFacing()) == this.getFront().getOpposite()) {
+                if (( bs.getValue(BlockBelt.FACING).getHorizontalFacing()) != this.getFront().getOpposite()) {
                     mask |= (1 << 1); // Set bit 1
                 }
             }
