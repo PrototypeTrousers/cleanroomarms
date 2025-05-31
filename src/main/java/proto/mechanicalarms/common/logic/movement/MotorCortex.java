@@ -26,9 +26,8 @@ public class MotorCortex implements INBTSerializable<NBTTagList> {
         this.interactionType = interactionType;
     }
 
-    public ActionResult move(Vec3d armPoint, Vec3d target, EnumFacing facing) {
-        Vec3d combinedVec = target.subtract(armPoint);
-        combinedVec = combinedVec.add(facing.getOpposite().getXOffset(), facing.getOpposite().getYOffset(), facing.getOpposite().getZOffset());
+    public ActionResult move(Vec3d target, EnumFacing facing) {
+        Vec3d combinedVec = target.add(facing.getOpposite().getXOffset() -0.5, facing.getOpposite().getYOffset() -0.5, facing.getOpposite().getZOffset() -0.5);
         float pitch = (float) Math.atan2(combinedVec.y, Math.sqrt(combinedVec.x * combinedVec.x + combinedVec.z * combinedVec.z));
         pitch -= (float) (Math.PI/2);
         //model initial angle is -90 degrees

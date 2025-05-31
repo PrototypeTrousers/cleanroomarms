@@ -121,7 +121,7 @@ public abstract class TileArmBase extends TileEntity implements ITickable, IGuiH
             }
         } else if (workStatus.getType() == ActionTypes.MOVEMENT) {
             if (workStatus.getAction() == Action.RETRIEVE) {
-                ActionResult result = motorCortex.move(armPoint, targeting.getSourceVec(), targeting.getSourceFacing());
+                ActionResult result = motorCortex.move( targeting.getSourceVec() , targeting.getSourceFacing());
                 if (result == ActionResult.SUCCESS) {
                     updateWorkStatus(ActionTypes.INTERACTION, RETRIEVE);
                 }
@@ -129,7 +129,7 @@ public abstract class TileArmBase extends TileEntity implements ITickable, IGuiH
                 if (itemHandler.getStackInSlot(0).isEmpty()){
                     updateWorkStatus(ActionTypes.MOVEMENT, RETRIEVE);
                 } else {
-                    ActionResult result = motorCortex.move(armPoint, targeting.getTargetVec(), targeting.getTargetFacing());
+                    ActionResult result = motorCortex.move(targeting.getTargetVec(), targeting.getTargetFacing());
                     if (result == ActionResult.SUCCESS) {
                         updateWorkStatus(ActionTypes.INTERACTION, DELIVER);
                     }
@@ -165,12 +165,12 @@ public abstract class TileArmBase extends TileEntity implements ITickable, IGuiH
     }
 
     public void setSource(BlockPos sourcePos, EnumFacing sourceFacing) {
-        targeting.setSource(sourcePos, sourceFacing);
+        targeting.setSource(sourcePos.subtract(this.pos) , sourceFacing);
         markDirty();
     }
 
     public void setTarget(BlockPos targetPos, EnumFacing targetFacing) {
-        targeting.setTarget(targetPos, targetFacing);
+        targeting.setTarget(targetPos.subtract(this.pos), targetFacing);
         markDirty();
     }
 

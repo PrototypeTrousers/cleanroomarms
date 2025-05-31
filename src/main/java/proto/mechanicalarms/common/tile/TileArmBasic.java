@@ -29,7 +29,7 @@ public class TileArmBasic extends TileArmBase {
 
     @Override
     public ActionResult interact(Action action, Pair<BlockPos, EnumFacing> blkFace) {
-        TileEntity te = world.getTileEntity(blkFace.getKey());
+        TileEntity te = world.getTileEntity(blkFace.getKey().add(this.pos));
         if (te != null) {
             IItemHandler itemHandler = te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, blkFace.getRight());
             if (itemHandler != null) {
