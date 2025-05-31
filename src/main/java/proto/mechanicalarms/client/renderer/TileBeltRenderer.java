@@ -32,6 +32,7 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
     Matrix4f itemBeltMtx = new Matrix4f();
     Matrix4f beltBseMtx = new Matrix4f();
     Matrix4f translationMatrix = new Matrix4f();
+    Matrix4f m2 = new Matrix4f();
     byte s;
     byte b;
     byte alpha;
@@ -118,8 +119,6 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
         matrix4fStack.pushMatrix();
         itemBeltMtx.setIdentity();
 
-        Vector3f p = new Vector3f(0.5f, 0.5F, 0.5f);
-
         if (itemvao.renderType == RenderType.BLOCK) {
             translate(matrix4fStack, new Vector3f((float) (x), (float) (y - 0.05), (float) (z)));
         } else {
@@ -127,9 +126,6 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
         }
 
         rot.setIndentity();
-
-        Vector3f ap = new Vector3f(p);
-        ap.negate();
 
         EnumFacing facing = tileBeltBasic.getFront();
 
@@ -190,9 +186,10 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
             vecProgress.z = yx - 0.6f;
         }
 
-        Matrix4f m2 = new Matrix4f();
         m2.setIdentity();
-        translate(m2, 1, 0, 0);
+        m2.m03 = 1;
+        m2.m13 = 0;
+        m2.m23 = 0;
 
         if (facing == EnumFacing.SOUTH) {
             m2.rotY((float) Math.PI);
@@ -212,12 +209,10 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
             rot.rotateX((float) (Math.PI / 4));
         }
 
-        translate(itemBeltMtx, vecProgress.x, yProgress, vecProgress.z);
-
-        translate(itemBeltMtx, p);
-        itemBeltMtx.setScale(itemvao.suggestedScale.x / 1.5f);
+        translate(itemBeltMtx, vecProgress.x + 0.5f, yProgress + 0.5f, vecProgress.z + 0.5f);
+        scale(itemBeltMtx, itemvao.suggestedScale.x / 1.5f, itemvao.suggestedScale.x / 1.5f, itemvao.suggestedScale.x / 1.5f);
         Quaternion.rotateMatrix(itemBeltMtx, rot);
-        translate(itemBeltMtx, ap);
+        translate(itemBeltMtx, -0.5f, -0.5f, -0.5f);
 
         matrix4fStack.mul(itemBeltMtx);
 
@@ -225,6 +220,21 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
         matrix4fStack.popMatrix();
         ir.bufferModelMatrixData(mtx);
         ir.bufferLight(s, b, alpha);
+    }
+
+    public void scale(Matrix4f matrix, float x, float y, float z) {
+        matrix.m00 *= x;
+        matrix.m10 *= x;
+        matrix.m20 *= x;
+        matrix.m30 *= x;
+        matrix.m01 *= y;
+        matrix.m11 *= y;
+        matrix.m21 *= y;
+        matrix.m31 *= y;
+        matrix.m02 *= z;
+        matrix.m12 *= z;
+        matrix.m22 *= z;
+        matrix.m32 *= z;
     }
 
     void matrix4ftofloatarray(Matrix4f matrix4f, float[] floats) {

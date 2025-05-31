@@ -129,8 +129,7 @@ public class TileArmRenderer extends FastTESR<TileArmBasic> {
 
         rot.setIndentity();
 
-
-        matrix4fStack.setScale(0.375f);
+        scale(matrix4fStack, 0.375f, 0.375f, 0.375f);
         rot.rotateX((float) (Math.PI));
         translate(matrix4fStack, -0.5f, 3f, 0.5f);
 
@@ -140,6 +139,21 @@ public class TileArmRenderer extends FastTESR<TileArmBasic> {
         matrix4fStack.popMatrix();
         ir.bufferModelMatrixData(mtx);
         ir.bufferLight(s, b, alpha);
+    }
+
+    public void scale(Matrix4f matrix, float x, float y, float z) {
+        matrix.m00 *= x;
+        matrix.m10 *= x;
+        matrix.m20 *= x;
+        matrix.m30 *= x;
+        matrix.m01 *= y;
+        matrix.m11 *= y;
+        matrix.m21 *= y;
+        matrix.m31 *= y;
+        matrix.m02 *= z;
+        matrix.m12 *= z;
+        matrix.m22 *= z;
+        matrix.m32 *= z;
     }
 
     void matrix4ftofloatarray(Matrix4f matrix4f, float[] floats) {
