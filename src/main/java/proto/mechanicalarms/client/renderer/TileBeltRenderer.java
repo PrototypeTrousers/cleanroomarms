@@ -3,7 +3,6 @@ package proto.mechanicalarms.client.renderer;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenCustomHashMap;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.init.Blocks;
-import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.world.EnumSkyBlock;
@@ -19,13 +18,11 @@ import proto.mechanicalarms.common.tile.TileBeltBasic;
 
 import javax.vecmath.Matrix4f;
 import javax.vecmath.Vector3f;
-import java.nio.FloatBuffer;
-import java.util.function.Supplier;
 
 
 public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
     private static final Object2ObjectOpenCustomHashMap<ItemStack, ItemStackRenderToVAO> modelCache = new Object2ObjectOpenCustomHashMap<>(new ItemStackHasher());
-    private final Matrix4f tempModelMatrix = new Matrix4f();
+    private static final Matrix4f tempModelMatrix = new Matrix4f();
     InstanceRender ir = InstanceRender.INSTANCE;
     float[] mtx = new float[16];
 
@@ -120,9 +117,9 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
         itemBeltMtx.setIdentity();
 
         if (itemvao.renderType == RenderType.BLOCK) {
-            translate(matrix4fStack, new Vector3f((float) (x), (float) (y - 0.05), (float) (z)));
+            translate(matrix4fStack, (float) x, (float) (y - 0.05), (float) z);
         } else {
-            translate(matrix4fStack, new Vector3f((float) (x), (float) (y - 0.25), (float) (z)));
+            translate(matrix4fStack, (float) x, (float) (y - 0.25), (float) z);
         }
 
         rot.setIndentity();
@@ -279,9 +276,6 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
 
         EnumFacing facing = tileBeltBasic.getFront();
         //model origin
-        Vector3f p = new Vector3f(0, 0.6f, 0f);
-        Vector3f ap = new Vector3f(p);
-        ap.negate();
 
         if (facing == EnumFacing.SOUTH) {
             rot.rotateY((float) (Math.PI));
@@ -298,9 +292,9 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
             }
         }
 
-        translate(beltBseMtx, p);
+        translate(beltBseMtx, 0, 0.6f, 0f);
         Quaternion.rotateMatrix(beltBseMtx, rot);
-        translate(beltBseMtx, ap);
+        translate(beltBseMtx, 0, -0.6f, 0f);
         matrix4fStack.popMatrix();
 
         renderBase(tileBeltBasic);
@@ -311,18 +305,19 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
         renderHoldingItem(tileBeltBasic, curStack, tileBeltBasic.getLogic().getProgressRight(), tileBeltBasic.getLogic().getPreviousProgressRight(), x, y, z, false);
     }
 
-
+    //    public void translate(Matrix4f mat, float x, float y, float z) {
+//        mat.m03 += mat.m00 * x + mat.m01 * y + mat.m02 * z;
+//        mat.m13 += mat.m10 * x + mat.m11 * y + mat.m12 * z;
+//        mat.m23 += mat.m20 * x + mat.m21 * y + mat.m22 * z;
+//        mat.m33 += mat.m30 * x + mat.m31 * y + mat.m32 * z;
+//    }
+//
+    //the above function, but usinng fused multiply-add
     public void translate(Matrix4f mat, float x, float y, float z) {
-        mat.m03 += mat.m00 * x + mat.m01 * y + mat.m02 * z;
-        mat.m13 += mat.m10 * x + mat.m11 * y + mat.m12 * z;
-        mat.m23 += mat.m20 * x + mat.m21 * y + mat.m22 * z;
-        mat.m33 += mat.m30 * x + mat.m31 * y + mat.m32 * z;
-    }
-
-    void translate(Matrix4f matrix, Vector3f translation) {
-        this.tempModelMatrix.setIdentity();
-        this.tempModelMatrix.setTranslation(translation);
-        matrix.mul(this.tempModelMatrix);
+        mat.m03 = Math.fma(mat.m00, x, Math.fma(mat.m01, y, (Math.fma(mat.m02, z, mat.m03))));
+        mat.m13 = Math.fma(mat.m10, x, Math.fma(mat.m11, y, (Math.fma(mat.m12, z, mat.m13))));
+        mat.m23 = Math.fma(mat.m20, x, Math.fma(mat.m21, y, (Math.fma(mat.m22, z, mat.m23))));
+        mat.m33 = Math.fma(mat.m30, x, Math.fma(mat.m31, y, (Math.fma(mat.m32, z, mat.m33))));
     }
 
     private float lerp(float previous, float current, float partialTick) {
