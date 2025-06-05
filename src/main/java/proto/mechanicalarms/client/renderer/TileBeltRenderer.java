@@ -34,6 +34,7 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
     byte b;
     byte alpha;
     Quaternion rot = Quaternion.createIdentity();
+    Quaternion rotProgress = Quaternion.createIdentity();
     Matrix4fStack matrix4fStack = new Matrix4fStack(10);
     ModelInstance baseBeltModel = new ModelInstance(ClientProxy.belt);
     ModelInstance slopedBeltModel = new ModelInstance(ClientProxy.beltSlope);
@@ -93,8 +94,10 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
         }
 
         matrix4fStack.pushMatrix();
-        matrix4fStack.mul(translationMatrix);
-        matrix4fStack.mul(beltBseMtx);
+//        matrix4fStack.mul(translationMatrix);
+//        matrix4fStack.mul(beltBseMtx);
+        multiply(matrix4fStack, translationMatrix);
+        multiply(matrix4fStack, beltBseMtx);
         traverseHierarchy(ni, tileBeltBasic);
         matrix4fStack.popMatrix();
     }
@@ -184,18 +187,20 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
         }
 
         m2.setIdentity();
+        rotProgress.setIndentity();
         m2.m03 = 1;
         m2.m13 = 0;
         m2.m23 = 0;
 
         if (facing == EnumFacing.SOUTH) {
-            m2.rotY((float) Math.PI);
+            rotProgress.rotateY((float) Math.PI);
         } else if (facing == EnumFacing.WEST) {
-            m2.rotY((float) Math.PI / 2);
+            rotProgress.rotateY((float) Math.PI / 2);
         } else if (facing == EnumFacing.EAST) {
-            m2.rotY((float) -Math.PI / 2);
+            rotProgress.rotateY((float) -Math.PI / 2);
         }
 
+        Quaternion.rotateMatrix(m2, rotProgress);
         m2.transform(vecProgress);
         float yProgress = 0;
         if (tileBeltBasic.getDirection().getRelativeHeight() == Directions.RelativeHeight.BELOW) {
@@ -211,13 +216,55 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
         Quaternion.rotateMatrix(itemBeltMtx, rot);
         translate(itemBeltMtx, -0.5f, -0.5f, -0.5f);
 
-        matrix4fStack.mul(itemBeltMtx);
+        //matrix4fStack.mul(itemBeltMtx);
+        multiply(matrix4fStack, itemBeltMtx);
 
         matrix4ftofloatarray(matrix4fStack, mtx);
         matrix4fStack.popMatrix();
         ir.bufferModelMatrixData(mtx);
         ir.bufferLight(s, b, alpha);
     }
+
+
+    public void multiply(Matrix4f mat, Matrix4f other) {
+        float a00 = mat.m00;
+        float a01 = mat.m01;
+        float a02 = mat.m02;
+        float a03 = mat.m03;
+        float a10 = mat.m10;
+        float a11 = mat.m11;
+        float a12 = mat.m12;
+        float a13 = mat.m13;
+        float a20 = mat.m20;
+        float a21 = mat.m21;
+        float a22 = mat.m22;
+        float a23 = mat.m23;
+        float a30 = mat.m30;
+        float a31 = mat.m31;
+        float a32 = mat.m32;
+        float a33 = mat.m33;
+
+        mat.m00 = Math.fma(a00, other.m00, Math.fma(a01, other.m10, Math.fma(a02, other.m20, a03 * other.m30)));
+        mat.m01 = Math.fma(a00, other.m01, Math.fma(a01, other.m11, Math.fma(a02, other.m21, a03 * other.m31)));
+        mat.m02 = Math.fma(a00, other.m02, Math.fma(a01, other.m12, Math.fma(a02, other.m22, a03 * other.m32)));
+        mat.m03 = Math.fma(a00, other.m03, Math.fma(a01, other.m13, Math.fma(a02, other.m23, a03 * other.m33)));
+
+        mat.m10 = Math.fma(a10, other.m00, Math.fma(a11, other.m10, Math.fma(a12, other.m20, a13 * other.m30)));
+        mat.m11 = Math.fma(a10, other.m01, Math.fma(a11, other.m11, Math.fma(a12, other.m21, a13 * other.m31)));
+        mat.m12 = Math.fma(a10, other.m02, Math.fma(a11, other.m12, Math.fma(a12, other.m22, a13 * other.m32)));
+        mat.m13 = Math.fma(a10, other.m03, Math.fma(a11, other.m13, Math.fma(a12, other.m23, a13 * other.m33)));
+
+        mat.m20 = Math.fma(a20, other.m00, Math.fma(a21, other.m10, Math.fma(a22, other.m20, a23 * other.m30)));
+        mat.m21 = Math.fma(a20, other.m01, Math.fma(a21, other.m11, Math.fma(a22, other.m21, a23 * other.m31)));
+        mat.m22 = Math.fma(a20, other.m02, Math.fma(a21, other.m12, Math.fma(a22, other.m22, a23 * other.m32)));
+        mat.m23 = Math.fma(a20, other.m03, Math.fma(a21, other.m13, Math.fma(a22, other.m23, a23 * other.m33)));
+
+        mat.m30 = Math.fma(a30, other.m00, Math.fma(a31, other.m10, Math.fma(a32, other.m20, a33 * other.m30)));
+        mat.m31 = Math.fma(a30, other.m01, Math.fma(a31, other.m11, Math.fma(a32, other.m21, a33 * other.m31)));
+        mat.m32 = Math.fma(a30, other.m02, Math.fma(a31, other.m12, Math.fma(a32, other.m22, a33 * other.m32)));
+        mat.m33 = Math.fma(a30, other.m03, Math.fma(a31, other.m13, Math.fma(a32, other.m23, a33 * other.m33)));
+    }
+
 
     public void scale(Matrix4f matrix, float x, float y, float z) {
         matrix.m00 *= x;

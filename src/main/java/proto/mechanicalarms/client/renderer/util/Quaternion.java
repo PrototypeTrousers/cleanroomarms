@@ -115,10 +115,10 @@ public class Quaternion {
         float y0 = this.y;
         float z0 = this.z;
         float w0 = this.w;
-        this.x =  x0 * w + w0 * x;
-        this.y =  y0 * w + z0 * x;
-        this.z = -y0 * x + z0 * w;
-        this.w = -x0 * x + w0 * w;
+        this.x = Math.fma(x0, w, w0 * x);
+        this.y = Math.fma(y0, w, z0 * x);
+        this.z = Math.fma(-y0, x, z0 * w);
+        this.w = Math.fma(-x0, x, w0 * w);
         return this;
     }
 
@@ -213,18 +213,18 @@ public class Quaternion {
         float f31 = mat.m31;
         float f32 = mat.m32;
 
-        mat.m00 = f00 * r00 + f01 * r10 + f02 * r20;
-        mat.m01 = f00 * r01 + f01 * r11 + f02 * r21;
-        mat.m02 = f00 * r02 + f01 * r12 + f02 * r22;
-        mat.m10 = f10 * r00 + f11 * r10 + f12 * r20;
-        mat.m11 = f10 * r01 + f11 * r11 + f12 * r21;
-        mat.m12 = f10 * r02 + f11 * r12 + f12 * r22;
-        mat.m20 = f20 * r00 + f21 * r10 + f22 * r20;
-        mat.m21 = f20 * r01 + f21 * r11 + f22 * r21;
-        mat.m22 = f20 * r02 + f21 * r12 + f22 * r22;
-        mat.m30 = f30 * r00 + f31 * r10 + f32 * r20;
-        mat.m31 = f30 * r01 + f31 * r11 + f32 * r21;
-        mat.m32 = f30 * r02 + f31 * r12 + f32 * r22;
+        mat.m00 = Math.fma(f00, r00, Math.fma(f01, r10, f02 * r20));
+        mat.m01 = Math.fma(f00, r01, Math.fma(f01, r11, f02 * r21));
+        mat.m02 = Math.fma(f00, r02, Math.fma(f01, r12, f02 * r22));
+        mat.m10 = Math.fma(f10, r00, Math.fma(f11, r10, f12 * r20));
+        mat.m11 = Math.fma(f10, r01, Math.fma(f11, r11, f12 * r21));
+        mat.m12 = Math.fma(f10, r02, Math.fma(f11, r12, f12 * r22));
+        mat.m20 = Math.fma(f20, r00, Math.fma(f21, r10, f22 * r20));
+        mat.m21 = Math.fma(f20, r01, Math.fma(f21, r11, f22 * r21));
+        mat.m22 = Math.fma(f20, r02, Math.fma(f21, r12, f22 * r22));
+        mat.m30 = Math.fma(f30, r00, Math.fma(f31, r10, f32 * r20));
+        mat.m31 = Math.fma(f30, r01, Math.fma(f31, r11, f32 * r21));
+        mat.m32 = Math.fma(f30, r02, Math.fma(f31, r12, f32 * r22));
     }
 
     public static Matrix4f createRotateXMatrix(Quaternion quaternion) {
