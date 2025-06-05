@@ -336,7 +336,30 @@ public class ItemStackRenderToVAO implements InstanceableModel {
         return (stack.getItem() == that.stack.getItem() &&
                 stack.getMetadata() == that.stack.getMetadata() &&
                 stack.getItemDamage() == that.stack.getItemDamage() &&
-                ItemStack.areItemStackTagsEqual(stack, that.stack));
+                areItemStackTagsEqual(stack, that.stack));
+    }
+
+    public static boolean areItemStackTagsEqual(ItemStack itemStack, ItemStack otherStack)
+    {
+        if (itemStack.isEmpty() && otherStack.isEmpty())
+        {
+            return true;
+        }
+        else if (!itemStack.isEmpty() && !otherStack.isEmpty())
+        {
+            if (itemStack.getTagCompound() == null && otherStack.getTagCompound() != null)
+            {
+                return false;
+            }
+            else
+            {
+                return (itemStack.getTagCompound() == null || itemStack.getTagCompound().equals(otherStack.getTagCompound()));
+            }
+        }
+        else
+        {
+            return false;
+        }
     }
 
     @Override
