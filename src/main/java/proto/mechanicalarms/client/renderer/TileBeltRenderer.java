@@ -305,7 +305,7 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
         if (tileBeltBasic.hasWorld()) {
             Chunk c = tileBeltBasic.getWorld().getChunk(tileBeltBasic.getPos());
             s = (byte) c.getLightFor(EnumSkyBlock.SKY, tileBeltBasic.getPos());
-            b = (byte) c.getLightFor(EnumSkyBlock.BLOCK, tileBeltBasic.getPos());
+            b = (byte) c.getLightFor(EnumSkyBlock.BLOCK, tileBeltBasic.getPos().up());
         } else {
             s = b = (byte) 15;
         }

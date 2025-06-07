@@ -1,17 +1,15 @@
 package proto.mechanicalarms.client.renderer;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.GLAllocation;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.RenderItem;
+import net.minecraft.util.ResourceLocation;
+import org.lwjgl.opengl.*;
 import proto.mechanicalarms.MechanicalArms;
 import proto.mechanicalarms.client.renderer.instances.InstanceableModel;
 import proto.mechanicalarms.client.renderer.shaders.Shader;
 import proto.mechanicalarms.client.renderer.shaders.ShaderManager;
-import net.minecraft.client.renderer.GLAllocation;
-import net.minecraft.util.ResourceLocation;
-import org.lwjgl.opengl.*;
 import proto.mechanicalarms.client.renderer.util.ItemStackRenderToVAO;
 
 import javax.vecmath.Matrix4f;
@@ -27,7 +25,6 @@ public class InstanceRender {
 
     protected static final FloatBuffer MODELVIEW_MATRIX_BUFFER = GLAllocation.createDirectFloatBuffer(16);
     protected static final FloatBuffer PROJECTION_MATRIX_BUFFER = GLAllocation.createDirectFloatBuffer(16);
-    protected static final FloatBuffer SUN_MATRIX_BUFFER = GLAllocation.createDirectFloatBuffer(16);
     protected static final ByteBuffer GLINT_BUFFER = GLAllocation.createDirectByteBuffer(2).put((byte) 15).put((byte) 15).rewind();
 
 
@@ -54,11 +51,6 @@ public class InstanceRender {
         // Get the current projection matrix and store it in the buffer
         GL11.glGetFloatv(GL11.GL_PROJECTION_MATRIX, PROJECTION_MATRIX_BUFFER);
 
-        float[] s = new float[16];
-        matrix4ftofloatarray(getSunRotationMatrix(Minecraft.getMinecraft().world.getCelestialAngleRadians(Minecraft.getMinecraft().getRenderPartialTicks())),s);
-        SUN_MATRIX_BUFFER.put(s);
-        SUN_MATRIX_BUFFER.rewind();
-
         int projectionLoc = GL20.glGetUniformLocation(base_vao.getShaderId(), "projection");
         int viewLoc = GL20.glGetUniformLocation(base_vao.getShaderId(), "view");
         int sunRotation = GL20.glGetUniformLocation(base_vao.getShaderId(), "sunRotation");
@@ -66,8 +58,6 @@ public class InstanceRender {
 
         GL20.glUniformMatrix4fv(projectionLoc, false, PROJECTION_MATRIX_BUFFER);
         GL20.glUniformMatrix4fv(viewLoc, false, MODELVIEW_MATRIX_BUFFER);
-        GL20.glUniformMatrix4fv(sunRotation, false, SUN_MATRIX_BUFFER);
-
 
         for (Map.Entry<InstanceableModel, InstanceData> entry : modelInstanceData.entrySet()) {
             InstanceableModel im = entry.getKey();
@@ -111,47 +101,15 @@ public class InstanceRender {
         }
 
         GL11.glBindTexture(GL11.GL_TEXTURE_2D, originalTexId);
-        modelInstanceData.clear();
+        //modelInstanceData.clear();
         GL30.glBindVertexArray(0);
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
         base_vao.release();
     }
 
-    public static Matrix4f getSunRotationMatrix(float radians) {
-        Matrix4f rotationMatrix = new Matrix4f();
-        float cosTheta = (float)Math.cos(-radians);
-        float sinTheta = (float)Math.sin(-radians);
-
-        // Create a new 4x4 identity matrix
-        rotationMatrix.setIdentity();
-
-        // Set rotation values for Z-axis rotation
-        rotationMatrix.m00 = cosTheta;
-        rotationMatrix.m01 = -sinTheta;
-        rotationMatrix.m10 = sinTheta;
-        rotationMatrix.m11 = cosTheta;
-        return rotationMatrix;
+    public void clear() {
+        modelInstanceData.clear();
     }
-
-    static void matrix4ftofloatarray(Matrix4f matrix4f, float[] floats) {
-        floats[0] = matrix4f.m00;
-        floats[1] = matrix4f.m10;
-        floats[2] = matrix4f.m20;
-        floats[3] = matrix4f.m30;
-        floats[4] = matrix4f.m01;
-        floats[5] = matrix4f.m11;
-        floats[6] = matrix4f.m21;
-        floats[7] = matrix4f.m31;
-        floats[8] = matrix4f.m02;
-        floats[9] = matrix4f.m12;
-        floats[10] = matrix4f.m22;
-        floats[11] = matrix4f.m32;
-        floats[12] = matrix4f.m03;
-        floats[13] = matrix4f.m13;
-        floats[14] = matrix4f.m23;
-        floats[15] = matrix4f.m33;
-    }
-
 
     static void renderGlintPass(InstanceData instanceData, InstanceableModel im, float f, float angle) {
         instanceData.rewindBuffers();

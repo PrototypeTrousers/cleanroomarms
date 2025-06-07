@@ -8,6 +8,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import org.lwjgl.opengl.GL11;
+import proto.mechanicalarms.client.renderer.InstanceRender;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -33,5 +34,6 @@ public class Tick {
                 TextureUtil.uploadTextureImageAllocate(tintTexGL, originalTint, true, false);
             }
         }
+        InstanceRender.INSTANCE.clear();
     }
 }

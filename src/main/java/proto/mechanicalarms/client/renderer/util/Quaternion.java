@@ -130,10 +130,10 @@ public class Quaternion {
         float y0 = this.y;
         float z0 = this.z;
         float w0 = this.w;
-        this.x =  x0 * w - z0 * y;
-        this.y =  y0 * w + w0 * y;
-        this.z =  x0 * y + z0 * w;
-        this.w = -y0 * y + w0 * w;
+        this.x = Math.fma(x0, w, -z0 * y);
+        this.y = Math.fma(y0, w, w0 * y);
+        this.z = Math.fma(x0, y, z0 * w);
+        this.w = Math.fma(-y0, y, w0 * w);
         return this;
     }
 
