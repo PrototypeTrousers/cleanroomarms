@@ -25,7 +25,7 @@ public class InstanceRender {
 
     protected static final FloatBuffer MODELVIEW_MATRIX_BUFFER = GLAllocation.createDirectFloatBuffer(16);
     protected static final FloatBuffer PROJECTION_MATRIX_BUFFER = GLAllocation.createDirectFloatBuffer(16);
-    protected static final ByteBuffer GLINT_BUFFER = GLAllocation.createDirectByteBuffer(2).put((byte) 15).put((byte) 15).rewind();
+    protected static final ByteBuffer GLINT_BUFFER = GLAllocation.createDirectByteBuffer(3).put((byte) 15).put((byte) 15).put((byte) 10).rewind();
 
 
 
