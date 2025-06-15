@@ -368,6 +368,6 @@ public class TileBeltRenderer extends FastTESR<TileBeltBasic> {
     }
 
     private float lerp(float previous, float current, float partialTick) {
-        return (previous * (1.0F - partialTick)) + (current * partialTick);
+        return Math.fma(previous, 1.0F - partialTick, (current * partialTick));
     }
 }
