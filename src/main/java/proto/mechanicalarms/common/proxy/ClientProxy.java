@@ -41,6 +41,13 @@ public class ClientProxy extends CommonProxy {
     public static final ModelResourceLocation beltSlope = new ModelResourceLocation(new ResourceLocation(MechanicalArms.MODID, "models/block/beltslope.glb"), "");
     public static final ModelResourceLocation splitter = new ModelResourceLocation(new ResourceLocation(MechanicalArms.MODID, "models/block/splitter.glb"), "");
 
+
+
+
+    public static final ModelResourceLocation hexapod = new ModelResourceLocation(new ResourceLocation(MechanicalArms.MODID, "models/entities/spiderv1.glb"), "");
+
+
+
     @SubscribeEvent
     public static void registerModels(ModelRegistryEvent event) {
         ModelLoader.setCustomModelResourceLocation(Items.ARM_BASE, 0, new ModelResourceLocation(new ResourceLocation(MechanicalArms.MODID, "models/block/completearm.obj"), "inventory"));

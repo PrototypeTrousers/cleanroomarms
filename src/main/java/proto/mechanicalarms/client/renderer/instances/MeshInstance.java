@@ -1,11 +1,10 @@
 package proto.mechanicalarms.client.renderer.instances;
 
-import de.javagl.jgltf.model.AccessorModel;
-import de.javagl.jgltf.model.MeshModel;
-import de.javagl.jgltf.model.MeshPrimitiveModel;
-import de.javagl.jgltf.model.NodeModel;
+import de.javagl.jgltf.model.*;
 import de.javagl.jgltf.model.v2.MaterialModelV2;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.texture.TextureManager;
+import net.minecraft.client.renderer.texture.TextureUtil;
 import net.minecraft.util.ResourceLocation;
 import org.lwjgl.opengl.*;
 import proto.mechanicalarms.MechanicalArms;
@@ -76,10 +75,14 @@ public class MeshInstance implements InstanceableModel {
 
 
         MaterialModelV2 m = ((MaterialModelV2) meshPrimitiveModel.getMaterialModel());
-        EmbeddedTexture embeddedTexture = new EmbeddedTexture(m.getBaseColorTexture());
-
-        Minecraft.getMinecraft().getTextureManager().loadTexture(texture, embeddedTexture);
-        texGL = Minecraft.getMinecraft().getTextureManager().getTexture(texture).getGlTextureId();
+        TextureModel baseTexture = m.getBaseColorTexture();
+        if (baseTexture == null) {
+            texGL = 1;
+        } else {
+            EmbeddedTexture embeddedTexture = new EmbeddedTexture(baseTexture);
+            Minecraft.getMinecraft().getTextureManager().loadTexture(texture, embeddedTexture);
+            texGL = Minecraft.getMinecraft().getTextureManager().getTexture(texture).getGlTextureId();
+        }
 
         AccessorModel normalAccessor = meshPrimitiveModel.getAttributes().get("NORMAL");
 
