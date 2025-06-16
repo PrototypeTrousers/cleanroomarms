@@ -10,6 +10,7 @@ import net.minecraft.client.resources.IResource;
 import net.minecraft.util.ResourceLocation;
 import proto.mechanicalarms.client.renderer.util.Quaternion;
 
+import javax.vecmath.Vector3f;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -76,6 +77,10 @@ public class ModelInstancer {
                 UnaryOperator<Quaternion> f = modelInstance.rmap.get(nm.getName());
                 if (f != null) {
                     mi.setRotationFunction(f);
+                }
+                UnaryOperator<Vector3f> v = modelInstance.tmap.get(nm.getName());
+                if (v != null) {
+                    mi.setTranslationVector(v);
                 }
                 Runnable g = modelInstance.attachedmap.get(nm.getName());
                 if (g != null) {

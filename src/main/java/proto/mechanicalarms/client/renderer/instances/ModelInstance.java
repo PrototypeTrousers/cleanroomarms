@@ -7,12 +7,14 @@ import net.minecraft.util.ResourceLocation;
 import org.apache.commons.lang3.time.StopWatch;
 import proto.mechanicalarms.client.renderer.util.Quaternion;
 
+import javax.vecmath.Vector3f;
 import java.util.function.UnaryOperator;
 
 public class ModelInstance {
     NodeInstance root;
     ResourceLocation resourceLocation;
     Object2ObjectArrayMap<String, UnaryOperator<Quaternion>> rmap = new Object2ObjectArrayMap<>();
+    Object2ObjectArrayMap<String, UnaryOperator<Vector3f>> tmap = new Object2ObjectArrayMap<>();
     Object2ObjectArrayMap<String, Runnable> attachedmap = new Object2ObjectArrayMap<>();
 
     public ModelInstance(ResourceLocation resourceLocation) {
@@ -21,6 +23,10 @@ public class ModelInstance {
 
     public void setMeshRotationFunction(String meshName, UnaryOperator<Quaternion> f) {
         rmap.put(meshName, f);
+    }
+
+    public void setMeshTranslationFunction(String meshName, UnaryOperator<Vector3f> f) {
+        tmap.put(meshName, f);
     }
 
     public void init() {

@@ -18,6 +18,7 @@ import proto.mechanicalarms.common.proxy.ClientProxy;
 import proto.mechanicalarms.common.tile.TileArmBasic;
 
 import javax.vecmath.Matrix4f;
+import javax.vecmath.Vector3f;
 import java.util.function.Supplier;
 
 
@@ -32,6 +33,7 @@ public class HexapodRenderer{
     byte s;
     byte b;
     Quaternion rot = Quaternion.createIdentity();
+    Vector3f translation = new Vector3f();
     Matrix4fStack matrix4fStack = new Matrix4fStack(10);
 
     ModelInstance modelInstance = new ModelInstance(ClientProxy.hexapod);
@@ -69,6 +71,11 @@ public class HexapodRenderer{
                 Quaternion.rotateMatrix(matrix4fStack, rot);
             } else {
                 translate(matrix4fStack, m.meshOrigin[0], m.meshOrigin[1], m.meshOrigin[2]);
+                if (m.hasTranslationVector()) {
+                    translation.set(0,0,0);
+                    m.applyTranslation(translation);
+                    translate(matrix4fStack, translation.x, translation.y, translation.z);
+                }
             }
 
             matrix4ftofloatarray(matrix4fStack, mtx);
@@ -94,13 +101,18 @@ public class HexapodRenderer{
     void renderBase() {
         if (modelInstance.getRoot() == null) {
             modelInstance.setMeshRotationFunction(
-                    "FrontRightLegBase", (quaternion) -> quaternion
-                            .rotateY(-getEntityHexapod().get().getR1())
-                            .rotateZ((getEntityHexapod().get().getR1())));
-            modelInstance.setMeshRotationFunction(
-                    "FrontRightLegMid", (quaternion) -> quaternion.rotateZ(2* -(getEntityHexapod().get().getR1())));
-            modelInstance.setMeshRotationFunction(
-                    "FrontRightLegTip", (quaternion) -> quaternion.rotateZ((getEntityHexapod().get().getR1())));
+                    "FrontRightLegBase", (quaternion) -> {
+                        quaternion.multiply(getEntityHexapod().get().getR1());
+                        return quaternion;
+                    });
+            modelInstance.setMeshTranslationFunction("FrontRightLegBase", (vector3f -> {
+                        vector3f.set(getEntityHexapod().get().getTranslation());
+                        return vector3f;
+                    }));
+//            modelInstance.setMeshRotationFunction(
+//                    "FrontRightLegMid", (quaternion) -> quaternion.rotateZ(2* -(getEntityHexapod().get().getR1())));
+//            modelInstance.setMeshRotationFunction(
+//                    "FrontRightLegTip", (quaternion) -> quaternion.rotateZ((getEntityHexapod().get().getR1())));
 //            modelInstance.setMeshRotationFunction(
 //                    "FirstArm", (quaternion) -> quaternion.rotateX(lerp(getEntityHexapod().get().getAnimationRotation(0)[0],
 //                            getEntityHexapod().get().getRotation(0)[0], partialTicks)));
@@ -191,7 +203,7 @@ public class HexapodRenderer{
         this.alpha = (byte) Math.clamp(alpha * 10, 0, 10);
 
         translationMatrix.setIdentity();
-        translate(translationMatrix, (float) x + 0.5F, (float) y, (float) z + 0.5F);
+        translate(translationMatrix, (float) x, (float) y, (float) z);
         setEntityHexapod(hexapod);
         renderBase();
     }

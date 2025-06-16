@@ -11,6 +11,7 @@ import proto.mechanicalarms.MechanicalArms;
 import proto.mechanicalarms.client.jgltf.EmbeddedTexture;
 import proto.mechanicalarms.client.renderer.util.Quaternion;
 
+import javax.vecmath.Vector3f;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
@@ -38,6 +39,7 @@ public class MeshInstance implements InstanceableModel {
     private Quaternion rotation;
     private UnaryOperator<Quaternion> rotationFunction;
     private Runnable runnable;
+    private UnaryOperator<Vector3f> translationVectorFunction;
 
     MeshInstance(NodeModel nm, MeshModel meshModel, MeshPrimitiveModel meshPrimitiveModel) {
         meshOrigin = nm.getTranslation();
@@ -172,6 +174,10 @@ public class MeshInstance implements InstanceableModel {
         rotationFunction.apply(quaternion);
     }
 
+    public void applyTranslation(Vector3f vector3f) {
+        translationVectorFunction.apply(vector3f);
+    }
+
     public void setRotationFunction(UnaryOperator<Quaternion> f) {
         rotationFunction = f;
     }
@@ -180,6 +186,9 @@ public class MeshInstance implements InstanceableModel {
         return rotationFunction != null;
     }
 
+    public boolean hasTranslationVector() {
+        return translationVectorFunction != null;
+    }
 
     @Override
     public boolean equals(Object o) {
@@ -203,5 +212,9 @@ public class MeshInstance implements InstanceableModel {
 
     public Runnable getAttachedMesh() {
         return this.runnable;
+    }
+
+    public void setTranslationVector(UnaryOperator<Vector3f> v) {
+        this.translationVectorFunction = v;
     }
 }

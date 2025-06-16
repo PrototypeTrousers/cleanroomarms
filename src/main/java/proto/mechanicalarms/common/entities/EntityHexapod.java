@@ -15,13 +15,15 @@ import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.joml.Quaternionf;
+import org.joml.Vector3f;
 import proto.mechanicalarms.MechanicalArms;
-import proto.mechanicalarms.common.entities.ai.EntityAIWeirdZombieAttack;
+import proto.mechanicalarms.client.renderer.entities.KinematicChain;
+import proto.mechanicalarms.client.renderer.entities.ModelSegment;
+import proto.mechanicalarms.client.renderer.util.Quaternion;
 
 import javax.annotation.Nullable;
 
@@ -32,6 +34,16 @@ public class EntityHexapod extends EntityMob {
 
     public static final ResourceLocation LOOT = new ResourceLocation(MechanicalArms.MODID, "entities/weird_zombie");
 
+
+    ModelSegment mainBody = new ModelSegment();
+    KinematicChain kinematicChain = new KinematicChain(mainBody);
+    ModelSegment leftArm = new ModelSegment(mainBody, 3);
+    ModelSegment rightArm = new ModelSegment(mainBody, 3);
+    ModelSegment leftMidLeg = new ModelSegment(mainBody, 3);
+    ModelSegment rightMidLeg = new ModelSegment(mainBody, 3);
+    ModelSegment leftBackLeg = new ModelSegment(mainBody, 3);
+    ModelSegment rightBackLeg = new ModelSegment(mainBody, 3);
+
     public EntityHexapod(World worldIn) {
         super(worldIn);
         setSize(1F, 1F);
@@ -41,6 +53,12 @@ public class EntityHexapod extends EntityMob {
     protected void entityInit() {
         super.entityInit();
         this.getDataManager().register(ARMS_RAISED, Boolean.valueOf(false));
+    }
+
+    @Override
+    public void onEntityUpdate() {
+        kinematicChain.doFabrik(new Vector3f(0, 10, 0));
+        super.onEntityUpdate();
     }
 
     @Override
@@ -85,8 +103,8 @@ public class EntityHexapod extends EntityMob {
         if (super.attackEntityAsMob(entityIn)) {
             if (entityIn instanceof EntityLivingBase) {
                 // This zombie gives health boost and regeneration when it attacks
-                ((EntityLivingBase)entityIn).addPotionEffect(new PotionEffect(MobEffects.HEALTH_BOOST, 200));
-                ((EntityLivingBase)entityIn).addPotionEffect(new PotionEffect(MobEffects.REGENERATION, 200));
+                ((EntityLivingBase) entityIn).addPotionEffect(new PotionEffect(MobEffects.HEALTH_BOOST, 200));
+                ((EntityLivingBase) entityIn).addPotionEffect(new PotionEffect(MobEffects.REGENERATION, 200));
             }
             return true;
         } else {
@@ -110,8 +128,12 @@ public class EntityHexapod extends EntityMob {
         return 5;
     }
 
-    public float getR1() {
-        float r1 = (float) (Math.sin(System.currentTimeMillis() /1000d)  -1 ) /2f;
-        return r1;
+    public Quaternion getR1() {
+        Quaternionf la = rightArm.getCurrentRotation();
+        return new Quaternion(la.x, la.y, la.z, la.w);
+    }
+
+    public javax.vecmath.Vector3f getTranslation() {
+        return new javax.vecmath.Vector3f(rightArm.getBaseVector().x, rightArm.getBaseVector().y, rightArm.getBaseVector().z);
     }
 }
