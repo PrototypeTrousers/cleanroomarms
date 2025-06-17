@@ -37,8 +37,9 @@ public class EntityHexapod extends EntityMob {
 
     ModelSegment mainBody = new ModelSegment();
     KinematicChain kinematicChain = new KinematicChain(mainBody);
-//    ModelSegment leftArm = new ModelSegment(mainBody, 3);
-    ModelSegment rightArm = new ModelSegment(mainBody, 3);
+    //    ModelSegment leftArm = new ModelSegment(mainBody, 3);
+    ModelSegment rightArm = new ModelSegment(0);
+    KinematicChain rightArmChain = new KinematicChain(kinematicChain, rightArm);
 //    ModelSegment leftMidLeg = new ModelSegment(mainBody, 3);
 //    ModelSegment rightMidLeg = new ModelSegment(mainBody, 3);
 //    ModelSegment leftBackLeg = new ModelSegment(mainBody, 3);
@@ -58,8 +59,10 @@ public class EntityHexapod extends EntityMob {
     @Override
     public void onEntityUpdate() {
         //RECHECK THIS
-        kinematicChain.doFabrik(new Vector3f(1f, 0.2f, 0));
-        mainBody.move(0,0,0);
+        float f = (float) (Math.sin(System.currentTimeMillis() /1000d) ) /2f;
+        kinematicChain.updateFromNewBase(new Vector3f(0,f, 0));
+        mainBody.move(0, f, 0);
+        rightArmChain.doFabrik(new Vector3f(1.5f, f - 0.2f, 0));
         super.onEntityUpdate();
     }
 
@@ -137,5 +140,33 @@ public class EntityHexapod extends EntityMob {
 
     public javax.vecmath.Vector3f getTranslation() {
         return new javax.vecmath.Vector3f(mainBody.getBaseVector().x, mainBody.getBaseVector().y, mainBody.getBaseVector().z);
+    }
+
+
+    public static void main(String[] args){
+        ModelSegment mainBody = new ModelSegment();
+        KinematicChain kinematicChain = new KinematicChain(mainBody);
+        ModelSegment rightArm = new ModelSegment(0);
+        KinematicChain rightArmChain = new KinematicChain(kinematicChain, rightArm);
+
+        rightArmChain.doFabrik(new Vector3f(1.5f, 0f, 0));
+
+        Quaternionf q = new Quaternionf();
+        q.rotationTo(rightArm.originalVector, rightArm.getcurvec());
+
+        Vector3f v = q.getEulerAnglesXYZ(new Vector3f());
+        System.out.println(v.x);
+        System.out.println(v.y);
+        System.out.println(v.z);
+
+        rightArmChain.doFabrik(new Vector3f(2f, 2f, 0));
+
+        q.identity();
+        q.rotationTo(rightArm.originalVector, rightArm.getcurvec());
+
+        v = q.getEulerAnglesXYZ(new Vector3f());
+        System.out.println(v.x);
+        System.out.println(v.y);
+        System.out.println(v.z);
     }
 }

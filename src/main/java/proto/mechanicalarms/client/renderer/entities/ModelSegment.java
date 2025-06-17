@@ -12,6 +12,9 @@ public class ModelSegment {
     Quaternionf currentRotation = new Quaternionf();
     Quaternionf prevRotation = new Quaternionf();
 
+    public Vector3f originalVector = new Vector3f();
+    public Quaternionf originalRotation = new Quaternionf();
+
     public Vector3f getBaseVector() {
         return baseVector;
     }
@@ -43,7 +46,23 @@ public class ModelSegment {
         }
     }
 
-    public void move(int x, int y, int z) {
+    public ModelSegment(int segmentCount) {
+        //RECHECK THIS
+        this.baseVector.set(0f, 0f,0);
+        this.tipVector.set(1f, 0f,0);
+        tipVector.sub(baseVector, originalVector);
+        originalRotation.rotationTo( new Vector3f(1,0,0), originalVector);
+        originalRotation.rotateX((float) (-Math.PI));
+
+        for (int i = 0; i < segmentCount; i++) {
+            ModelSegment child = new ModelSegment(this);
+            child = new ModelSegment(child);
+            child.baseVector.set(1.5f + i, 0.2f,0);
+            child.tipVector.set(2.5f + i, 0.2f,0);
+        }
+    }
+
+    public void move(float x, float y, float z) {
         baseVector.x = x;
         baseVector.y = y;
         baseVector.z = z;
@@ -51,14 +70,25 @@ public class ModelSegment {
 
     public Quaternionf getCurrentRotation() {
         if (baseVector.isFinite() && tipVector.isFinite()) {
-            currentRotation.rotationTo(baseVector, tipVector);
+            Vector3f currRotationVector = currentRotation.getEulerAnglesXYZ(new Vector3f());
+            Vector3f toRotationVector = getcurvec();
+            currentRotation.rotationTo(originalVector, getcurvec());
             if (currentRotation.isFinite()) {
-                return currentRotation;
+                return currentRotation.mul(originalRotation);
             } else {
                 return currentRotation.identity();
             }
         } else {
             return currentRotation.identity();
         }
+    }
+
+    public Vector3f getcurvec() {
+        Vector3f direction = new Vector3f();
+        tipVector.sub(baseVector, direction).normalize();
+        if (!direction.isFinite()) {
+            direction.set(0, 0, 0);
+        }
+        return direction;
     }
 }

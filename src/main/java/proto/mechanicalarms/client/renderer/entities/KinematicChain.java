@@ -2,8 +2,13 @@ package proto.mechanicalarms.client.renderer.entities;
 
 import org.joml.Vector3f;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class KinematicChain {
     ModelSegment root;
+    List<KinematicChain> children = new ArrayList<>();
+    KinematicChain parent;
     int maxIteration = 10;
     float epsilon = 0.1f;
 
@@ -11,10 +16,28 @@ public class KinematicChain {
         this.root = root;
     }
 
+    public KinematicChain(KinematicChain parent, ModelSegment root) {
+        this.root = root;
+        this.parent = parent;
+        parent.children.add(this);
+    }
+
     public void doFabrik(Vector3f target) {
         for (int i = 0; i < maxIteration; i++) {
             fabrikForward(root, target);
             fabrikBackward(root, root.baseVector);
+        }
+    }
+
+    /**
+     * Updates the entire chain's position after the root's base has been moved.
+     * This method propagates the change from the root down to the end-effector.
+     *
+     * @param newBasePosition The new position for the base of the root segment.
+     */
+    public void updateFromNewBase(Vector3f newBasePosition) {
+        for (KinematicChain kc : children) {
+            kc.fabrikBackward(kc.root, newBasePosition);
         }
     }
 
@@ -40,6 +63,10 @@ public class KinematicChain {
                 Vector3f childsCorrectedBase = fabrikForward(segment.children.get(i), target);
                 segment.tipVector.set(childsCorrectedBase);
             }
+        }
+
+        if (segment.parent == null) {
+            return segment.baseVector;
         }
 
         // --- This logic runs for EVERY segment on the way back up the chain. ---
