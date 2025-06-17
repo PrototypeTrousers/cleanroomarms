@@ -37,12 +37,12 @@ public class EntityHexapod extends EntityMob {
 
     ModelSegment mainBody = new ModelSegment();
     KinematicChain kinematicChain = new KinematicChain(mainBody);
-    ModelSegment leftArm = new ModelSegment(mainBody, 3);
+//    ModelSegment leftArm = new ModelSegment(mainBody, 3);
     ModelSegment rightArm = new ModelSegment(mainBody, 3);
-    ModelSegment leftMidLeg = new ModelSegment(mainBody, 3);
-    ModelSegment rightMidLeg = new ModelSegment(mainBody, 3);
-    ModelSegment leftBackLeg = new ModelSegment(mainBody, 3);
-    ModelSegment rightBackLeg = new ModelSegment(mainBody, 3);
+//    ModelSegment leftMidLeg = new ModelSegment(mainBody, 3);
+//    ModelSegment rightMidLeg = new ModelSegment(mainBody, 3);
+//    ModelSegment leftBackLeg = new ModelSegment(mainBody, 3);
+//    ModelSegment rightBackLeg = new ModelSegment(mainBody, 3);
 
     public EntityHexapod(World worldIn) {
         super(worldIn);
@@ -57,7 +57,9 @@ public class EntityHexapod extends EntityMob {
 
     @Override
     public void onEntityUpdate() {
-        kinematicChain.doFabrik(new Vector3f(0, 10, 0));
+        //RECHECK THIS
+        kinematicChain.doFabrik(new Vector3f(1f, 0.2f, 0));
+        mainBody.move(0,0,0);
         super.onEntityUpdate();
     }
 
@@ -134,6 +136,6 @@ public class EntityHexapod extends EntityMob {
     }
 
     public javax.vecmath.Vector3f getTranslation() {
-        return new javax.vecmath.Vector3f(rightArm.getBaseVector().x, rightArm.getBaseVector().y, rightArm.getBaseVector().z);
+        return new javax.vecmath.Vector3f(mainBody.getBaseVector().x, mainBody.getBaseVector().y, mainBody.getBaseVector().z);
     }
 }

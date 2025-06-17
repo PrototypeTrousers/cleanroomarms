@@ -63,19 +63,23 @@ public class HexapodRenderer{
         for (MeshInstance m : node.getMeshes()) {
             ir.schedule(m); // Schedule the mesh for rendering
 
+            boolean tto = false;
             // Reset the rotation matrix
             if (m.hasRotationFunction()) {
                 rot.setIndentity();
                 m.applyRotation(rot);
                 translate(matrix4fStack, m.meshOrigin[0], m.meshOrigin[1], m.meshOrigin[2]);
+                tto = true;
                 Quaternion.rotateMatrix(matrix4fStack, rot);
-            } else {
+            }
+            if (m.hasTranslationVector()) {
+                m.applyTranslation(translation);
+                translate(matrix4fStack, translation.x, translation.y, translation.z);
+            }
+
+            if (!tto) {
+
                 translate(matrix4fStack, m.meshOrigin[0], m.meshOrigin[1], m.meshOrigin[2]);
-                if (m.hasTranslationVector()) {
-                    translation.set(0,0,0);
-                    m.applyTranslation(translation);
-                    translate(matrix4fStack, translation.x, translation.y, translation.z);
-                }
             }
 
             matrix4ftofloatarray(matrix4fStack, mtx);
@@ -100,15 +104,15 @@ public class HexapodRenderer{
 
     void renderBase() {
         if (modelInstance.getRoot() == null) {
+            modelInstance.setMeshTranslationFunction("Body", (vector3f -> {
+                vector3f.set(getEntityHexapod().get().getTranslation());
+                return vector3f;
+            }));
             modelInstance.setMeshRotationFunction(
                     "FrontRightLegBase", (quaternion) -> {
                         quaternion.multiply(getEntityHexapod().get().getR1());
                         return quaternion;
                     });
-            modelInstance.setMeshTranslationFunction("FrontRightLegBase", (vector3f -> {
-                        vector3f.set(getEntityHexapod().get().getTranslation());
-                        return vector3f;
-                    }));
 //            modelInstance.setMeshRotationFunction(
 //                    "FrontRightLegMid", (quaternion) -> quaternion.rotateZ(2* -(getEntityHexapod().get().getR1())));
 //            modelInstance.setMeshRotationFunction(
@@ -126,6 +130,7 @@ public class HexapodRenderer{
         NodeInstance ni = modelInstance.getRoot();
         matrix4fStack.pushMatrix();
         matrix4fStack.mul(translationMatrix);
+        translation.set(0,0,0);
         traverseHierarchy(ni);
         matrix4fStack.popMatrix();
     }

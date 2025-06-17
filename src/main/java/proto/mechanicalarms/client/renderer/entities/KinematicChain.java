@@ -36,8 +36,10 @@ public class KinematicChain {
         else {
             // Recurse all the way down the chain first. The returned vector is the
             // corrected position where our tip should attach.
-            Vector3f childsCorrectedBase = fabrikForward(segment.children.get(0), target);
-            segment.tipVector.set(childsCorrectedBase);
+            for (int i = 0; i < segment.children.size(); i++) {
+                Vector3f childsCorrectedBase = fabrikForward(segment.children.get(i), target);
+                segment.tipVector.set(childsCorrectedBase);
+            }
         }
 
         // --- This logic runs for EVERY segment on the way back up the chain. ---
@@ -77,7 +79,9 @@ public class KinematicChain {
         // --- Recursive Step: If we are not at the end. ---
         // Call the function for our child, passing our new tip as its constraint.
         if (!segment.children.isEmpty()) {
-            fabrikBackward(segment.children.get(0), segment.tipVector);
+            for (int i = 0; i < segment.children.size(); i++) {
+                fabrikBackward(segment.children.get(i), segment.tipVector);
+            }
         }
     }
 }

@@ -32,16 +32,21 @@ public class ModelSegment {
     public ModelSegment(ModelSegment parent, int segmentCount) {
         this.parent = parent;
         parent.children.add(this);
+        //RECHECK THIS
         ModelSegment child = new ModelSegment(this);
+        child.baseVector.set(0.5f, 0.2f,0);
+        child.tipVector.set(1.5f, 0.2f,0);
         for (int i = 0; i < segmentCount; i++) {
             child = new ModelSegment(child);
+            child.baseVector.set(1.5f + i, 0.2f,0);
+            child.tipVector.set(2.5f + i, 0.2f,0);
         }
     }
 
     public void move(int x, int y, int z) {
-        tipVector.x += x;
-        tipVector.y += y;
-        tipVector.z += z;
+        baseVector.x = x;
+        baseVector.y = y;
+        baseVector.z = z;
     }
 
     public Quaternionf getCurrentRotation() {
