@@ -38,7 +38,7 @@ public class EntityHexapod extends EntityMob {
     ModelSegment mainBody = new ModelSegment();
     KinematicChain kinematicChain = new KinematicChain(mainBody);
     //    ModelSegment leftArm = new ModelSegment(mainBody, 3);
-    ModelSegment rightArm = new ModelSegment(0);
+    ModelSegment rightArm = new ModelSegment(2);
     KinematicChain rightArmChain = new KinematicChain(kinematicChain, rightArm);
 //    ModelSegment leftMidLeg = new ModelSegment(mainBody, 3);
 //    ModelSegment rightMidLeg = new ModelSegment(mainBody, 3);
@@ -59,10 +59,10 @@ public class EntityHexapod extends EntityMob {
     @Override
     public void onEntityUpdate() {
         //RECHECK THIS
-        float f = (float) (Math.sin(System.currentTimeMillis() /1000d) ) /2f;
-        kinematicChain.updateFromNewBase(new Vector3f(0,f, 0));
-        mainBody.move(0, f, 0);
-        rightArmChain.doFabrik(new Vector3f(1.5f, f - 0.2f, 0));
+        float f = (float) (Math.sin(System.currentTimeMillis() /100d) ) /2f;
+        //kinematicChain.updateFromNewBase(new Vector3f(0,f, 0));
+        //mainBody.move(0, f, 0);
+        rightArmChain.doFabrik(new Vector3f(3f,  f + 1, 0));
         super.onEntityUpdate();
     }
 
@@ -168,5 +168,15 @@ public class EntityHexapod extends EntityMob {
         System.out.println(v.x);
         System.out.println(v.y);
         System.out.println(v.z);
+    }
+
+    public Quaternion getR2() {
+        Quaternionf la = rightArm.children.get(0).getCurrentRotation();
+        return new Quaternion(la.x, la.y, la.z, la.w);
+    }
+
+    public Quaternion getR3() {
+        Quaternionf la = rightArm.children.get(0).children.get(0).getCurrentRotation();
+        return new Quaternion(la.x, la.y, la.z, la.w);
     }
 }

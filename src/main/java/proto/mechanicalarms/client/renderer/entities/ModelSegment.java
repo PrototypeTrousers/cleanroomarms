@@ -8,7 +8,7 @@ import java.util.List;
 
 public class ModelSegment {
     ModelSegment parent;
-    List<ModelSegment> children = new ArrayList<>();
+    public List<ModelSegment> children = new ArrayList<>();
     Quaternionf currentRotation = new Quaternionf();
     Quaternionf prevRotation = new Quaternionf();
 
@@ -48,17 +48,23 @@ public class ModelSegment {
 
     public ModelSegment(int segmentCount) {
         //RECHECK THIS
-        this.baseVector.set(0f, 0f,0);
-        this.tipVector.set(1f, 0f,0);
+        this.baseVector.set(0f, 0f, 0);
+        this.tipVector.set(1f, 0f, 0);
         tipVector.sub(baseVector, originalVector);
-        originalRotation.rotationTo( new Vector3f(1,0,0), originalVector);
-        originalRotation.rotateX((float) (-Math.PI));
+        originalRotation.rotationTo(new Vector3f(1, 0, 0), originalVector);
+        //originalRotation.rotateZ((float) (-Math.PI/2));
 
-        for (int i = 0; i < segmentCount; i++) {
-            ModelSegment child = new ModelSegment(this);
-            child = new ModelSegment(child);
-            child.baseVector.set(1.5f + i, 0.2f,0);
-            child.tipVector.set(2.5f + i, 0.2f,0);
+        if (segmentCount > 0) {
+            ModelSegment parent = this;
+            for (int i = 0; i < segmentCount; i++) {
+                ModelSegment child = new ModelSegment(parent);
+                child.baseVector.set(1.0f + i, 0.0f, 0);
+                child.tipVector.set(2.0f + i, 0.0f, 0);
+                child.tipVector.sub(baseVector, child.originalVector);
+                child.originalRotation.rotationTo(new Vector3f(1, 0, 0), child.originalVector);
+                //child.originalRotation.rotateZ((float) (Math.PI/2));
+                parent = child;
+            }
         }
     }
 
