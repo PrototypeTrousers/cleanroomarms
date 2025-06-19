@@ -60,7 +60,7 @@ public class ModelSegment {
                 ModelSegment child = new ModelSegment(parent);
                 child.baseVector.set(1.0f + i, 0.0f, 0);
                 child.tipVector.set(2.0f + i, 0.0f, 0);
-                child.tipVector.sub(baseVector, child.originalVector);
+                child.tipVector.sub(child.baseVector, child.originalVector);
                 child.originalRotation.rotationTo(new Vector3f(1, 0, 0), child.originalVector);
                 //child.originalRotation.rotateZ((float) (Math.PI/2));
                 parent = child;
@@ -76,9 +76,11 @@ public class ModelSegment {
 
     public Quaternionf getCurrentRotation() {
         if (baseVector.isFinite() && tipVector.isFinite()) {
-            Vector3f currRotationVector = currentRotation.getEulerAnglesXYZ(new Vector3f());
-            Vector3f toRotationVector = getcurvec();
-            currentRotation.rotationTo(originalVector, getcurvec());
+            if (parent != null) {
+                currentRotation.rotationTo(parent.getcurvec(), getcurvec());
+            } else {
+                currentRotation.rotationTo(originalVector, getcurvec());
+            }
             if (currentRotation.isFinite()) {
                 return currentRotation.mul(originalRotation);
             } else {
