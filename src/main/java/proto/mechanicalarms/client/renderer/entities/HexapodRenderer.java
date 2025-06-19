@@ -109,6 +109,11 @@ public class HexapodRenderer{
                 return vector3f;
             }));
             modelInstance.setMeshRotationFunction(
+                    "Body", (quaternion) -> {
+                        quaternion.multiply(getEntityHexapod().get().getBodyRotation());
+                        return quaternion;
+                    });
+            modelInstance.setMeshRotationFunction(
                     "FrontRightLegBase", (quaternion) -> {
                         quaternion.multiply(getEntityHexapod().get().getR1());
                         return quaternion;

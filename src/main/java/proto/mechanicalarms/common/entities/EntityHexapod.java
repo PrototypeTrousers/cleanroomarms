@@ -61,8 +61,8 @@ public class EntityHexapod extends EntityMob {
         //RECHECK THIS
         float f = (float) (Math.sin(System.currentTimeMillis() /100d) ) /2f;
         //kinematicChain.updateFromNewBase(new Vector3f(0,f, 0));
-        //mainBody.move(0, f, 0);
-        rightArmChain.doFabrik(new Vector3f(3f,  f + 1, 0));
+        //mainBody.move(0, 1 + f, 0);
+        rightArmChain.doFabrik(new Vector3f(3f,  1, -3 + f));
         super.onEntityUpdate();
     }
 
@@ -177,6 +177,14 @@ public class EntityHexapod extends EntityMob {
 
     public Quaternion getR3() {
         Quaternionf la = rightArm.children.get(0).children.get(0).getCurrentRotation();
+        return new Quaternion(la.x, la.y, la.z, la.w);
+    }
+
+    public Quaternion getBodyRotation() {
+
+        Quaternionf la = new Quaternionf();
+        la.rotateY((float) this.getLook(1).x);
+        //la.rotateY(this.rotationPitch);
         return new Quaternion(la.x, la.y, la.z, la.w);
     }
 }
