@@ -1,5 +1,6 @@
 package proto.mechanicalarms.client.renderer.entities;
 
+import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 import java.util.ArrayList;
@@ -23,6 +24,8 @@ public class KinematicChain {
     }
 
     public void doFabrik(Vector3f target) {
+        Vector3f direction = new Vector3f(target).setComponent(1, 0).normalize();;
+        fabrikBackward2(root, root.baseVector, direction);
         for (int i = 0; i < maxIteration; i++) {
             fabrikForward(root, target);
             fabrikBackward(root, root.baseVector);
@@ -108,6 +111,21 @@ public class KinematicChain {
         if (!segment.children.isEmpty()) {
             for (int i = 0; i < segment.children.size(); i++) {
                 fabrikBackward(segment.children.get(i), segment.tipVector);
+            }
+        }
+    }
+
+    private void fabrikBackward2(ModelSegment segment, Vector3f constraintPosition, Vector3f direction) {
+        // --- This logic runs for the current segment on the way down the chain. ---
+        // Set our base to the constrained position provided by our parent.
+        segment.baseVector.set(constraintPosition);
+        segment.tipVector.set(segment.baseVector).add(direction.mul(segment.length));
+
+        // --- Recursive Step: If we are not at the end. ---
+        // Call the function for our child, passing our new tip as its constraint.
+        if (!segment.children.isEmpty()) {
+            for (int i = 0; i < segment.children.size(); i++) {
+                fabrikBackward2(segment.children.get(i), segment.tipVector, direction);
             }
         }
     }

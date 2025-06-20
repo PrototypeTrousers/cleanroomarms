@@ -1,5 +1,7 @@
 package proto.mechanicalarms.common.entities;
 
+import net.minecraft.block.state.BlockStateBase;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
@@ -9,12 +11,14 @@ import net.minecraft.entity.monster.EntityMob;
 import net.minecraft.entity.monster.EntityPigZombie;
 import net.minecraft.entity.passive.EntityVillager;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Blocks;
 import net.minecraft.init.MobEffects;
 import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -62,7 +66,17 @@ public class EntityHexapod extends EntityMob {
         float f = (float) (Math.sin(System.currentTimeMillis() /100d) ) /2f;
         //kinematicChain.updateFromNewBase(new Vector3f(0,f, 0));
         //mainBody.move(0, 1 + f, 0);
-        rightArmChain.doFabrik(new Vector3f(3f,  1, -3 + f));
+
+
+        Quaternionf la = new Quaternionf();
+        la.rotateY((float) this.getLook(1).x);
+        Vector3f ra = new Vector3f(3f, 0, 0);
+        Vector3f ra2 = new Vector3f(0.5f + 1 + f, 1.5f, -f - 1);
+        ra.rotate(la);
+//        if (!(world.getBlockState(new BlockPos(posX + ra.x, posY + ra.y, posZ + ra.z)) == Blocks.AIR.getDefaultState())) {
+//            ra2.y += 1;
+//        }
+        rightArmChain.doFabrik(ra2);
         super.onEntityUpdate();
     }
 
@@ -183,7 +197,7 @@ public class EntityHexapod extends EntityMob {
     public Quaternion getBodyRotation() {
 
         Quaternionf la = new Quaternionf();
-        la.rotateY((float) this.getLook(1).x);
+        //la.rotateY((float) this.getLook(1).x);
         //la.rotateY(this.rotationPitch);
         return new Quaternion(la.x, la.y, la.z, la.w);
     }

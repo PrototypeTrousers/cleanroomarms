@@ -77,9 +77,16 @@ public class ModelSegment {
     public Quaternionf getCurrentRotation() {
         if (baseVector.isFinite() && tipVector.isFinite()) {
             if (parent != null) {
-                currentRotation.rotationTo(parent.getcurvec(), getcurvec());
+                float angle = parent.getcurvec().angleSigned(getcurvec(), new Vector3f(0, 1, 0));
+                currentRotation.setAngleAxis(angle % Math.PI, 0,1,0);
+                float angle2 = parent.getcurvec().angleSigned(getcurvec(), new Vector3f(0, 0, 1));
+                currentRotation.rotateZ((float) (angle2% Math.PI));
             } else {
-                currentRotation.rotationTo(originalVector, getcurvec());
+                float angle = originalVector.angleSigned(getcurvec(), new Vector3f(0, 1, 0));
+                currentRotation.setAngleAxis(angle % Math.PI, 0,1,0);
+                float angle2 = originalVector.angleSigned(getcurvec(), new Vector3f(0, 0, 1));
+                currentRotation.rotateZ((float) (angle2% Math.PI));
+
             }
             if (currentRotation.isFinite()) {
                 return currentRotation.mul(originalRotation);
