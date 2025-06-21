@@ -82,7 +82,7 @@ public class ModelSegment {
 
     public static float normalizeRadians(float angleRadians)
     {
-        angleRadians %= ((float)Math.PI);
+        angleRadians %= (2 *(float)Math.PI);
 
         if (angleRadians >= (float)Math.PI)
         {
@@ -113,7 +113,12 @@ public class ModelSegment {
             } else {
                 float angle = originalVector.angleSigned(getcurvec(), new Vector3f(0, 1, 0));
                 angle = normalizeRadians(angle);
-                currentRotation.setAngleAxis(angle % Math.PI, 0,1,0);
+
+                float yaw = (float) Math.atan2(-0.1f, -0.1f);
+
+
+
+                currentRotation.setAngleAxis(yaw % Math.PI, 0,1,0);
                 float angle2 = originalVector.angleSigned(getcurvec(), new Vector3f(0, 0, 1));
                 angle2 = normalizeRadians(angle2);
                 currentRotation.rotateZ((float) (angle2% Math.PI));
@@ -129,9 +134,45 @@ public class ModelSegment {
         }
     }
 
+    public Quaternionf getCurrentRotation(Vector3f endEffectorPos) {
+        if (baseVector.isFinite() && tipVector.isFinite()) {
+            if (parent != null) {
+                float yaw = parent.getcurvec().angleSigned(getcurvec(endEffectorPos), new Vector3f(0, 1, 0));
+                yaw = normalizeRadians(yaw);
+                currentRotation.setAngleAxis(yaw, 0,1,0);
+                float pitch = parent.getcurvec().angleSigned(getcurvec(), new Vector3f(0, 0, 1));
+                pitch = normalizeRadians(pitch);
+                currentRotation.rotateZ((float) (pitch% Math.PI));
+            } else {
+                float yaw = originalVector.angleSigned(getcurvec(endEffectorPos), new Vector3f(0, 1, 0));
+                yaw = normalizeRadians(yaw);
+                currentRotation.setAngleAxis(yaw % Math.PI, 0,1,0);
+                float pitch = originalVector.angleSigned(getcurvec(), new Vector3f(0, 0, 1));
+                pitch = normalizeRadians(pitch);
+                currentRotation.rotateZ((float) (pitch% Math.PI));
+            }
+            if (currentRotation.isFinite()) {
+                return currentRotation.mul(originalRotation);
+            } else {
+                return currentRotation.identity();
+            }
+        } else {
+            return currentRotation.identity();
+        }
+    }
+
     public Vector3f getcurvec() {
         Vector3f direction = new Vector3f();
         tipVector.sub(baseVector, direction).normalize();
+        if (!direction.isFinite()) {
+            direction.set(0, 0, 0);
+        }
+        return direction;
+    }
+
+    public Vector3f getcurvec(Vector3f target) {
+        Vector3f direction = new Vector3f();
+        target.sub(baseVector, direction).normalize();
         if (!direction.isFinite()) {
             direction.set(0, 0, 0);
         }

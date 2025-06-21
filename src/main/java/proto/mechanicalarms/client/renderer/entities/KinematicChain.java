@@ -6,11 +6,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class KinematicChain {
-    ModelSegment root;
+    public ModelSegment root;
     List<KinematicChain> children = new ArrayList<>();
     KinematicChain parent;
     int maxIteration = 10;
     float epsilon = 0.1f;
+    public Vector3f endEffectorPosition = new Vector3f();
 
     public KinematicChain(ModelSegment root) {
         this.root = root;
@@ -30,6 +31,7 @@ public class KinematicChain {
             fabrikForward(root, target);
             fabrikBackward(root, root.baseVector);
         }
+        endEffectorPosition.set(target);
     }
 
     /**

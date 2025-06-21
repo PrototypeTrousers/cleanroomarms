@@ -70,12 +70,12 @@ public class EntityHexapod extends EntityMob {
 
         Quaternionf la = new Quaternionf();
         la.rotateY((float) this.getLook(1).x);
-        Vector3f ra = new Vector3f(3f, 0, 0);
-        Vector3f ra2 = new Vector3f(1.77f + f,  -1f, -1.25f);
+        Vector3f ra = new Vector3f(1.0f, 0.0f, -1.0f);
+        Vector3f ra2 = new Vector3f(ra);
         ra.rotate(la);
-//        if (!(world.getBlockState(new BlockPos(posX + ra.x, posY + ra.y, posZ + ra.z)) == Blocks.AIR.getDefaultState())) {
-//            ra2.y += 1;
-//        }
+        if (!(world.getBlockState(new BlockPos(posX + ra.x, posY + ra.y, posZ + ra.z)) == Blocks.AIR.getDefaultState())) {
+            //ra2.y += 1;
+        }
         rightArmChain.doFabrik(ra2);
         super.onEntityUpdate();
     }
@@ -148,7 +148,7 @@ public class EntityHexapod extends EntityMob {
     }
 
     public Quaternion getR1() {
-        Quaternionf la = rightArm.getCurrentRotation();
+        Quaternionf la = rightArmChain.root.getCurrentRotation(rightArmChain.endEffectorPosition);
         return new Quaternion(la.x, la.y, la.z, la.w);
     }
 
@@ -185,12 +185,12 @@ public class EntityHexapod extends EntityMob {
     }
 
     public Quaternion getR2() {
-        Quaternionf la = rightArm.children.get(0).getCurrentRotation();
+        Quaternionf la = rightArmChain.root.children.get(0).getCurrentRotation(rightArmChain.endEffectorPosition);
         return new Quaternion(la.x, la.y, la.z, la.w);
     }
 
     public Quaternion getR3() {
-        Quaternionf la = rightArm.children.get(0).children.get(0).getCurrentRotation();
+        Quaternionf la = rightArmChain.root.children.get(0).children.get(0).getCurrentRotation(rightArmChain.endEffectorPosition);
         return new Quaternion(la.x, la.y, la.z, la.w);
     }
 
