@@ -21,6 +21,7 @@ public class ModelSegment {
 
     Vector3f baseVector = new Vector3f();
     Vector3f tipVector = new Vector3f();
+    Vector3f restingTipDirection = new Vector3f();
     float length = 1f;
 
 
@@ -52,6 +53,7 @@ public class ModelSegment {
         this.tipVector.set(1f, 0f, 0);
         tipVector.sub(baseVector, originalVector);
         originalRotation.rotationTo(new Vector3f(1, 0, 0), originalVector);
+        restingTipDirection.set(0,1,0);
         //originalRotation.rotateZ((float) (-Math.PI/2));
 
         if (segmentCount > 0) {
@@ -62,7 +64,11 @@ public class ModelSegment {
                 child.tipVector.set(2.0f + i, 0.0f, 0);
                 child.tipVector.sub(child.baseVector, child.originalVector);
                 child.originalRotation.rotationTo(new Vector3f(1, 0, 0), child.originalVector);
-                //child.originalRotation.rotateZ((float) (Math.PI/2));
+                if (i == segmentCount - 1) {
+                    child.restingTipDirection.set(0,-1,0);
+                } else {
+                    child.restingTipDirection.set(0,1,0);
+                }
                 parent = child;
             }
         }
@@ -74,17 +80,42 @@ public class ModelSegment {
         baseVector.z = z;
     }
 
+    public static float normalizeRadians(float angleRadians)
+    {
+        angleRadians %= ((float)Math.PI);
+
+        if (angleRadians >= (float)Math.PI)
+        {
+            angleRadians -= (2 * (float)Math.PI);
+        }
+
+        if (angleRadians < -(float)Math.PI)
+        {
+            angleRadians += (2 * (float)Math.PI);
+        }
+
+        if (Math.PI - Math.abs(angleRadians) < 0.0001f) {
+            angleRadians = 0;
+        }
+
+        return angleRadians;
+    }
+
     public Quaternionf getCurrentRotation() {
         if (baseVector.isFinite() && tipVector.isFinite()) {
             if (parent != null) {
                 float angle = parent.getcurvec().angleSigned(getcurvec(), new Vector3f(0, 1, 0));
-                currentRotation.setAngleAxis(angle % Math.PI, 0,1,0);
+                angle = normalizeRadians(angle);
+                currentRotation.setAngleAxis(angle, 0,1,0);
                 float angle2 = parent.getcurvec().angleSigned(getcurvec(), new Vector3f(0, 0, 1));
+                angle2 = normalizeRadians(angle2);
                 currentRotation.rotateZ((float) (angle2% Math.PI));
             } else {
                 float angle = originalVector.angleSigned(getcurvec(), new Vector3f(0, 1, 0));
+                angle = normalizeRadians(angle);
                 currentRotation.setAngleAxis(angle % Math.PI, 0,1,0);
                 float angle2 = originalVector.angleSigned(getcurvec(), new Vector3f(0, 0, 1));
+                angle2 = normalizeRadians(angle2);
                 currentRotation.rotateZ((float) (angle2% Math.PI));
 
             }

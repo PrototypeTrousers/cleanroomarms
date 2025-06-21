@@ -65,13 +65,13 @@ public class EntityHexapod extends EntityMob {
         //RECHECK THIS
         float f = (float) (Math.sin(System.currentTimeMillis() /100d) ) /2f;
         //kinematicChain.updateFromNewBase(new Vector3f(0,f, 0));
-        //mainBody.move(0, 1 + f, 0);
+        mainBody.move(0, 1, 0);
 
 
         Quaternionf la = new Quaternionf();
         la.rotateY((float) this.getLook(1).x);
         Vector3f ra = new Vector3f(3f, 0, 0);
-        Vector3f ra2 = new Vector3f(0.5f + 1 + f, 1.5f, -f - 1);
+        Vector3f ra2 = new Vector3f(1.77f + f,  -1f, -1.25f);
         ra.rotate(la);
 //        if (!(world.getBlockState(new BlockPos(posX + ra.x, posY + ra.y, posZ + ra.z)) == Blocks.AIR.getDefaultState())) {
 //            ra2.y += 1;
