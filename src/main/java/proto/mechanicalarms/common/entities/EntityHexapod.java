@@ -39,22 +39,20 @@ public class EntityHexapod extends EntityMob {
 
     ModelSegment mainBody = new ModelSegment(ModelSegment.FORWARD, ModelSegment.FORWARD);
     KinematicChain kinematicChain = new KinematicChain(mainBody);
-    //    ModelSegment leftArm = new ModelSegment(mainBody, 3);
-    ModelSegment rightFrontArm = new ModelSegment(ModelSegment.RIGHT, ModelSegment.UP)
-            .withChild(new ModelSegment(ModelSegment.RIGHT, ModelSegment.UP)
-                    .withChild(new ModelSegment(ModelSegment.RIGHT, ModelSegment.DOWN)));
 
-    ModelSegment leftFrontArm = new ModelSegment(ModelSegment.LEFT, ModelSegment.UP)
-            .withChild(new ModelSegment(ModelSegment.LEFT, ModelSegment.UP)
-                    .withChild(new ModelSegment(ModelSegment.LEFT, ModelSegment.DOWN)));
+    ModelSegment rightFrontArm = ArmFactory.arm(ModelSegment.RIGHT, 3);
+    ModelSegment leftFrontArm = ArmFactory.arm(ModelSegment.LEFT, 3);
+    ModelSegment rightMidArm = ArmFactory.arm(ModelSegment.RIGHT, 3);
+    ModelSegment leftMidArm = ArmFactory.arm(ModelSegment.LEFT, 3);
+    ModelSegment rightRearArm = ArmFactory.arm(ModelSegment.RIGHT, 3);
+    ModelSegment leftRearArm = ArmFactory.arm(ModelSegment.LEFT, 3);
 
-    KinematicChain rightArmChain = new KinematicChain(kinematicChain, rightFrontArm);
-    KinematicChain leftArmChain = new KinematicChain(kinematicChain, leftFrontArm);
-
-//    ModelSegment leftMidLeg = new ModelSegment(mainBody, 3);
-//    ModelSegment rightMidLeg = new ModelSegment(mainBody, 3);
-//    ModelSegment leftBackLeg = new ModelSegment(mainBody, 3);
-//    ModelSegment rightBackLeg = new ModelSegment(mainBody, 3);
+    KinematicChain frontRightArmChain = new KinematicChain(kinematicChain, rightFrontArm);
+    KinematicChain frontLeftArmChain = new KinematicChain(kinematicChain, leftFrontArm);
+    KinematicChain midRightArmChain = new KinematicChain(kinematicChain, rightMidArm);
+    KinematicChain midLeftArmChain = new KinematicChain(kinematicChain, leftMidArm);
+    KinematicChain rearRightArmChain = new KinematicChain(kinematicChain, rightRearArm);
+    KinematicChain rearLeftArmChain = new KinematicChain(kinematicChain, leftRearArm);
 
     public EntityHexapod(World worldIn) {
         super(worldIn);
@@ -83,8 +81,12 @@ public class EntityHexapod extends EntityMob {
         if (!(world.getBlockState(new BlockPos(posX + ra.x, posY + ra.y, posZ + ra.z)) == Blocks.AIR.getDefaultState())) {
             //ra2.y += 1;
         }
-        rightArmChain.doFabrik(ra2);
-        leftArmChain.doFabrik(new Vector3f(-1.0f, 0.0f, -1.0f + f/2f));
+        frontRightArmChain.doFabrik(ra2);
+        frontLeftArmChain.doFabrik(new Vector3f(-1.0f, 0.0f, -1.0f + f/2f));
+        midLeftArmChain.doFabrik(new Vector3f(-1.5f, 0.0f, 0.0f));
+        midRightArmChain.doFabrik(new Vector3f(1.5f, 0.0f, 0.0f));
+        rearLeftArmChain.doFabrik(new Vector3f(-1.5f, 0.0f, 0f));
+        rearRightArmChain.doFabrik(new Vector3f(1.5f, 0.0f, 0f));
         super.onEntityUpdate();
     }
 
@@ -159,33 +161,46 @@ public class EntityHexapod extends EntityMob {
         return new javax.vecmath.Vector3f(mainBody.getBaseVector().x, mainBody.getBaseVector().y, mainBody.getBaseVector().z);
     }
 
-    public Quaternion getR1() {
-        Quaternionf la = rightArmChain.root.getCurrentRotation(rightArmChain.endEffectorPosition);
-        return new Quaternion(la.x, la.y, la.z, la.w);
+    public Quaternion getFrontRight(int segment) {
+        return getSegmentRotation(frontRightArmChain, segment);
     }
 
-    public Quaternion getR2() {
-        Quaternionf la = rightArmChain.root.children.get(0).getCurrentRotation(rightArmChain.endEffectorPosition);
-        return new Quaternion(la.x, la.y, la.z, la.w);
+    public Quaternion getFrontLeft(int segment) {
+        return getSegmentRotation(frontLeftArmChain, segment);
     }
 
-    public Quaternion getR3() {
-        Quaternionf la = rightArmChain.root.children.get(0).children.get(0).getCurrentRotation(rightArmChain.endEffectorPosition);
-        return new Quaternion(la.x, la.y, la.z, la.w);
+    public Quaternion getMidRight(int segment) {
+        return getSegmentRotation(midRightArmChain, segment);
     }
 
-    public Quaternion getL1() {
-        Quaternionf la = leftArmChain.root.getCurrentRotation(leftArmChain.endEffectorPosition);
-        return new Quaternion(la.x, la.y, la.z, la.w);
+    public Quaternion getMidLeft(int segment) {
+        return getSegmentRotation(midLeftArmChain, segment);
     }
 
-    public Quaternion getL2() {
-        Quaternionf la = leftArmChain.root.children.get(0).getCurrentRotation(leftArmChain.endEffectorPosition);
-        return new Quaternion(la.x, la.y, la.z, la.w);
+    public Quaternion getRearRight(int segment) {
+        return getSegmentRotation(rearRightArmChain, segment);
     }
 
-    public Quaternion getL3() {
-        Quaternionf la = leftArmChain.root.children.get(0).children.get(0).getCurrentRotation(leftArmChain.endEffectorPosition);
+    public Quaternion getRearLeft(int segment) {
+        return getSegmentRotation(rearLeftArmChain, segment);
+    }
+
+    public Quaternion getSegmentRotation(KinematicChain chain, int segment) {
+        ModelSegment currentSegment = chain.root;
+        // Traverse down the chain of children based on the segment index
+        for (int i = 0; i < segment; i++) {
+            // Check if we've run out of children before reaching the desired segment
+            if (currentSegment.children.isEmpty()) {
+                // Or return null, or throw a more specific exception like IndexOutOfBoundsException
+                throw new IndexOutOfBoundsException("Segment " + segment + " is out of bounds for the right arm chain.");
+            }
+            currentSegment = currentSegment.children.get(0);
+        }
+
+        // Get the current rotation of the final segment
+        Quaternionf la = currentSegment.getCurrentRotation(chain.endEffectorPosition);
+
+        // Assuming Quaternion is a class that takes x, y, z, w
         return new Quaternion(la.x, la.y, la.z, la.w);
     }
 
@@ -195,5 +210,20 @@ public class EntityHexapod extends EntityMob {
         //la.rotateY((float) this.getLook(1).x);
         //la.rotateY(this.rotationPitch);
         return new Quaternion(la.x, la.y, la.z, la.w);
+    }
+
+    static class ArmFactory {
+
+        static ModelSegment arm(Vector3f side, int numberSegments) {
+            ModelSegment root = new ModelSegment(side, ModelSegment.UP);
+            ModelSegment current = root;
+            ModelSegment child;
+            for (int i = 1; i < numberSegments; i++) {
+                child = new ModelSegment(side, i == numberSegments - 1 ? ModelSegment.DOWN : ModelSegment.UP);
+                current.withChild(child);
+                current = child;
+            }
+            return root;
+        }
     }
 }
