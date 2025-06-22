@@ -1,7 +1,5 @@
 package proto.mechanicalarms.common.entities;
 
-import net.minecraft.block.state.BlockStateBase;
-import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
@@ -39,11 +37,20 @@ public class EntityHexapod extends EntityMob {
     public static final ResourceLocation LOOT = new ResourceLocation(MechanicalArms.MODID, "entities/weird_zombie");
 
 
-    ModelSegment mainBody = new ModelSegment();
+    ModelSegment mainBody = new ModelSegment(ModelSegment.FORWARD, ModelSegment.FORWARD);
     KinematicChain kinematicChain = new KinematicChain(mainBody);
     //    ModelSegment leftArm = new ModelSegment(mainBody, 3);
-    ModelSegment rightArm = new ModelSegment(2);
-    KinematicChain rightArmChain = new KinematicChain(kinematicChain, rightArm);
+    ModelSegment rightFrontArm = new ModelSegment(ModelSegment.RIGHT, ModelSegment.UP)
+            .withChild(new ModelSegment(ModelSegment.RIGHT, ModelSegment.UP)
+                    .withChild(new ModelSegment(ModelSegment.RIGHT, ModelSegment.DOWN)));
+
+    ModelSegment leftFrontArm = new ModelSegment(ModelSegment.LEFT, ModelSegment.UP)
+            .withChild(new ModelSegment(ModelSegment.LEFT, ModelSegment.UP)
+                    .withChild(new ModelSegment(ModelSegment.LEFT, ModelSegment.DOWN)));
+
+    KinematicChain rightArmChain = new KinematicChain(kinematicChain, rightFrontArm);
+    KinematicChain leftArmChain = new KinematicChain(kinematicChain, leftFrontArm);
+
 //    ModelSegment leftMidLeg = new ModelSegment(mainBody, 3);
 //    ModelSegment rightMidLeg = new ModelSegment(mainBody, 3);
 //    ModelSegment leftBackLeg = new ModelSegment(mainBody, 3);
@@ -63,20 +70,21 @@ public class EntityHexapod extends EntityMob {
     @Override
     public void onEntityUpdate() {
         //RECHECK THIS
-        float f = (float) (Math.sin(System.currentTimeMillis() /100d) ) /2f;
+        float f = (float) (Math.sin(System.currentTimeMillis() / 100d)) / 2f;
         //kinematicChain.updateFromNewBase(new Vector3f(0,f, 0));
-        mainBody.move(0, 1, 0);
+        //mainBody.move(0, 0, 0);
 
 
         Quaternionf la = new Quaternionf();
         la.rotateY((float) this.getLook(1).x);
-        Vector3f ra = new Vector3f(1.0f, 0.0f, -1.0f);
+        Vector3f ra = new Vector3f(1.0f, 0.0f, -1.0f - f/2f);
         Vector3f ra2 = new Vector3f(ra);
         ra.rotate(la);
         if (!(world.getBlockState(new BlockPos(posX + ra.x, posY + ra.y, posZ + ra.z)) == Blocks.AIR.getDefaultState())) {
             //ra2.y += 1;
         }
         rightArmChain.doFabrik(ra2);
+        leftArmChain.doFabrik(new Vector3f(-1.0f, 0.0f, -1.0f + f/2f));
         super.onEntityUpdate();
     }
 
@@ -147,41 +155,13 @@ public class EntityHexapod extends EntityMob {
         return 5;
     }
 
-    public Quaternion getR1() {
-        Quaternionf la = rightArmChain.root.getCurrentRotation(rightArmChain.endEffectorPosition);
-        return new Quaternion(la.x, la.y, la.z, la.w);
-    }
-
     public javax.vecmath.Vector3f getTranslation() {
         return new javax.vecmath.Vector3f(mainBody.getBaseVector().x, mainBody.getBaseVector().y, mainBody.getBaseVector().z);
     }
 
-
-    public static void main(String[] args){
-        ModelSegment mainBody = new ModelSegment();
-        KinematicChain kinematicChain = new KinematicChain(mainBody);
-        ModelSegment rightArm = new ModelSegment(0);
-        KinematicChain rightArmChain = new KinematicChain(kinematicChain, rightArm);
-
-        rightArmChain.doFabrik(new Vector3f(1.5f, 0f, 0));
-
-        Quaternionf q = new Quaternionf();
-        q.rotationTo(rightArm.originalVector, rightArm.getcurvec());
-
-        Vector3f v = q.getEulerAnglesXYZ(new Vector3f());
-        System.out.println(v.x);
-        System.out.println(v.y);
-        System.out.println(v.z);
-
-        rightArmChain.doFabrik(new Vector3f(2f, 2f, 0));
-
-        q.identity();
-        q.rotationTo(rightArm.originalVector, rightArm.getcurvec());
-
-        v = q.getEulerAnglesXYZ(new Vector3f());
-        System.out.println(v.x);
-        System.out.println(v.y);
-        System.out.println(v.z);
+    public Quaternion getR1() {
+        Quaternionf la = rightArmChain.root.getCurrentRotation(rightArmChain.endEffectorPosition);
+        return new Quaternion(la.x, la.y, la.z, la.w);
     }
 
     public Quaternion getR2() {
@@ -191,6 +171,21 @@ public class EntityHexapod extends EntityMob {
 
     public Quaternion getR3() {
         Quaternionf la = rightArmChain.root.children.get(0).children.get(0).getCurrentRotation(rightArmChain.endEffectorPosition);
+        return new Quaternion(la.x, la.y, la.z, la.w);
+    }
+
+    public Quaternion getL1() {
+        Quaternionf la = leftArmChain.root.getCurrentRotation(leftArmChain.endEffectorPosition);
+        return new Quaternion(la.x, la.y, la.z, la.w);
+    }
+
+    public Quaternion getL2() {
+        Quaternionf la = leftArmChain.root.children.get(0).getCurrentRotation(leftArmChain.endEffectorPosition);
+        return new Quaternion(la.x, la.y, la.z, la.w);
+    }
+
+    public Quaternion getL3() {
+        Quaternionf la = leftArmChain.root.children.get(0).children.get(0).getCurrentRotation(leftArmChain.endEffectorPosition);
         return new Quaternion(la.x, la.y, la.z, la.w);
     }
 

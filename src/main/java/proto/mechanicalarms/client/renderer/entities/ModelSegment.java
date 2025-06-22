@@ -7,6 +7,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ModelSegment {
+    public static final Vector3f UP = new Vector3f(0, 1, 0);
+    public static final Vector3f DOWN = new Vector3f(0, -1, 0);
+    public static final Vector3f RIGHT = new Vector3f(1, 0, 0);
+    public static final Vector3f LEFT = new Vector3f(-1, 0, 0);
+    public static final Vector3f FORWARD = new Vector3f(0, 0, 1);
+    public static final Vector3f BACKWARD = new Vector3f(0, 0, -1);
+
     ModelSegment parent;
     public List<ModelSegment> children = new ArrayList<>();
     Quaternionf currentRotation = new Quaternionf();
@@ -24,60 +31,23 @@ public class ModelSegment {
     Vector3f restingTipDirection = new Vector3f();
     float length = 1f;
 
-
-    public ModelSegment() {
+    public ModelSegment(Vector3f tipDirection, Vector3f restingDirection) {
+        this.tipVector.set(tipDirection);
+        this.originalVector.set(tipDirection);
+        restingTipDirection.set(restingDirection);
     }
 
-    public ModelSegment(ModelSegment parent) {
-        this.parent = parent;
-        parent.children.add(this);
-    }
-
-    public ModelSegment(ModelSegment parent, int segmentCount) {
-        this.parent = parent;
-        parent.children.add(this);
-        //RECHECK THIS
-        ModelSegment child = new ModelSegment(this);
-        child.baseVector.set(0.5f, 0.2f,0);
-        child.tipVector.set(1.5f, 0.2f,0);
-        for (int i = 0; i < segmentCount; i++) {
-            child = new ModelSegment(child);
-            child.baseVector.set(1.5f + i, 0.2f,0);
-            child.tipVector.set(2.5f + i, 0.2f,0);
-        }
-    }
-
-    public ModelSegment(int segmentCount) {
-        //RECHECK THIS
-        this.baseVector.set(0f, 0f, 0);
-        this.tipVector.set(1f, 0f, 0);
-        tipVector.sub(baseVector, originalVector);
-        originalRotation.rotationTo(new Vector3f(1, 0, 0), originalVector);
-        restingTipDirection.set(0,1,0);
-        //originalRotation.rotateZ((float) (-Math.PI/2));
-
-        if (segmentCount > 0) {
-            ModelSegment parent = this;
-            for (int i = 0; i < segmentCount; i++) {
-                ModelSegment child = new ModelSegment(parent);
-                child.baseVector.set(1.0f + i, 0.0f, 0);
-                child.tipVector.set(2.0f + i, 0.0f, 0);
-                child.tipVector.sub(child.baseVector, child.originalVector);
-                child.originalRotation.rotationTo(new Vector3f(1, 0, 0), child.originalVector);
-                if (i == segmentCount - 1) {
-                    child.restingTipDirection.set(0,-1,0);
-                } else {
-                    child.restingTipDirection.set(0,1,0);
-                }
-                parent = child;
-            }
-        }
+    public ModelSegment withChild(ModelSegment child) {
+        child.parent = this;
+        children.add(child);
+        return this;
     }
 
     public void move(float x, float y, float z) {
         baseVector.x = x;
         baseVector.y = y;
         baseVector.z = z;
+        tipVector.set(baseVector).add(originalVector.mul(length));
     }
 
     public static float normalizeRadians(float angleRadians)

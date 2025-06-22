@@ -128,6 +128,24 @@ public class HexapodRenderer{
                         quaternion.multiply(getEntityHexapod().get().getR3());
                         return quaternion;
                     });
+
+            modelInstance.setMeshRotationFunction(
+                    "FrontLeftLegBase", (quaternion) -> {
+                        quaternion.multiply(getEntityHexapod().get().getL1());
+                        return quaternion;
+                    });
+            modelInstance.setMeshRotationFunction(
+                    "FrontLeftLegMid", (quaternion) -> {
+                        quaternion.multiply(getEntityHexapod().get().getL2());
+                        return quaternion;
+                    });
+            modelInstance.setMeshRotationFunction(
+                    "FrontLeftLegTip", (quaternion) -> {
+                        quaternion.multiply(getEntityHexapod().get().getL3());
+                        return quaternion;
+                    });
+
+
 //            modelInstance.setMeshRotationFunction(
 //                    "FrontRightLegMid", (quaternion) -> quaternion.rotateZ(2* -(getEntityHexapod().get().getR1())));
 //            modelInstance.setMeshRotationFunction(
