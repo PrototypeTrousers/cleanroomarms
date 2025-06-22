@@ -17,6 +17,8 @@ public class ModelSegment {
     ModelSegment parent;
     public List<ModelSegment> children = new ArrayList<>();
     Quaternionf currentRotation = new Quaternionf();
+    Quaternionf yawQ = new Quaternionf();
+    Quaternionf pitchQ = new Quaternionf();
     Quaternionf prevRotation = new Quaternionf();
 
     public Vector3f originalVector = new Vector3f();
@@ -71,55 +73,21 @@ public class ModelSegment {
         return angleRadians;
     }
 
-    public Quaternionf getCurrentRotation() {
-        if (baseVector.isFinite() && tipVector.isFinite()) {
-            if (parent != null) {
-                float angle = parent.getcurvec().angleSigned(getcurvec(), new Vector3f(0, 1, 0));
-                angle = normalizeRadians(angle);
-                currentRotation.setAngleAxis(angle, 0,1,0);
-                float angle2 = parent.getcurvec().angleSigned(getcurvec(), new Vector3f(0, 0, 1));
-                angle2 = normalizeRadians(angle2);
-                currentRotation.rotateZ((float) (angle2% Math.PI));
-            } else {
-                float angle = originalVector.angleSigned(getcurvec(), new Vector3f(0, 1, 0));
-                angle = normalizeRadians(angle);
-
-                float yaw = (float) Math.atan2(-0.1f, -0.1f);
-
-
-
-                currentRotation.setAngleAxis(yaw % Math.PI, 0,1,0);
-                float angle2 = originalVector.angleSigned(getcurvec(), new Vector3f(0, 0, 1));
-                angle2 = normalizeRadians(angle2);
-                currentRotation.rotateZ((float) (angle2% Math.PI));
-
-            }
-            if (currentRotation.isFinite()) {
-                return currentRotation.mul(originalRotation);
-            } else {
-                return currentRotation.identity();
-            }
-        } else {
-            return currentRotation.identity();
-        }
-    }
-
     public Quaternionf getCurrentRotation(Vector3f endEffectorPos) {
         if (baseVector.isFinite() && tipVector.isFinite()) {
             if (parent != null) {
-                float yaw = parent.getcurvec().angleSigned(getcurvec(endEffectorPos), new Vector3f(0, 1, 0));
-                yaw = normalizeRadians(yaw);
-                currentRotation.setAngleAxis(yaw, 0,1,0);
-                float pitch = parent.getcurvec().angleSigned(getcurvec(), new Vector3f(0, 0, 1));
-                pitch = normalizeRadians(pitch);
-                currentRotation.rotateZ((float) (pitch% Math.PI));
+                Vector3f v3 = getcurvec().setComponent(2,0);
+                pitchQ.rotationTo(parent.getcurvec().setComponent(2,0), v3);
+
+                currentRotation.set(yawQ).mul(pitchQ);
             } else {
-                float yaw = originalVector.angleSigned(getcurvec(endEffectorPos), new Vector3f(0, 1, 0));
-                yaw = normalizeRadians(yaw);
-                currentRotation.setAngleAxis(yaw % Math.PI, 0,1,0);
-                float pitch = originalVector.angleSigned(getcurvec(), new Vector3f(0, 0, 1));
-                pitch = normalizeRadians(pitch);
-                currentRotation.rotateZ((float) (pitch% Math.PI));
+                Vector3f v2 = getcurvec(endEffectorPos).setComponent(1,0);
+                yawQ.rotationTo(originalVector, v2);
+
+                Vector3f v3 = getcurvec().setComponent(2,0);
+                pitchQ.rotationTo(originalVector, v3);
+
+                currentRotation.set(yawQ).mul(pitchQ);
             }
             if (currentRotation.isFinite()) {
                 return currentRotation.mul(originalRotation);
