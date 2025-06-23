@@ -10,7 +10,7 @@ public class KinematicChain {
     List<KinematicChain> children = new ArrayList<>();
     KinematicChain parent;
     int maxIteration = 10;
-    float epsilon = 0.1f;
+    float epsilon = 0.001f;
     public Vector3f endEffectorPosition = new Vector3f();
 
     public KinematicChain(ModelSegment root) {
@@ -24,6 +24,9 @@ public class KinematicChain {
     }
 
     public void doFabrik(Vector3f target) {
+        if (endEffectorPosition.distance(target) < epsilon) {
+            return;
+        }
         Vector3f direction = new Vector3f(target).setComponent(1, 0).normalize();;
         fabrikBackward2(root, root.baseVector, direction);
         restPose(root, root.baseVector);

@@ -1,7 +1,9 @@
 package proto.mechanicalarms.common.entities;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.MoverType;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.*;
 import net.minecraft.entity.monster.EntityIronGolem;
@@ -70,24 +72,51 @@ public class EntityHexapod extends EntityMob {
         //RECHECK THIS
         float f = (float) (Math.sin(System.currentTimeMillis() / 100d)) / 2f;
         //kinematicChain.updateFromNewBase(new Vector3f(0,f, 0));
-        //mainBody.move(0, 0, 0);
+        //tmainBody.move(0, 0.5f + f, 0);
 
 
         Quaternionf la = new Quaternionf();
         la.rotateY((float) this.getLook(1).x);
-        Vector3f ra = new Vector3f(1.0f, 0.0f, -1.0f - f/2f);
+        Vector3f ra = new Vector3f(1.0f, -mainBody.getBaseVector().y, -2);
         Vector3f ra2 = new Vector3f(ra);
         ra.rotate(la);
         if (!(world.getBlockState(new BlockPos(posX + ra.x, posY + ra.y, posZ + ra.z)) == Blocks.AIR.getDefaultState())) {
             //ra2.y += 1;
         }
         frontRightArmChain.doFabrik(ra2);
-        frontLeftArmChain.doFabrik(new Vector3f(-1.0f, 0.0f, -1.0f + f/2f));
-        midLeftArmChain.doFabrik(new Vector3f(-1.5f, 0.0f, 0.0f));
-        midRightArmChain.doFabrik(new Vector3f(1.5f, 0.0f, 0.0f));
-        rearLeftArmChain.doFabrik(new Vector3f(-1.5f, 0.0f, 0f));
-        rearRightArmChain.doFabrik(new Vector3f(1.5f, 0.0f, 0f));
+        frontLeftArmChain.doFabrik(new Vector3f(-1.0f, -mainBody.getBaseVector().y , -2));
+
+
         super.onEntityUpdate();
+    }
+
+    @Override
+    public void onLivingUpdate() {
+        Quaternionf la = new Quaternionf();
+        float partialTicks;
+        if (world.isRemote) {
+            partialTicks = Minecraft.getMinecraft().getRenderPartialTicks();
+        } else {
+            partialTicks = 1;
+        }
+
+        la.rotateY((float) this.getLook(partialTicks).x);
+        Vector3f ra = new Vector3f(2f, 0, 0);
+        ra.rotate(la);
+
+        float z = (float) (Math.abs(posZ) - (int) Math.abs(posZ));
+        float x = (float) (Math.abs(posX) - (int) Math.abs(posX));
+
+        midRightArmChain.doFabrik(new Vector3f(ra.x + (0.5f - x), -mainBody.getBaseVector().y, ra.z -(0.5f - z)/2f));
+        midLeftArmChain.doFabrik(new Vector3f(-ra.x + (0.5f - x), -mainBody.getBaseVector().y, ra.z-(0.5f - z)/2f));
+
+
+        rearRightArmChain.doFabrik(new Vector3f(ra.x + (0.5f - x), -mainBody.getBaseVector().y, ra.z+(0.5f - z)/2f));
+        rearLeftArmChain.doFabrik(new Vector3f(-ra.x + (0.5f - x), -mainBody.getBaseVector().y, ra.z+(0.5f - z)/2f));
+        //moveRelative(0, 0, -0.01f, 0.1f);
+
+        this.move(MoverType.SELF, 0, 0, 0.02);
+        //super.onLivingUpdate();
     }
 
     @Override
@@ -207,8 +236,7 @@ public class EntityHexapod extends EntityMob {
     public Quaternion getBodyRotation() {
 
         Quaternionf la = new Quaternionf();
-        //la.rotateY((float) this.getLook(1).x);
-        //la.rotateY(this.rotationPitch);
+        la.rotateY((float) this.getLook(1).x);
         return new Quaternion(la.x, la.y, la.z, la.w);
     }
 
