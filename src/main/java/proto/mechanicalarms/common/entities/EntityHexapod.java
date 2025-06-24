@@ -1,6 +1,7 @@
 package proto.mechanicalarms.common.entities;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.particle.ParticleManager;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.MoverType;
@@ -17,8 +18,10 @@ import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.potion.PotionEffect;
+import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -40,21 +43,21 @@ public class EntityHexapod extends EntityMob {
 
 
     ModelSegment mainBody = new ModelSegment(ModelSegment.FORWARD, ModelSegment.FORWARD);
-    KinematicChain kinematicChain = new KinematicChain(mainBody);
+    KinematicChain kinematicChain = new KinematicChain(mainBody, this::getPositionVector);
 
-    ModelSegment rightFrontArm = ArmFactory.arm(ModelSegment.RIGHT, 3);
-    ModelSegment leftFrontArm = ArmFactory.arm(ModelSegment.LEFT, 3);
-    ModelSegment rightMidArm = ArmFactory.arm(ModelSegment.RIGHT, 3);
-    ModelSegment leftMidArm = ArmFactory.arm(ModelSegment.LEFT, 3);
-    ModelSegment rightRearArm = ArmFactory.arm(ModelSegment.RIGHT, 3);
-    ModelSegment leftRearArm = ArmFactory.arm(ModelSegment.LEFT, 3);
+    ModelSegment rightFrontArm = ArmFactory.arm(ModelSegment.RIGHT, 3, new Vector3f(-0.5f,-0.3f, 0.8f));
+//    ModelSegment leftFrontArm = ArmFactory.arm(ModelSegment.LEFT, 3);
+    ModelSegment rightMidArm = ArmFactory.arm(ModelSegment.RIGHT, 3, new Vector3f(-0.5f,-0.3f, 0f));
+//    ModelSegment leftMidArm = ArmFactory.arm(ModelSegment.LEFT, 3);
+//    ModelSegment rightRearArm = ArmFactory.arm(ModelSegment.RIGHT, 3);
+//    ModelSegment leftRearArm = ArmFactory.arm(ModelSegment.LEFT, 3);
 
     KinematicChain frontRightArmChain = new KinematicChain(kinematicChain, rightFrontArm);
-    KinematicChain frontLeftArmChain = new KinematicChain(kinematicChain, leftFrontArm);
+//    KinematicChain frontLeftArmChain = new KinematicChain(kinematicChain, leftFrontArm);
     KinematicChain midRightArmChain = new KinematicChain(kinematicChain, rightMidArm);
-    KinematicChain midLeftArmChain = new KinematicChain(kinematicChain, leftMidArm);
-    KinematicChain rearRightArmChain = new KinematicChain(kinematicChain, rightRearArm);
-    KinematicChain rearLeftArmChain = new KinematicChain(kinematicChain, leftRearArm);
+//    KinematicChain midLeftArmChain = new KinematicChain(kinematicChain, leftMidArm);
+//    KinematicChain rearRightArmChain = new KinematicChain(kinematicChain, rightRearArm);
+//    KinematicChain rearLeftArmChain = new KinematicChain(kinematicChain, leftRearArm);
 
     public EntityHexapod(World worldIn) {
         super(worldIn);
@@ -64,7 +67,7 @@ public class EntityHexapod extends EntityMob {
     @Override
     protected void entityInit() {
         super.entityInit();
-        this.getDataManager().register(ARMS_RAISED, Boolean.valueOf(false));
+        this.getDataManager().register(ARMS_RAISED, Boolean.FALSE);
     }
 
     @Override
@@ -84,7 +87,7 @@ public class EntityHexapod extends EntityMob {
             //ra2.y += 1;
         }
         frontRightArmChain.doFabrik(ra2);
-        frontLeftArmChain.doFabrik(new Vector3f(-1.0f, -mainBody.getBaseVector().y , -2));
+//        frontLeftArmChain.doFabrik(new Vector3f(1.0f, -mainBody.getBaseVector().y , 2));
 
 
         super.onEntityUpdate();
@@ -100,22 +103,40 @@ public class EntityHexapod extends EntityMob {
             partialTicks = 1;
         }
 
-        la.rotateY((float) this.getLook(partialTicks).x);
-        Vector3f ra = new Vector3f(2f, 0, 0);
-        ra.rotate(la);
+        float f = (float) (Math.sin(System.currentTimeMillis() / 100d) / 2f);
 
-        float z = (float) (Math.abs(posZ) - (int) Math.abs(posZ));
-        float x = (float) (Math.abs(posX) - (int) Math.abs(posX));
+        //mainBody.move(f, 1, f);
 
-        midRightArmChain.doFabrik(new Vector3f(ra.x + (0.5f - x), -mainBody.getBaseVector().y, ra.z -(0.5f - z)/2f));
-        midLeftArmChain.doFabrik(new Vector3f(-ra.x + (0.5f - x), -mainBody.getBaseVector().y, ra.z-(0.5f - z)/2f));
+        midRightArmChain.doFabrik(new Vector3f(2,0,0));
+        this.world.spawnParticle(EnumParticleTypes.SMOKE_NORMAL, midRightArmChain.endEffectorWorldlyPosition.x, midRightArmChain.endEffectorWorldlyPosition.y, midRightArmChain.endEffectorWorldlyPosition.z, 0,0,0);
 
 
-        rearRightArmChain.doFabrik(new Vector3f(ra.x + (0.5f - x), -mainBody.getBaseVector().y, ra.z+(0.5f - z)/2f));
-        rearLeftArmChain.doFabrik(new Vector3f(-ra.x + (0.5f - x), -mainBody.getBaseVector().y, ra.z+(0.5f - z)/2f));
-        //moveRelative(0, 0, -0.01f, 0.1f);
 
-        this.move(MoverType.SELF, 0, 0, 0.02);
+
+//        if (midRightArmChain.endEffectorWorldlyPosition.distance((float) posX, (float) posY, (float) posZ) > 2f) {
+//            resting = false;
+//        }
+//        if (resting) {
+//            midRightArmChain.doFabrik(new Vector3f(2f, 0, 0));
+//        } else {
+//            midRightArmChain.doFabrik(new Vector3f(ra.x, -mainBody.getBaseVector().y, ra.z + f));
+//            midRightArmChain.endEffectorWorldlyPosition.set(rac);
+//        }
+//        midLeftArmChain.doFabrik(new Vector3f(0, 3, 0));
+//
+//
+//        rearRightArmChain.doFabrik(new Vector3f(0, 3, 0));
+//        rearLeftArmChain.doFabrik(new Vector3f(0, 3, 0));
+
+//        midRightArmChain.doFabrik(new Vector3f(ra.x + (0.5f - x), -mainBody.getBaseVector().y, ra.z -(0.5f - z)/2f));
+//        midLeftArmChain.doFabrik(new Vector3f(-ra.x + (0.5f - x), -mainBody.getBaseVector().y, ra.z-(0.5f - z)/2f));
+//
+//
+//        rearRightArmChain.doFabrik(new Vector3f(ra.x + (0.5f - x), -mainBody.getBaseVector().y, ra.z+(0.5f - z)/2f));
+//        rearLeftArmChain.doFabrik(new Vector3f(-ra.x + (0.5f - x), -mainBody.getBaseVector().y, ra.z+(0.5f - z)/2f));
+//        moveRelative(0, 0, -0.01f, 1f);
+//
+        //this.move(MoverType.SELF, 0, 0, 0.05);
         //super.onLivingUpdate();
     }
 
@@ -194,25 +215,25 @@ public class EntityHexapod extends EntityMob {
         return getSegmentRotation(frontRightArmChain, segment);
     }
 
-    public Quaternion getFrontLeft(int segment) {
-        return getSegmentRotation(frontLeftArmChain, segment);
-    }
-
+//    public Quaternion getFrontLeft(int segment) {
+//        return getSegmentRotation(frontLeftArmChain, segment);
+//    }
+//
     public Quaternion getMidRight(int segment) {
         return getSegmentRotation(midRightArmChain, segment);
     }
-
-    public Quaternion getMidLeft(int segment) {
-        return getSegmentRotation(midLeftArmChain, segment);
-    }
-
-    public Quaternion getRearRight(int segment) {
-        return getSegmentRotation(rearRightArmChain, segment);
-    }
-
-    public Quaternion getRearLeft(int segment) {
-        return getSegmentRotation(rearLeftArmChain, segment);
-    }
+//
+//    public Quaternion getMidLeft(int segment) {
+//        return getSegmentRotation(midLeftArmChain, segment);
+//    }
+//
+//    public Quaternion getRearRight(int segment) {
+//        return getSegmentRotation(rearRightArmChain, segment);
+//    }
+//
+//    public Quaternion getRearLeft(int segment) {
+//        return getSegmentRotation(rearLeftArmChain, segment);
+//    }
 
     public Quaternion getSegmentRotation(KinematicChain chain, int segment) {
         ModelSegment currentSegment = chain.root;
@@ -242,8 +263,8 @@ public class EntityHexapod extends EntityMob {
 
     static class ArmFactory {
 
-        static ModelSegment arm(Vector3f side, int numberSegments) {
-            ModelSegment root = new ModelSegment(side, ModelSegment.UP);
+        static ModelSegment arm(Vector3f side, int numberSegments, Vector3f rootAttachmentPos) {
+            ModelSegment root = new ModelSegment(side, ModelSegment.UP, rootAttachmentPos);
             ModelSegment current = root;
             ModelSegment child;
             for (int i = 1; i < numberSegments; i++) {

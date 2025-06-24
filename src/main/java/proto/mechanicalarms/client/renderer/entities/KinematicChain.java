@@ -1,9 +1,11 @@
 package proto.mechanicalarms.client.renderer.entities;
 
+import net.minecraft.util.math.Vec3d;
 import org.joml.Vector3f;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 
 public class KinematicChain {
     public ModelSegment root;
@@ -12,9 +14,13 @@ public class KinematicChain {
     int maxIteration = 10;
     float epsilon = 0.001f;
     public Vector3f endEffectorPosition = new Vector3f();
+    public Vector3f endEffectorWorldlyPosition = new Vector3f();
+    public Vector3f lastEndEffectorPosition = new Vector3f();
+    public Supplier<Vec3d> worldPositionSupplier;
 
-    public KinematicChain(ModelSegment root) {
+    public KinematicChain(ModelSegment root, Supplier<Vec3d> worldPositionSupplier) {
         this.root = root;
+        this.worldPositionSupplier = worldPositionSupplier;
     }
 
     public KinematicChain(KinematicChain parent, ModelSegment root) {
@@ -24,17 +30,25 @@ public class KinematicChain {
     }
 
     public void doFabrik(Vector3f target) {
-        if (endEffectorPosition.distance(target) < epsilon) {
-            return;
-        }
-        Vector3f direction = new Vector3f(target).setComponent(1, 0).normalize();;
+//        if (endEffectorPosition.distance(target) < epsilon ) {
+//            return;
+//        }
+
+        Vector3f direction = new Vector3f(target).setComponent(1, 0).normalize();
         fabrikBackward2(root, root.baseVector, direction);
         restPose(root, root.baseVector);
         for (int i = 0; i < maxIteration; i++) {
             fabrikForward(root, target);
             fabrikBackward(root, root.baseVector);
         }
+        lastEndEffectorPosition.set(endEffectorPosition);
         endEffectorPosition.set(target);
+        if (parent != null && parent.worldPositionSupplier != null) {
+            Vec3d worldlyPosition = parent.worldPositionSupplier.get();
+            target.add((float) worldlyPosition.x, (float) worldlyPosition.y, (float) worldlyPosition.z);
+        }
+
+        endEffectorWorldlyPosition.set(target);
     }
 
     /**

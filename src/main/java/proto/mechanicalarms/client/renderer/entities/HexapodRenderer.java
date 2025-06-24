@@ -131,21 +131,21 @@ public class HexapodRenderer{
                         return quaternion;
                     });
 
-            modelInstance.setMeshRotationFunction(
-                    "FrontLeftLegBase", (quaternion) -> {
-                        quaternion.multiply(getEntityHexapod().get().getFrontLeft(0));
-                        return quaternion;
-                    });
-            modelInstance.setMeshRotationFunction(
-                    "FrontLeftLegMid", (quaternion) -> {
-                        quaternion.multiply(getEntityHexapod().get().getFrontLeft(1));
-                        return quaternion;
-                    });
-            modelInstance.setMeshRotationFunction(
-                    "FrontLeftLegTip", (quaternion) -> {
-                        quaternion.multiply(getEntityHexapod().get().getFrontLeft(2));
-                        return quaternion;
-                    });
+//            modelInstance.setMeshRotationFunction(
+//                    "FrontLeftLegBase", (quaternion) -> {
+//                        quaternion.multiply(getEntityHexapod().get().getFrontLeft(0));
+//                        return quaternion;
+//                    });
+//            modelInstance.setMeshRotationFunction(
+//                    "FrontLeftLegMid", (quaternion) -> {
+//                        quaternion.multiply(getEntityHexapod().get().getFrontLeft(1));
+//                        return quaternion;
+//                    });
+//            modelInstance.setMeshRotationFunction(
+//                    "FrontLeftLegTip", (quaternion) -> {
+//                        quaternion.multiply(getEntityHexapod().get().getFrontLeft(2));
+//                        return quaternion;
+//                    });
 
             //Mid
             modelInstance.setMeshRotationFunction(
@@ -164,54 +164,54 @@ public class HexapodRenderer{
                         return quaternion;
                     });
 
-            modelInstance.setMeshRotationFunction(
-                    "MidLeftLegBase", (quaternion) -> {
-                        quaternion.multiply(getEntityHexapod().get().getMidLeft(0));
-                        return quaternion;
-                    });
-            modelInstance.setMeshRotationFunction(
-                    "MidLeftLegMid", (quaternion) -> {
-                        quaternion.multiply(getEntityHexapod().get().getMidLeft(1));
-                        return quaternion;
-                    });
-            modelInstance.setMeshRotationFunction(
-                    "MidLeftLegTip", (quaternion) -> {
-                        quaternion.multiply(getEntityHexapod().get().getMidLeft(2));
-                        return quaternion;
-                    });
-
-            //Rear
-            modelInstance.setMeshRotationFunction(
-                    "RearRightLegBase", (quaternion) -> {
-                        quaternion.multiply(getEntityHexapod().get().getRearRight(0));
-                        return quaternion;
-                    });
-            modelInstance.setMeshRotationFunction(
-                    "RearRightLegMid", (quaternion) -> {
-                        quaternion.multiply(getEntityHexapod().get().getRearRight(1));
-                        return quaternion;
-                    });
-            modelInstance.setMeshRotationFunction(
-                    "RearRightLegTip", (quaternion) -> {
-                        quaternion.multiply(getEntityHexapod().get().getRearRight(2));
-                        return quaternion;
-                    });
-
-            modelInstance.setMeshRotationFunction(
-                    "RearLeftLegBase", (quaternion) -> {
-                        quaternion.multiply(getEntityHexapod().get().getRearLeft(0));
-                        return quaternion;
-                    });
-            modelInstance.setMeshRotationFunction(
-                    "RearLeftLegMid", (quaternion) -> {
-                        quaternion.multiply(getEntityHexapod().get().getRearLeft(1));
-                        return quaternion;
-                    });
-            modelInstance.setMeshRotationFunction(
-                    "RearLeftLegTip", (quaternion) -> {
-                        quaternion.multiply(getEntityHexapod().get().getRearLeft(2));
-                        return quaternion;
-                    });
+//            modelInstance.setMeshRotationFunction(
+//                    "MidLeftLegBase", (quaternion) -> {
+//                        quaternion.multiply(getEntityHexapod().get().getMidLeft(0));
+//                        return quaternion;
+//                    });
+//            modelInstance.setMeshRotationFunction(
+//                    "MidLeftLegMid", (quaternion) -> {
+//                        quaternion.multiply(getEntityHexapod().get().getMidLeft(1));
+//                        return quaternion;
+//                    });
+//            modelInstance.setMeshRotationFunction(
+//                    "MidLeftLegTip", (quaternion) -> {
+//                        quaternion.multiply(getEntityHexapod().get().getMidLeft(2));
+//                        return quaternion;
+//                    });
+//
+//            //Rear
+//            modelInstance.setMeshRotationFunction(
+//                    "RearRightLegBase", (quaternion) -> {
+//                        quaternion.multiply(getEntityHexapod().get().getRearRight(0));
+//                        return quaternion;
+//                    });
+//            modelInstance.setMeshRotationFunction(
+//                    "RearRightLegMid", (quaternion) -> {
+//                        quaternion.multiply(getEntityHexapod().get().getRearRight(1));
+//                        return quaternion;
+//                    });
+//            modelInstance.setMeshRotationFunction(
+//                    "RearRightLegTip", (quaternion) -> {
+//                        quaternion.multiply(getEntityHexapod().get().getRearRight(2));
+//                        return quaternion;
+//                    });
+//
+//            modelInstance.setMeshRotationFunction(
+//                    "RearLeftLegBase", (quaternion) -> {
+//                        quaternion.multiply(getEntityHexapod().get().getRearLeft(0));
+//                        return quaternion;
+//                    });
+//            modelInstance.setMeshRotationFunction(
+//                    "RearLeftLegMid", (quaternion) -> {
+//                        quaternion.multiply(getEntityHexapod().get().getRearLeft(1));
+//                        return quaternion;
+//                    });
+//            modelInstance.setMeshRotationFunction(
+//                    "RearLeftLegTip", (quaternion) -> {
+//                        quaternion.multiply(getEntityHexapod().get().getRearLeft(2));
+//                        return quaternion;
+//                    });
 
             modelInstance.init();
         }
