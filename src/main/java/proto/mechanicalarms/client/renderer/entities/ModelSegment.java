@@ -15,7 +15,6 @@ public class ModelSegment {
     public static final Vector3f BACKWARD = new Vector3f(0, 0, 1);
 
     ModelSegment parent;
-    Vector3f attachmentPoint = new Vector3f();
     public List<ModelSegment> children = new ArrayList<>();
     Quaternionf currentRotation = new Quaternionf();
     Quaternionf yawQ = new Quaternionf();
@@ -39,10 +38,10 @@ public class ModelSegment {
     }
 
     public ModelSegment(Vector3f tipDirection, Vector3f restingDirection, Vector3f attachmentPoint) {
-        this.tipVector.set(tipDirection);
-        this.originalVector.set(tipDirection);
+        this.baseVector.set(attachmentPoint);
+        this.tipVector.set(originalVector).add(tipDirection);
+        this.originalVector.set(tipVector);
         this.restingTipDirection.set(restingDirection);
-        this.attachmentPoint.set(attachmentPoint);
     }
 
     public ModelSegment withChild(ModelSegment child) {

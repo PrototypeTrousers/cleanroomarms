@@ -43,11 +43,13 @@ public class EntityHexapod extends EntityMob {
 
 
     ModelSegment mainBody = new ModelSegment(ModelSegment.FORWARD, ModelSegment.FORWARD);
+    Quaternionf mainBodyRotation = new Quaternionf();
+    static final Vector3f FORWARD = new Vector3f(0, 0, -1);
     KinematicChain kinematicChain = new KinematicChain(mainBody, this::getPositionVector);
 
-    ModelSegment rightFrontArm = ArmFactory.arm(ModelSegment.RIGHT, 3, new Vector3f(-0.5f,-0.3f, 0.8f));
+    ModelSegment rightFrontArm = ArmFactory.arm(ModelSegment.RIGHT, 3, new Vector3f(0.5f,-0.3f, -0.8f));
 //    ModelSegment leftFrontArm = ArmFactory.arm(ModelSegment.LEFT, 3);
-    ModelSegment rightMidArm = ArmFactory.arm(ModelSegment.RIGHT, 3, new Vector3f(-0.5f,-0.3f, 0f));
+    ModelSegment rightMidArm = ArmFactory.arm(ModelSegment.RIGHT, 3, new Vector3f(0.5f,-0.3f, 0f));
 //    ModelSegment leftMidArm = ArmFactory.arm(ModelSegment.LEFT, 3);
 //    ModelSegment rightRearArm = ArmFactory.arm(ModelSegment.RIGHT, 3);
 //    ModelSegment leftRearArm = ArmFactory.arm(ModelSegment.LEFT, 3);
@@ -77,16 +79,17 @@ public class EntityHexapod extends EntityMob {
         //kinematicChain.updateFromNewBase(new Vector3f(0,f, 0));
         //tmainBody.move(0, 0.5f + f, 0);
 
+        mainBodyRotation.identity();
+        mainBodyRotation.rotateY((float) this.getVectorForRotation(this.rotationPitch, this.rotationYaw).x);
 
-        Quaternionf la = new Quaternionf();
-        la.rotateY((float) this.getLook(1).x);
+
         Vector3f ra = new Vector3f(1.0f, -mainBody.getBaseVector().y, -2);
         Vector3f ra2 = new Vector3f(ra);
-        ra.rotate(la);
+        ra.rotate(mainBodyRotation);
         if (!(world.getBlockState(new BlockPos(posX + ra.x, posY + ra.y, posZ + ra.z)) == Blocks.AIR.getDefaultState())) {
             //ra2.y += 1;
         }
-        frontRightArmChain.doFabrik(ra2);
+        frontRightArmChain.doFabrik(ra2, mainBodyRotation);
 //        frontLeftArmChain.doFabrik(new Vector3f(1.0f, -mainBody.getBaseVector().y , 2));
 
 
@@ -107,7 +110,7 @@ public class EntityHexapod extends EntityMob {
 
         //mainBody.move(f, 1, f);
 
-        midRightArmChain.doFabrik(new Vector3f(2,0,0));
+        midRightArmChain.doFabrik(new Vector3f(2,-0.4f,0), mainBodyRotation);
         this.world.spawnParticle(EnumParticleTypes.SMOKE_NORMAL, midRightArmChain.endEffectorWorldlyPosition.x, midRightArmChain.endEffectorWorldlyPosition.y, midRightArmChain.endEffectorWorldlyPosition.z, 0,0,0);
 
 
@@ -137,7 +140,7 @@ public class EntityHexapod extends EntityMob {
 //        moveRelative(0, 0, -0.01f, 1f);
 //
         //this.move(MoverType.SELF, 0, 0, 0.05);
-        //super.onLivingUpdate();
+        super.onLivingUpdate();
     }
 
     @Override
