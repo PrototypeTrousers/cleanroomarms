@@ -1,7 +1,6 @@
 package proto.mechanicalarms.client.renderer.entities;
 
 import net.minecraft.util.math.Vec3d;
-import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 import java.util.ArrayList;
@@ -30,11 +29,10 @@ public class KinematicChain {
         parent.children.add(this);
     }
 
-    public void doFabrik(Vector3f target, Quaternionf rootRotation) {
+    public void doFabrik(Vector3f target) {
 //        if (endEffectorPosition.distance(target) < epsilon ) {
 //            return;
 //        }
-
 
         Vector3f direction = new Vector3f(target).setComponent(1, 0).normalize();
         fabrikBackward2(root, root.baseVector, direction);

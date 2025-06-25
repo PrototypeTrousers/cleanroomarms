@@ -1,14 +1,8 @@
 package proto.mechanicalarms.common.entities;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.particle.ParticleManager;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.MoverType;
-import net.minecraft.entity.SharedMonsterAttributes;
+import net.minecraft.entity.*;
 import net.minecraft.entity.ai.*;
 import net.minecraft.entity.monster.EntityIronGolem;
-import net.minecraft.entity.monster.EntityMob;
 import net.minecraft.entity.monster.EntityPigZombie;
 import net.minecraft.entity.passive.EntityVillager;
 import net.minecraft.entity.player.EntityPlayer;
@@ -21,7 +15,6 @@ import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -34,7 +27,7 @@ import proto.mechanicalarms.client.renderer.util.Quaternion;
 
 import javax.annotation.Nullable;
 
-public class EntityHexapod extends EntityMob {
+public class EntityHexapod extends EntityCreature {
 
     // We reuse the zombie model which has arms that need to be raised when the zombie is attacking:
     private static final DataParameter<Boolean> ARMS_RAISED = EntityDataManager.createKey(EntityHexapod.class, DataSerializers.BOOLEAN);
@@ -78,39 +71,31 @@ public class EntityHexapod extends EntityMob {
         float f = (float) (Math.sin(System.currentTimeMillis() / 100d)) / 2f;
         //kinematicChain.updateFromNewBase(new Vector3f(0,f, 0));
         //tmainBody.move(0, 0.5f + f, 0);
-
+        super.onEntityUpdate();
         mainBodyRotation.identity();
-        mainBodyRotation.rotateY((float) this.getVectorForRotation(this.rotationPitch, this.rotationYaw).x);
+        this.rotationYaw = 0;
+        mainBodyRotation.rotateY((float) (Math.toRadians(getPitchYaw().y)));
 
 
-        Vector3f ra = new Vector3f(1.0f, -mainBody.getBaseVector().y, -2);
+        Vector3f ra = new Vector3f(2.0f, -mainBody.getBaseVector().y, -2);
         Vector3f ra2 = new Vector3f(ra);
         ra.rotate(mainBodyRotation);
         if (!(world.getBlockState(new BlockPos(posX + ra.x, posY + ra.y, posZ + ra.z)) == Blocks.AIR.getDefaultState())) {
             //ra2.y += 1;
         }
-        frontRightArmChain.doFabrik(ra2, mainBodyRotation);
+        frontRightArmChain.doFabrik(ra2);
 //        frontLeftArmChain.doFabrik(new Vector3f(1.0f, -mainBody.getBaseVector().y , 2));
 
 
-        super.onEntityUpdate();
     }
 
     @Override
     public void onLivingUpdate() {
-        Quaternionf la = new Quaternionf();
-        float partialTicks;
-        if (world.isRemote) {
-            partialTicks = Minecraft.getMinecraft().getRenderPartialTicks();
-        } else {
-            partialTicks = 1;
-        }
+        Vector3f target = new Vector3f((float) ((int)posX + 2), (float) posY, (float) posZ);
+        target.sub((float) this.posX, (float) this.posY, (float) this.posZ);
+        target.rotate(mainBodyRotation);
 
-        float f = (float) (Math.sin(System.currentTimeMillis() / 100d) / 2f);
-
-        //mainBody.move(f, 1, f);
-
-        midRightArmChain.doFabrik(new Vector3f(2,-0.4f,0), mainBodyRotation);
+        midRightArmChain.doFabrik(target);
         this.world.spawnParticle(EnumParticleTypes.SMOKE_NORMAL, midRightArmChain.endEffectorWorldlyPosition.x, midRightArmChain.endEffectorWorldlyPosition.y, midRightArmChain.endEffectorWorldlyPosition.z, 0,0,0);
 
 
@@ -149,7 +134,7 @@ public class EntityHexapod extends EntityMob {
         // Here we set various attributes for our mob. Like maximum health, armor, speed, ...
         this.getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE).setBaseValue(35.0D);
         this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.13D);
-        this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue(3.0D);
+        //this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue(3.0D);
         this.getEntityAttribute(SharedMonsterAttributes.ARMOR).setBaseValue(2.0D);
     }
 
@@ -198,11 +183,6 @@ public class EntityHexapod extends EntityMob {
     @Nullable
     protected ResourceLocation getLootTable() {
         return LOOT;
-    }
-
-    @Override
-    protected boolean isValidLightLevel() {
-        return true;
     }
 
     @Override
@@ -258,10 +238,12 @@ public class EntityHexapod extends EntityMob {
     }
 
     public Quaternion getBodyRotation() {
+        return new Quaternion(mainBodyRotation.x, mainBodyRotation.y, mainBodyRotation.z, mainBodyRotation.w);
+    }
 
-        Quaternionf la = new Quaternionf();
-        la.rotateY((float) this.getLook(1).x);
-        return new Quaternion(la.x, la.y, la.z, la.w);
+    @Override
+    public boolean getCanSpawnHere() {
+        return false;
     }
 
     static class ArmFactory {
