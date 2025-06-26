@@ -41,18 +41,18 @@ public class EntityHexapod extends EntityCreature {
     KinematicChain kinematicChain = new KinematicChain(mainBody, this::getPositionVector, this::getBodyRotation);
 
     ModelSegment rightFrontArm = ArmFactory.arm(ModelSegment.RIGHT, 3, new Vector3f(0.5f,-0.3f, -0.8f));
-//    ModelSegment leftFrontArm = ArmFactory.arm(ModelSegment.LEFT, 3);
+    ModelSegment leftFrontArm = ArmFactory.arm(ModelSegment.LEFT, 3, new Vector3f(-0.5f,-0.3f, -0.8f));
     ModelSegment rightMidArm = ArmFactory.arm(ModelSegment.RIGHT, 3, new Vector3f(0.5f,-0.3f, 0f));
-//    ModelSegment leftMidArm = ArmFactory.arm(ModelSegment.LEFT, 3);
-//    ModelSegment rightRearArm = ArmFactory.arm(ModelSegment.RIGHT, 3);
-//    ModelSegment leftRearArm = ArmFactory.arm(ModelSegment.LEFT, 3);
+    ModelSegment leftMidArm = ArmFactory.arm(ModelSegment.LEFT, 3, new Vector3f(-0.5f,-0.3f, 0f));
+    ModelSegment rightRearArm = ArmFactory.arm(ModelSegment.RIGHT, 3, new Vector3f(0.5f,-0.3f, 0.8f));
+    ModelSegment leftRearArm = ArmFactory.arm(ModelSegment.LEFT, 3, new Vector3f(-0.5f,-0.3f, 0.8f));
 
     KinematicChain frontRightArmChain = new KinematicChain(kinematicChain, rightFrontArm);
-//    KinematicChain frontLeftArmChain = new KinematicChain(kinematicChain, leftFrontArm);
+    KinematicChain frontLeftArmChain = new KinematicChain(kinematicChain, leftFrontArm);
     KinematicChain midRightArmChain = new KinematicChain(kinematicChain, rightMidArm);
-//    KinematicChain midLeftArmChain = new KinematicChain(kinematicChain, leftMidArm);
-//    KinematicChain rearRightArmChain = new KinematicChain(kinematicChain, rightRearArm);
-//    KinematicChain rearLeftArmChain = new KinematicChain(kinematicChain, leftRearArm);
+    KinematicChain midLeftArmChain = new KinematicChain(kinematicChain, leftMidArm);
+    KinematicChain rearRightArmChain = new KinematicChain(kinematicChain, rightRearArm);
+    KinematicChain rearLeftArmChain = new KinematicChain(kinematicChain, leftRearArm);
 
     public EntityHexapod(World worldIn) {
         super(worldIn);
@@ -78,50 +78,45 @@ public class EntityHexapod extends EntityCreature {
         Vector3f ra = new Vector3f(2.0f, -mainBody.getBaseVector().y, -2);
         Vector3f ra2 = new Vector3f(ra);
         ra.rotate(mainBodyRotation);
-        if (!(world.getBlockState(new BlockPos(posX + ra.x, posY + ra.y, posZ + ra.z)) == Blocks.AIR.getDefaultState())) {
-            //ra2.y += 1;
-        }
-        frontRightArmChain.doFabrik(ra2);
-//        frontLeftArmChain.doFabrik(new Vector3f(1.0f, -mainBody.getBaseVector().y , 2));
 
+        frontRightArmChain.doFabrik(ra2);
+        frontLeftArmChain.doFabrik(new Vector3f(-2.0f, -mainBody.getBaseVector().y, -2));
     }
 
     @Override
     public void onLivingUpdate() {
-        Vector3f target = new Vector3f((int)posX + 1.5f, (float) posY, (float) posZ);
-        target.sub((float) this.posX, (float) this.posY, (float) this.posZ);
-        //target.rotate(mainBodyRotation.invert(new Quaternionf()));
+        Vector3f target = new Vector3f((int)posX + 2f, (float) posY, (float) posZ);
+
+        if (!(world.getBlockState(new BlockPos(target.x, target.y, target.z)) == Blocks.AIR.getDefaultState())) {
+            target.add(0,1,0);
+        }
+
+        target.sub((float) this.posX, (float) this.posY + 0.4f, (float) this.posZ);
+
+        //this.world.spawnParticle(EnumParticleTypes.SMOKE_NORMAL, midRightArmChain.endEffectorWorldlyPosition.x, midRightArmChain.endEffectorWorldlyPosition.y, midRightArmChain.endEffectorWorldlyPosition.z, 0,0,0);
+        Vector3f endeffector = midRightArmChain.endEffectorPosition;
+
+        float maxDistance = 0.1f;
+
+// Clamp X
+        target.x = Math.clamp(target.x, endeffector.x - maxDistance, endeffector.x + maxDistance);
+
+// Clamp Y
+        target.y = Math.clamp(target.y, endeffector.y - maxDistance, endeffector.y + maxDistance);
+
+// Clamp Z
+        target.z = Math.clamp(target.z, endeffector.z - maxDistance, endeffector.z + maxDistance);
+
 
         midRightArmChain.doFabrik(target);
-        this.world.spawnParticle(EnumParticleTypes.SMOKE_NORMAL, midRightArmChain.endEffectorWorldlyPosition.x, midRightArmChain.endEffectorWorldlyPosition.y, midRightArmChain.endEffectorWorldlyPosition.z, 0,0,0);
 
-
-
-
-//        if (midRightArmChain.endEffectorWorldlyPosition.distance((float) posX, (float) posY, (float) posZ) > 2f) {
-//            resting = false;
-//        }
-//        if (resting) {
-//            midRightArmChain.doFabrik(new Vector3f(2f, 0, 0));
-//        } else {
-//            midRightArmChain.doFabrik(new Vector3f(ra.x, -mainBody.getBaseVector().y, ra.z + f));
-//            midRightArmChain.endEffectorWorldlyPosition.set(rac);
-//        }
-//        midLeftArmChain.doFabrik(new Vector3f(0, 3, 0));
+        midLeftArmChain.doFabrik(new Vector3f(-2, -mainBody.getBaseVector().y, 0));
+        rearRightArmChain.doFabrik(new Vector3f(2, -mainBody.getBaseVector().y, 0.8f));
+        rearLeftArmChain.doFabrik(new Vector3f(-2, -mainBody.getBaseVector().y, 0.8f));
+        //moveRelative(0.1f, 0, 0, 1f);
 //
-//
-//        rearRightArmChain.doFabrik(new Vector3f(0, 3, 0));
-//        rearLeftArmChain.doFabrik(new Vector3f(0, 3, 0));
-
-//        midRightArmChain.doFabrik(new Vector3f(ra.x + (0.5f - x), -mainBody.getBaseVector().y, ra.z -(0.5f - z)/2f));
-//        midLeftArmChain.doFabrik(new Vector3f(-ra.x + (0.5f - x), -mainBody.getBaseVector().y, ra.z-(0.5f - z)/2f));
-//
-//
-//        rearRightArmChain.doFabrik(new Vector3f(ra.x + (0.5f - x), -mainBody.getBaseVector().y, ra.z+(0.5f - z)/2f));
-//        rearLeftArmChain.doFabrik(new Vector3f(-ra.x + (0.5f - x), -mainBody.getBaseVector().y, ra.z+(0.5f - z)/2f));
-//        moveRelative(0, 0, -0.01f, 1f);
-//
-        //this.move(MoverType.SELF, 0.1f, 0, 0);
+        //this.motionX += 0.2f;
+        this.move(MoverType.SELF, 0.1f, 0, 0);
         super.onLivingUpdate();
     }
 
@@ -195,25 +190,25 @@ public class EntityHexapod extends EntityCreature {
         return getSegmentRotation(frontRightArmChain, segment);
     }
 
-//    public Quaternion getFrontLeft(int segment) {
-//        return getSegmentRotation(frontLeftArmChain, segment);
-//    }
-//
+    public Quaternion getFrontLeft(int segment) {
+        return getSegmentRotation(frontLeftArmChain, segment);
+    }
+
     public Quaternion getMidRight(int segment) {
         return getSegmentRotation(midRightArmChain, segment);
     }
-//
-//    public Quaternion getMidLeft(int segment) {
-//        return getSegmentRotation(midLeftArmChain, segment);
-//    }
-//
-//    public Quaternion getRearRight(int segment) {
-//        return getSegmentRotation(rearRightArmChain, segment);
-//    }
-//
-//    public Quaternion getRearLeft(int segment) {
-//        return getSegmentRotation(rearLeftArmChain, segment);
-//    }
+
+    public Quaternion getMidLeft(int segment) {
+        return getSegmentRotation(midLeftArmChain, segment);
+    }
+
+    public Quaternion getRearRight(int segment) {
+        return getSegmentRotation(rearRightArmChain, segment);
+    }
+
+    public Quaternion getRearLeft(int segment) {
+        return getSegmentRotation(rearLeftArmChain, segment);
+    }
 
     public Quaternion getSegmentRotation(KinematicChain chain, int segment) {
         ModelSegment currentSegment = chain.root;
