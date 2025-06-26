@@ -38,7 +38,7 @@ public class EntityHexapod extends EntityCreature {
     ModelSegment mainBody = new ModelSegment(ModelSegment.FORWARD, ModelSegment.FORWARD);
     Quaternionf mainBodyRotation = new Quaternionf();
     static final Vector3f FORWARD = new Vector3f(0, 0, -1);
-    KinematicChain kinematicChain = new KinematicChain(mainBody, this::getPositionVector);
+    KinematicChain kinematicChain = new KinematicChain(mainBody, this::getPositionVector, this::getBodyRotation);
 
     ModelSegment rightFrontArm = ArmFactory.arm(ModelSegment.RIGHT, 3, new Vector3f(0.5f,-0.3f, -0.8f));
 //    ModelSegment leftFrontArm = ArmFactory.arm(ModelSegment.LEFT, 3);
@@ -73,9 +73,7 @@ public class EntityHexapod extends EntityCreature {
         //tmainBody.move(0, 0.5f + f, 0);
         super.onEntityUpdate();
         mainBodyRotation.identity();
-        this.rotationYaw = 0;
         mainBodyRotation.rotateY((float) (Math.toRadians(getPitchYaw().y)));
-
 
         Vector3f ra = new Vector3f(2.0f, -mainBody.getBaseVector().y, -2);
         Vector3f ra2 = new Vector3f(ra);
@@ -86,14 +84,13 @@ public class EntityHexapod extends EntityCreature {
         frontRightArmChain.doFabrik(ra2);
 //        frontLeftArmChain.doFabrik(new Vector3f(1.0f, -mainBody.getBaseVector().y , 2));
 
-
     }
 
     @Override
     public void onLivingUpdate() {
-        Vector3f target = new Vector3f((float) ((int)posX + 2), (float) posY, (float) posZ);
+        Vector3f target = new Vector3f((int)posX + 1.5f, (float) posY, (float) posZ);
         target.sub((float) this.posX, (float) this.posY, (float) this.posZ);
-        target.rotate(mainBodyRotation);
+        //target.rotate(mainBodyRotation.invert(new Quaternionf()));
 
         midRightArmChain.doFabrik(target);
         this.world.spawnParticle(EnumParticleTypes.SMOKE_NORMAL, midRightArmChain.endEffectorWorldlyPosition.x, midRightArmChain.endEffectorWorldlyPosition.y, midRightArmChain.endEffectorWorldlyPosition.z, 0,0,0);
@@ -124,7 +121,7 @@ public class EntityHexapod extends EntityCreature {
 //        rearLeftArmChain.doFabrik(new Vector3f(-ra.x + (0.5f - x), -mainBody.getBaseVector().y, ra.z+(0.5f - z)/2f));
 //        moveRelative(0, 0, -0.01f, 1f);
 //
-        //this.move(MoverType.SELF, 0, 0, 0.05);
+        //this.move(MoverType.SELF, 0.1f, 0, 0);
         super.onLivingUpdate();
     }
 

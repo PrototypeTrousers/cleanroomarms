@@ -1,7 +1,9 @@
 package proto.mechanicalarms.client.renderer.entities;
 
 import net.minecraft.util.math.Vec3d;
+import org.joml.Quaternionf;
 import org.joml.Vector3f;
+import proto.mechanicalarms.client.renderer.util.Quaternion;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,10 +19,12 @@ public class KinematicChain {
     public Vector3f endEffectorWorldlyPosition = new Vector3f();
     public Vector3f lastEndEffectorPosition = new Vector3f();
     public Supplier<Vec3d> worldPositionSupplier;
+    public Supplier<Quaternion> worldRotationSupplier;
 
-    public KinematicChain(ModelSegment root, Supplier<Vec3d> worldPositionSupplier) {
+    public KinematicChain(ModelSegment root, Supplier<Vec3d> worldPositionSupplier, Supplier<Quaternion> worldRotationSupplier) {
         this.root = root;
         this.worldPositionSupplier = worldPositionSupplier;
+        this.worldRotationSupplier = worldRotationSupplier;
     }
 
     public KinematicChain(KinematicChain parent, ModelSegment root) {
@@ -45,6 +49,9 @@ public class KinematicChain {
         endEffectorPosition.set(target);
         if (parent != null && parent.worldPositionSupplier != null) {
             Vec3d worldlyPosition = parent.worldPositionSupplier.get();
+
+            Quaternion worldlyRotation = parent.worldRotationSupplier.get();
+            target.rotate(new Quaternionf(worldlyRotation.x, worldlyRotation.y, worldlyRotation.z, worldlyRotation.w));
             target.add((float) worldlyPosition.x, (float) worldlyPosition.y, (float) worldlyPosition.z);
         }
 
