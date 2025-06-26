@@ -42,7 +42,7 @@ base {
 
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(21))
+        languageVersion.set(JavaLanguageVersion.of(24))
     }
     if (propertyBool('generate_sources_jar')) {
         withSourcesJar()
@@ -77,9 +77,9 @@ unimined.minecraft {
         }
 
         mixinConfig("mechanicalarms.mixins.json")
-        loader "0.3.4-alpha"
-        runs.config("client", {args += extra_jvm_args.split(" ")})
-        runs.config("server", {args += extra_jvm_args.split(" ")})
+        loader "0.3.7-alpha"
+        runs.config("client", { args += extra_jvm_args.split(" ") })
+        runs.config("server", { args += extra_jvm_args.split(" ") })
         runs.auth.username = minecraft_username
     }
 }
@@ -94,12 +94,12 @@ repositories {
 dependencies {
     implementation("org.joml:joml:1.10.8")
     implementation("de.javagl:jgltf-model:2.0.4")
-    runtimeOnly("curse.maven:Fugue-1005815:6493246")
+    runtimeOnly("curse.maven:Fugue-1005815:6690708")
     //modImplementation("curse.maven:Forgelin-Continuous-456403:6359253")
     runtimeOnly("curse.maven:Magneticraft-224808:3791484")
     runtimeOnly("curse.maven:ModelLoader-277663:2744735")
     runtimeOnly("curse.maven:Spark-361579:3542217")
-    runtimeOnly("curse.maven:WorldEdit-225608:2460570")
+    //runtimeOnly("curse.maven:WorldEdit-225608:2460570")
     compileOnly("curse.maven:modularui-624243:6535584-sources-deobf")
 
     if (propertyBool('use_asset_mover')) {
@@ -236,13 +236,19 @@ idea {
 }
 
 compileTestJava {
-    sourceCompatibility = targetCompatibility = JavaVersion.VERSION_21
+    sourceCompatibility = targetCompatibility = JavaVersion.VERSION_24
+}
+
+tasks.named("runClient").configure {
+    javaLauncher.set(javaToolchains.launcherFor {
+        languageVersion = JavaLanguageVersion.of(25)
+    })
 }
 
 test {
     useJUnitPlatform()
     javaLauncher.set(javaToolchains.launcherFor {
-        languageVersion = JavaLanguageVersion.of(21)
+        languageVersion = JavaLanguageVersion.of(24)
     })
     if (propertyBool('show_testing_output')) {
         testLogging {

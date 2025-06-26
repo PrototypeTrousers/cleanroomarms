@@ -87,8 +87,10 @@ public class EntityHexapod extends EntityCreature {
     public void onLivingUpdate() {
         Vector3f target = new Vector3f((int)posX + 2f, (float) posY, (float) posZ);
 
+        boolean riseBody = false;
         if (!(world.getBlockState(new BlockPos(target.x, target.y, target.z)) == Blocks.AIR.getDefaultState())) {
             target.add(0,1,0);
+            riseBody = true;
         }
 
         target.sub((float) this.posX, (float) this.posY + 0.4f, (float) this.posZ);
@@ -106,9 +108,13 @@ public class EntityHexapod extends EntityCreature {
 
 // Clamp Z
         target.z = Math.clamp(target.z, endeffector.z - maxDistance, endeffector.z + maxDistance);
-
+        float d = endeffector.distance(target);
+        if (riseBody && d < 0.1f) {
+            this.move(MoverType.SELF, 0f, 1f, 0);
+        }
 
         midRightArmChain.doFabrik(target);
+
 
         midLeftArmChain.doFabrik(new Vector3f(-2, -mainBody.getBaseVector().y, 0));
         rearRightArmChain.doFabrik(new Vector3f(2, -mainBody.getBaseVector().y, 0.8f));
