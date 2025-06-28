@@ -1,5 +1,6 @@
 package proto.mechanicalarms.common.entities;
 
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.*;
 import net.minecraft.entity.ai.*;
 import net.minecraft.entity.monster.EntityIronGolem;
@@ -16,6 +17,7 @@ import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.joml.Quaternionf;
@@ -85,35 +87,46 @@ public class EntityHexapod extends EntityCreature {
 
     @Override
     public void onLivingUpdate() {
-        Vector3f target = new Vector3f((int)posX + 2f, (float) posY, (float) posZ);
+        Vector3f modelRestingTarget = new Vector3f(2.5f,0,0f);
+        Vector3f relativePos = modelRestingTarget.rotate(mainBodyRotation, new Vector3f());
+        Vector3f target = relativePos.add((float) posX, (float) posY, (float) posZ, new Vector3f());
 
         boolean riseBody = false;
-        if (!(world.getBlockState(new BlockPos(target.x, target.y, target.z)) == Blocks.AIR.getDefaultState())) {
-            target.add(0,1,0);
-            riseBody = true;
+        Chunk chunk = world.getChunk((int)Math.floor(target.x) >> 4, (int)Math.floor(target.z) >> 4);
+        IBlockState bs = chunk.getBlockState((int) Math.floor(target.x), (int) Math.floor(target.y), (int) Math.floor(target.z));
+        IBlockState bsbelow = chunk.getBlockState((int) Math.floor(target.x), (int) Math.floor(target.y - 1), (int) Math.floor(target.z));
+
+        if (bs == Blocks.AIR.getDefaultState() && bsbelow != Blocks.AIR.getDefaultState()) {
+
+        } else if (bs == Blocks.AIR.getDefaultState() && bsbelow == Blocks.AIR.getDefaultState()) {
+            modelRestingTarget.add(0,-1,0);
+        } else if (bs != Blocks.AIR.getDefaultState() ) {
+            modelRestingTarget.add(0,1,0);
+            //riseBody = true;
         }
+        this.world.spawnParticle(EnumParticleTypes.WATER_BUBBLE, target.x, target.y, target.z, 0,0,0);
 
         target.sub((float) this.posX, (float) this.posY + 0.4f, (float) this.posZ);
 
-        //this.world.spawnParticle(EnumParticleTypes.SMOKE_NORMAL, midRightArmChain.endEffectorWorldlyPosition.x, midRightArmChain.endEffectorWorldlyPosition.y, midRightArmChain.endEffectorWorldlyPosition.z, 0,0,0);
         Vector3f endeffector = midRightArmChain.endEffectorPosition;
 
         float maxDistance = 0.1f;
 
-// Clamp X
+        // Clamp X
         target.x = Math.clamp(target.x, endeffector.x - maxDistance, endeffector.x + maxDistance);
 
-// Clamp Y
+        // Clamp Y
         target.y = Math.clamp(target.y, endeffector.y - maxDistance, endeffector.y + maxDistance);
 
-// Clamp Z
+        // Clamp Z
         target.z = Math.clamp(target.z, endeffector.z - maxDistance, endeffector.z + maxDistance);
         float d = endeffector.distance(target);
         if (riseBody && d < 0.1f) {
             this.move(MoverType.SELF, 0f, 1f, 0);
         }
 
-        midRightArmChain.doFabrik(target);
+        midRightArmChain.doFabrik(modelRestingTarget);
+        this.world.spawnParticle(EnumParticleTypes.SMOKE_NORMAL, midRightArmChain.endEffectorWorldlyPosition.x, midRightArmChain.endEffectorWorldlyPosition.y, midRightArmChain.endEffectorWorldlyPosition.z, 0,0,0);
 
 
         midLeftArmChain.doFabrik(new Vector3f(-2, -mainBody.getBaseVector().y, 0));
@@ -122,8 +135,9 @@ public class EntityHexapod extends EntityCreature {
         //moveRelative(0.1f, 0, 0, 1f);
 //
         //this.motionX += 0.2f;
-        this.move(MoverType.SELF, 0.1f, 0, 0);
-        super.onLivingUpdate();
+        //this.move(MoverType.SELF, 0.1f, 0, -0.1f);
+        this.turn(4f, 0);
+        //super.onLivingUpdate();
     }
 
     @Override
