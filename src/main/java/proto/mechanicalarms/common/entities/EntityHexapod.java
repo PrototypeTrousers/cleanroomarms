@@ -92,6 +92,7 @@ public class EntityHexapod extends EntityCreature {
         Vector3f target = relativePos.add((float) posX, (float) posY, (float) posZ, new Vector3f());
 
         boolean riseBody = false;
+        new BlockPos(0,0,0);
         Chunk chunk = world.getChunk((int)Math.floor(target.x) >> 4, (int)Math.floor(target.z) >> 4);
         IBlockState bs = chunk.getBlockState((int) Math.floor(target.x), (int) Math.floor(target.y), (int) Math.floor(target.z));
         IBlockState bsbelow = chunk.getBlockState((int) Math.floor(target.x), (int) Math.floor(target.y - 1), (int) Math.floor(target.z));
@@ -99,18 +100,21 @@ public class EntityHexapod extends EntityCreature {
         if (bs == Blocks.AIR.getDefaultState() && bsbelow != Blocks.AIR.getDefaultState()) {
 
         } else if (bs == Blocks.AIR.getDefaultState() && bsbelow == Blocks.AIR.getDefaultState()) {
-            modelRestingTarget.add(0,-1,0);
+            target.add(0,-1,0);
         } else if (bs != Blocks.AIR.getDefaultState() ) {
-            modelRestingTarget.add(0,1,0);
+            target.add(0,1,0);
             //riseBody = true;
         }
         this.world.spawnParticle(EnumParticleTypes.WATER_BUBBLE, target.x, target.y, target.z, 0,0,0);
 
-        target.sub((float) this.posX, (float) this.posY + 0.4f, (float) this.posZ);
+        target.sub((float) this.posX, (float) this.posY, (float) this.posZ);
 
         Vector3f endeffector = midRightArmChain.endEffectorPosition;
 
-        float maxDistance = 0.1f;
+        float maxDistance = 0.2f;
+
+        target.rotate(mainBodyRotation.conjugate(new Quaternionf()));
+
 
         // Clamp X
         target.x = Math.clamp(target.x, endeffector.x - maxDistance, endeffector.x + maxDistance);
@@ -125,7 +129,7 @@ public class EntityHexapod extends EntityCreature {
             this.move(MoverType.SELF, 0f, 1f, 0);
         }
 
-        midRightArmChain.doFabrik(modelRestingTarget);
+        midRightArmChain.doFabrik(target);
         this.world.spawnParticle(EnumParticleTypes.SMOKE_NORMAL, midRightArmChain.endEffectorWorldlyPosition.x, midRightArmChain.endEffectorWorldlyPosition.y, midRightArmChain.endEffectorWorldlyPosition.z, 0,0,0);
 
 
@@ -136,7 +140,7 @@ public class EntityHexapod extends EntityCreature {
 //
         //this.motionX += 0.2f;
         //this.move(MoverType.SELF, 0.1f, 0, -0.1f);
-        this.turn(4f, 0);
+        this.turn(28f, 0);
         //super.onLivingUpdate();
     }
 
