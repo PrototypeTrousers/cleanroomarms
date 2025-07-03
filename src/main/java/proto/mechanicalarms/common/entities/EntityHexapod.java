@@ -52,6 +52,7 @@ public class EntityHexapod extends EntityCreature {
     KinematicChain frontRightArmChain = new KinematicChain(kinematicChain, rightFrontArm);
     KinematicChain frontLeftArmChain = new KinematicChain(kinematicChain, leftFrontArm);
     KinematicChain midRightArmChain = new KinematicChain(kinematicChain, rightMidArm);
+    boolean resting;
     KinematicChain midLeftArmChain = new KinematicChain(kinematicChain, leftMidArm);
     KinematicChain rearRightArmChain = new KinematicChain(kinematicChain, rightRearArm);
     KinematicChain rearLeftArmChain = new KinematicChain(kinematicChain, leftRearArm);
@@ -87,7 +88,7 @@ public class EntityHexapod extends EntityCreature {
 
     @Override
     public void onLivingUpdate() {
-        Vector3f modelRestingTarget = new Vector3f(2.5f,0,0f);
+        Vector3f modelRestingTarget = new Vector3f(2.5f,0,-0.5f);
         Vector3f relativePos = modelRestingTarget.rotate(mainBodyRotation, new Vector3f());
         Vector3f target = relativePos.add((float) posX, (float) posY, (float) posZ, new Vector3f());
 
@@ -107,7 +108,18 @@ public class EntityHexapod extends EntityCreature {
         }
         this.world.spawnParticle(EnumParticleTypes.WATER_BUBBLE, target.x, target.y, target.z, 0,0,0);
 
-        target.sub((float) this.posX, (float) this.posY, (float) this.posZ);
+        boolean stop = false;
+        float dist = midRightArmChain.endEffectorWorldlyPosition.distance(target);
+        if (dist < 0.001f) {
+            resting = false;
+        }
+        if (dist < 1.5f && !resting) {
+            target = midRightArmChain.endEffectorWorldlyPosition.sub((float) this.posX, (float) this.posY, (float) this.posZ, new Vector3f());
+        } else {
+            resting = true;
+            target.sub((float) this.posX, (float) this.posY, (float) this.posZ);
+            stop = true;
+        }
 
         Vector3f endeffector = midRightArmChain.endEffectorPosition;
 
@@ -115,6 +127,9 @@ public class EntityHexapod extends EntityCreature {
 
         target.rotate(mainBodyRotation.conjugate(new Quaternionf()));
 
+        float tx = target.x;
+        float ty = target.y;
+        float tz = target.z;
 
         // Clamp X
         target.x = Math.clamp(target.x, endeffector.x - maxDistance, endeffector.x + maxDistance);
@@ -124,6 +139,12 @@ public class EntityHexapod extends EntityCreature {
 
         // Clamp Z
         target.z = Math.clamp(target.z, endeffector.z - maxDistance, endeffector.z + maxDistance);
+
+        if (tx != target.x || ty != target.y || tz != target.z) {
+            stop = true;
+        }
+
+
         float d = endeffector.distance(target);
         if (riseBody && d < 0.1f) {
             this.move(MoverType.SELF, 0f, 1f, 0);
@@ -140,7 +161,9 @@ public class EntityHexapod extends EntityCreature {
 //
         //this.motionX += 0.2f;
         //this.move(MoverType.SELF, 0.1f, 0, -0.1f);
-        this.turn(28f, 0);
+        if (!stop && !resting) {
+            this.turn(28f, 0);
+        }
         //super.onLivingUpdate();
     }
 
