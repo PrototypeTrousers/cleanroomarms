@@ -47,10 +47,11 @@ public class EntityHexapod extends EntityCreature {
     KinematicChain frontRightArmChain = new KinematicChain(kinematicChain, rightFrontArm);
     KinematicChain frontLeftArmChain = new KinematicChain(kinematicChain, leftFrontArm);
     KinematicChain midRightArmChain = new KinematicChain(kinematicChain, rightMidArm);
-    boolean resting;
     KinematicChain midLeftArmChain = new KinematicChain(kinematicChain, leftMidArm);
     KinematicChain rearRightArmChain = new KinematicChain(kinematicChain, rightRearArm);
     KinematicChain rearLeftArmChain = new KinematicChain(kinematicChain, leftRearArm);
+
+    boolean canMove = false;
 
     public EntityHexapod(World worldIn) {
         super(worldIn);
@@ -82,12 +83,19 @@ public class EntityHexapod extends EntityCreature {
 
     @Override
     public void onLivingUpdate() {
-        super.onLivingUpdate();
+        //super.onLivingUpdate();
 
-        a(midRightArmChain);
-        a(midLeftArmChain);
-        a(rearRightArmChain);
-        a(rearLeftArmChain);
+        canMove = a(midRightArmChain);
+        canMove |= a(midLeftArmChain);
+        canMove |= a(rearRightArmChain);
+        canMove |= a(rearLeftArmChain);
+
+        if (canMove) {
+            this.turn(48f, 0);
+            this.moveRelative(0,0, -0.1f, 1f);
+            //this.move(MoverType.SELF, this.motionX, this.motionY, this.motionZ);
+        }
+
 
         //this.motionX = this.motionY = this.motionZ = 0;
 //        if (!resting) {
@@ -97,7 +105,7 @@ public class EntityHexapod extends EntityCreature {
 //        }
     }
 
-    public void a(KinematicChain chain) {
+    public boolean a(KinematicChain chain) {
         Vector3f relativePos = chain.restingPosition.rotate(mainBodyRotation, new Vector3f());
         Vector3f target = relativePos.add((float) posX, (float) posY, (float) posZ, new Vector3f());
 
@@ -115,21 +123,16 @@ public class EntityHexapod extends EntityCreature {
         }
         //this.world.spawnParticle(EnumParticleTypes.WATER_BUBBLE, target.x, target.y, target.z, 0,0,0);
 
+
         float dist = chain.endEffectorWorldlyPosition.distance(target);
-        if (dist <= 0.001f) {
-            resting = false;
+        if (dist < 0.001f) {
+            chain.movingToRest = false;
         }
-        if (dist > 1.0f) {
-            resting = true;
-        }
-        if (resting) {
-            target.sub((float) this.posX, (float) this.posY, (float) this.posZ);
-            this.motionX = 0;
-            this.motionY = 0;
-            this.motionZ = 0;
-            this.rotationYaw = 0;
-        } else {
+        if (dist < 1.5f && !chain.movingToRest) {
             target = chain.endEffectorWorldlyPosition.sub((float) this.posX, (float) this.posY, (float) this.posZ, new Vector3f());
+        } else {
+            chain.movingToRest = true;
+            target.sub((float) this.posX, (float) this.posY, (float) this.posZ);
         }
 
         Vector3f endeffector = chain.endEffectorPosition;
@@ -142,12 +145,9 @@ public class EntityHexapod extends EntityCreature {
         target.y = Math.clamp(target.y, endeffector.y - maxDistance, endeffector.y + maxDistance);
         target.z = Math.clamp(target.z, endeffector.z - maxDistance, endeffector.z + maxDistance);
 
-        float d = endeffector.distance(target);
-        if (riseBody && d < 0.1f) {
-            this.move(MoverType.SELF, 0f, 1f, 0);
-        }
-
         chain.doFabrik(target);
+
+        return !chain.movingToRest;
     }
 
 

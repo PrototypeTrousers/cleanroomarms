@@ -19,6 +19,7 @@ public class KinematicChain {
     public Vector3f endEffectorWorldlyPosition = new Vector3f();
     public Vector3f lastEndEffectorPosition = new Vector3f();
     public Vector3f restingPosition = new Vector3f();
+    public boolean movingToRest = false;
     public Supplier<Vec3d> worldPositionSupplier;
     public Supplier<Quaternion> worldRotationSupplier;
 
@@ -39,9 +40,9 @@ public class KinematicChain {
     }
 
     public void doFabrik(Vector3f target) {
-//        if (endEffectorPosition.distance(target) < epsilon ) {
-//            return;
-//        }
+        if (endEffectorPosition.distance(target) < epsilon ) {
+            return;
+        }
 
         Vector3f direction = new Vector3f(target).setComponent(1, 0).normalize();
         fabrikBackward2(root, root.baseVector, direction);
