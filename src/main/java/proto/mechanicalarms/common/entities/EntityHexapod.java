@@ -30,16 +30,11 @@ import proto.mechanicalarms.client.renderer.util.Quaternion;
 import javax.annotation.Nullable;
 
 public class EntityHexapod extends EntityCreature {
-
-    // We reuse the zombie model which has arms that need to be raised when the zombie is attacking:
-    private static final DataParameter<Boolean> ARMS_RAISED = EntityDataManager.createKey(EntityHexapod.class, DataSerializers.BOOLEAN);
-
     public static final ResourceLocation LOOT = new ResourceLocation(MechanicalArms.MODID, "entities/weird_zombie");
 
 
     ModelSegment mainBody = new ModelSegment(ModelSegment.FORWARD, ModelSegment.FORWARD);
     Quaternionf mainBodyRotation = new Quaternionf();
-    static final Vector3f FORWARD = new Vector3f(0, 0, -1);
     KinematicChain kinematicChain = new KinematicChain(mainBody, this::getPositionVector, this::getBodyRotation);
 
     ModelSegment rightFrontArm = ArmFactory.arm(ModelSegment.RIGHT, 3, new Vector3f(0.5f,-0.3f, -0.8f));
@@ -60,112 +55,101 @@ public class EntityHexapod extends EntityCreature {
     public EntityHexapod(World worldIn) {
         super(worldIn);
         setSize(1F, 1F);
+        midRightArmChain.setRestingPosition(new Vector3f(2.5f,0,-0.5f));
+        midLeftArmChain.setRestingPosition(new Vector3f(-2.5f,0,-0.5f));
+        rearRightArmChain.setRestingPosition(new Vector3f(2.0f,0,1.5f));
+        rearLeftArmChain.setRestingPosition(new Vector3f(-2.0f,0,1.5f));
     }
 
     @Override
     protected void entityInit() {
         super.entityInit();
-        this.getDataManager().register(ARMS_RAISED, Boolean.FALSE);
     }
 
     @Override
     public void onEntityUpdate() {
-        //RECHECK THIS
-        float f = (float) (Math.sin(System.currentTimeMillis() / 100d)) / 2f;
-        //kinematicChain.updateFromNewBase(new Vector3f(0,f, 0));
-        //tmainBody.move(0, 0.5f + f, 0);
-        super.onEntityUpdate();
         mainBodyRotation.identity();
         mainBodyRotation.rotateY((float) (Math.toRadians(getPitchYaw().y)));
 
-        Vector3f ra = new Vector3f(2.0f, -mainBody.getBaseVector().y, -2);
+        Vector3f ra = new Vector3f(2.0f, -mainBody.getBaseVector().y + 1, -2);
         Vector3f ra2 = new Vector3f(ra);
         ra.rotate(mainBodyRotation);
 
         frontRightArmChain.doFabrik(ra2);
-        frontLeftArmChain.doFabrik(new Vector3f(-2.0f, -mainBody.getBaseVector().y, -2));
+        frontLeftArmChain.doFabrik(new Vector3f(-2.0f, -mainBody.getBaseVector().y + 1, -2));
+        super.onEntityUpdate();
     }
 
     @Override
     public void onLivingUpdate() {
-        Vector3f modelRestingTarget = new Vector3f(2.5f,0,-0.5f);
-        Vector3f relativePos = modelRestingTarget.rotate(mainBodyRotation, new Vector3f());
+        super.onLivingUpdate();
+
+        a(midRightArmChain);
+        a(midLeftArmChain);
+        a(rearRightArmChain);
+        a(rearLeftArmChain);
+
+        //this.motionX = this.motionY = this.motionZ = 0;
+//        if (!resting) {
+
+//            //this.moveRelative(0,0,-0.1f,1f);
+//            //this.move(MoverType.SELF, this.motionX, this.motionY, this.motionZ);
+//        }
+    }
+
+    public void a(KinematicChain chain) {
+        Vector3f relativePos = chain.restingPosition.rotate(mainBodyRotation, new Vector3f());
         Vector3f target = relativePos.add((float) posX, (float) posY, (float) posZ, new Vector3f());
 
         boolean riseBody = false;
-        new BlockPos(0,0,0);
-        Chunk chunk = world.getChunk((int)Math.floor(target.x) >> 4, (int)Math.floor(target.z) >> 4);
+        Chunk chunk = world.getChunk((int) Math.floor(target.x) >> 4, (int) Math.floor(target.z) >> 4);
         IBlockState bs = chunk.getBlockState((int) Math.floor(target.x), (int) Math.floor(target.y), (int) Math.floor(target.z));
         IBlockState bsbelow = chunk.getBlockState((int) Math.floor(target.x), (int) Math.floor(target.y - 1), (int) Math.floor(target.z));
 
         if (bs == Blocks.AIR.getDefaultState() && bsbelow != Blocks.AIR.getDefaultState()) {
 
         } else if (bs == Blocks.AIR.getDefaultState() && bsbelow == Blocks.AIR.getDefaultState()) {
-            target.add(0,-1,0);
-        } else if (bs != Blocks.AIR.getDefaultState() ) {
-            target.add(0,1,0);
-            //riseBody = true;
+            target.add(0, -1, 0);
+        } else if (bs != Blocks.AIR.getDefaultState()) {
+            target.add(0, 1, 0);
         }
-        this.world.spawnParticle(EnumParticleTypes.WATER_BUBBLE, target.x, target.y, target.z, 0,0,0);
+        //this.world.spawnParticle(EnumParticleTypes.WATER_BUBBLE, target.x, target.y, target.z, 0,0,0);
 
-        boolean stop = false;
-        float dist = midRightArmChain.endEffectorWorldlyPosition.distance(target);
-        if (dist < 0.001f) {
+        float dist = chain.endEffectorWorldlyPosition.distance(target);
+        if (dist <= 0.001f) {
             resting = false;
         }
-        if (dist < 1.5f && !resting) {
-            target = midRightArmChain.endEffectorWorldlyPosition.sub((float) this.posX, (float) this.posY, (float) this.posZ, new Vector3f());
-        } else {
+        if (dist > 1.0f) {
             resting = true;
+        }
+        if (resting) {
             target.sub((float) this.posX, (float) this.posY, (float) this.posZ);
-            stop = true;
+            this.motionX = 0;
+            this.motionY = 0;
+            this.motionZ = 0;
+            this.rotationYaw = 0;
+        } else {
+            target = chain.endEffectorWorldlyPosition.sub((float) this.posX, (float) this.posY, (float) this.posZ, new Vector3f());
         }
 
-        Vector3f endeffector = midRightArmChain.endEffectorPosition;
+        Vector3f endeffector = chain.endEffectorPosition;
 
-        float maxDistance = 0.2f;
+        float maxDistance = 0.1f;
 
         target.rotate(mainBodyRotation.conjugate(new Quaternionf()));
 
-        float tx = target.x;
-        float ty = target.y;
-        float tz = target.z;
-
-        // Clamp X
         target.x = Math.clamp(target.x, endeffector.x - maxDistance, endeffector.x + maxDistance);
-
-        // Clamp Y
         target.y = Math.clamp(target.y, endeffector.y - maxDistance, endeffector.y + maxDistance);
-
-        // Clamp Z
         target.z = Math.clamp(target.z, endeffector.z - maxDistance, endeffector.z + maxDistance);
-
-        if (tx != target.x || ty != target.y || tz != target.z) {
-            stop = true;
-        }
-
 
         float d = endeffector.distance(target);
         if (riseBody && d < 0.1f) {
             this.move(MoverType.SELF, 0f, 1f, 0);
         }
 
-        midRightArmChain.doFabrik(target);
-        this.world.spawnParticle(EnumParticleTypes.SMOKE_NORMAL, midRightArmChain.endEffectorWorldlyPosition.x, midRightArmChain.endEffectorWorldlyPosition.y, midRightArmChain.endEffectorWorldlyPosition.z, 0,0,0);
-
-
-        midLeftArmChain.doFabrik(new Vector3f(-2, -mainBody.getBaseVector().y, 0));
-        rearRightArmChain.doFabrik(new Vector3f(2, -mainBody.getBaseVector().y, 0.8f));
-        rearLeftArmChain.doFabrik(new Vector3f(-2, -mainBody.getBaseVector().y, 0.8f));
-        //moveRelative(0.1f, 0, 0, 1f);
-//
-        //this.motionX += 0.2f;
-        //this.move(MoverType.SELF, 0.1f, 0, -0.1f);
-        if (!stop && !resting) {
-            this.turn(28f, 0);
-        }
-        //super.onLivingUpdate();
+        chain.doFabrik(target);
     }
+
 
     @Override
     protected void applyEntityAttributes() {
@@ -175,15 +159,6 @@ public class EntityHexapod extends EntityCreature {
         this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.13D);
         //this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue(3.0D);
         this.getEntityAttribute(SharedMonsterAttributes.ARMOR).setBaseValue(2.0D);
-    }
-
-    public void setArmsRaised(boolean armsRaised) {
-        this.getDataManager().set(ARMS_RAISED, Boolean.valueOf(armsRaised));
-    }
-
-    @SideOnly(Side.CLIENT)
-    public boolean isArmsRaised() {
-        return this.getDataManager().get(ARMS_RAISED).booleanValue();
     }
 
     @Override

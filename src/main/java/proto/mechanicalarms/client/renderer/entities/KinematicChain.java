@@ -18,6 +18,7 @@ public class KinematicChain {
     public Vector3f endEffectorPosition = new Vector3f();
     public Vector3f endEffectorWorldlyPosition = new Vector3f();
     public Vector3f lastEndEffectorPosition = new Vector3f();
+    public Vector3f restingPosition = new Vector3f();
     public Supplier<Vec3d> worldPositionSupplier;
     public Supplier<Quaternion> worldRotationSupplier;
 
@@ -31,6 +32,10 @@ public class KinematicChain {
         this.root = root;
         this.parent = parent;
         parent.children.add(this);
+    }
+
+    public void setRestingPosition(Vector3f restingPosition) {
+        this.restingPosition.set(restingPosition);
     }
 
     public void doFabrik(Vector3f target) {
