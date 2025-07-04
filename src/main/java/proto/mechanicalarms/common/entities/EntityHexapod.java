@@ -70,7 +70,7 @@ public class EntityHexapod extends EntityCreature {
     @Override
     public void onEntityUpdate() {
         mainBodyRotation.identity();
-        mainBodyRotation.rotateY((float) (Math.toRadians(getPitchYaw().y)));
+        mainBodyRotation.rotateY((float) (Math.toRadians(rotationYaw)));
 
         Vector3f ra = new Vector3f(2.0f, -mainBody.getBaseVector().y + 1, -2);
         Vector3f ra2 = new Vector3f(ra);
@@ -83,18 +83,27 @@ public class EntityHexapod extends EntityCreature {
 
     @Override
     public void onLivingUpdate() {
-        //super.onLivingUpdate();
+        super.onLivingUpdate();
 
-        canMove = a(midRightArmChain);
-        canMove |= a(midLeftArmChain);
-        canMove |= a(rearRightArmChain);
-        canMove |= a(rearLeftArmChain);
-
-        if (canMove) {
-            this.turn(48f, 0);
-            this.moveRelative(0,0, -0.1f, 1f);
-            //this.move(MoverType.SELF, this.motionX, this.motionY, this.motionZ);
+        canMove = true;
+        if (!a(midRightArmChain)){
+            canMove = false;
         }
+        if (!a(midLeftArmChain)){
+            canMove = false;
+        }
+        if (!a(rearRightArmChain)){
+            canMove = false;
+        }
+        if (!a(rearLeftArmChain)){
+            canMove = false;
+        }
+
+//        if (canMove) {
+//            this.turn(48f, 0);
+//            this.moveRelative(0,0, -0.1f, 1f);
+//            //this.move(MoverType.SELF, this.motionX, this.motionY, this.motionZ);
+//        }
 
 
         //this.motionX = this.motionY = this.motionZ = 0;
@@ -105,41 +114,46 @@ public class EntityHexapod extends EntityCreature {
 //        }
     }
 
+    boolean riseBody = false;
+//        Chunk chunk = world.getChunk((int) Math.floor(target.x) >> 4, (int) Math.floor(target.z) >> 4);
+//        IBlockState bs = chunk.getBlockState((int) Math.floor(target.x), (int) Math.floor(target.y), (int) Math.floor(target.z));
+//        IBlockState bsbelow = chunk.getBlockState((int) Math.floor(target.x), (int) Math.floor(target.y - 1), (int) Math.floor(target.z));
+//
+//        if (bs == Blocks.AIR.getDefaultState() && bsbelow != Blocks.AIR.getDefaultState()) {
+//
+//        } else if (bs == Blocks.AIR.getDefaultState() && bsbelow == Blocks.AIR.getDefaultState()) {
+//            target.add(0, -1, 0);
+//        } else if (bs != Blocks.AIR.getDefaultState()) {
+//            target.add(0, 1, 0);
+//        }
+//        //this.world.spawnParticle(EnumParticleTypes.WATER_BUBBLE, target.x, target.y, target.z, 0,0,0);
+
     public boolean a(KinematicChain chain) {
         Vector3f relativePos = chain.restingPosition.rotate(mainBodyRotation, new Vector3f());
-        Vector3f target = relativePos.add((float) posX, (float) posY, (float) posZ, new Vector3f());
-
-        boolean riseBody = false;
-        Chunk chunk = world.getChunk((int) Math.floor(target.x) >> 4, (int) Math.floor(target.z) >> 4);
-        IBlockState bs = chunk.getBlockState((int) Math.floor(target.x), (int) Math.floor(target.y), (int) Math.floor(target.z));
-        IBlockState bsbelow = chunk.getBlockState((int) Math.floor(target.x), (int) Math.floor(target.y - 1), (int) Math.floor(target.z));
-
-        if (bs == Blocks.AIR.getDefaultState() && bsbelow != Blocks.AIR.getDefaultState()) {
-
-        } else if (bs == Blocks.AIR.getDefaultState() && bsbelow == Blocks.AIR.getDefaultState()) {
-            target.add(0, -1, 0);
-        } else if (bs != Blocks.AIR.getDefaultState()) {
-            target.add(0, 1, 0);
-        }
-        //this.world.spawnParticle(EnumParticleTypes.WATER_BUBBLE, target.x, target.y, target.z, 0,0,0);
-
+        Vector3f target = relativePos.add((float) Math.floor(posX) + 0.5f, (float) Math.floor(posY), (float) Math.floor(posZ) + 0.5f, new Vector3f());
 
         float dist = chain.endEffectorWorldlyPosition.distance(target);
         if (dist < 0.001f) {
             chain.movingToRest = false;
         }
-        if (dist < 1.5f && !chain.movingToRest) {
-            target = chain.endEffectorWorldlyPosition.sub((float) this.posX, (float) this.posY, (float) this.posZ, new Vector3f());
-        } else {
+        if (dist > 1.f) {
             chain.movingToRest = true;
+        }
+        if (chain.movingToRest) {
             target.sub((float) this.posX, (float) this.posY, (float) this.posZ);
+            target.rotate(mainBodyRotation.conjugate(new Quaternionf()));
+        } else {
+            target = chain.endEffectorWorldlyPosition.sub((float) this.posX, (float) this.posY, (float) this.posZ, new Vector3f());
+            mainBodyRotation.identity();
+            mainBodyRotation.rotateY((float) (Math.toRadians(prevRotationYaw)));
+            target.rotate(mainBodyRotation.conjugate(new Quaternionf()));
+
         }
 
         Vector3f endeffector = chain.endEffectorPosition;
 
         float maxDistance = 0.1f;
 
-        target.rotate(mainBodyRotation.conjugate(new Quaternionf()));
 
         target.x = Math.clamp(target.x, endeffector.x - maxDistance, endeffector.x + maxDistance);
         target.y = Math.clamp(target.y, endeffector.y - maxDistance, endeffector.y + maxDistance);
